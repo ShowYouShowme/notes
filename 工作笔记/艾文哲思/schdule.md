@@ -1,0 +1,13 @@
+- [ ] 看Tars文档
+- [ ] 如何保存多个终端的history命令
+- [ ] 学习C++的future和promise
+- [ ] 学习pb文件的使用，用Visual studio自己编译执行
+- [ ] 阅读项目代码dz、roomserver、userinfoserver、loginserver
+- [ ] 编写脚本，将全部RPC服务的.h文件放到一个文件夹里面
+- [ ] [tars_cpp_user_guide.md](https://github.com/TarsCloud/TarsCpp/blob/master/docs/tars_cpp_user_guide.md)
+- [ ] [tars_push.md](https://github.com/TarsCloud/TarsCpp/blob/49b96f7a74ce96c411be280f34b55bc80f3d9497/docs/tars_push.md)
+- [ ] shell脚本自动更新全部项目
+- [ ] 学习IM相关，里面有很多技术含量特别高的地方！！！
+- [ ] 配置MySQL各种日志文件的路径，配置MySQL数据的路径
+- [ ] 测试部署redis，protobuf和pb2tars的脚本是否有问题
+
