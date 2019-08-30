@@ -84,3 +84,58 @@
    > -x：解压
    >
    > -c：创建新文档，打包时用
+
+
+
+
+
+# SCP
+
+格式：
+
+```shell
+scp [命令参数] [源路径] [目的路径]
+```
+
+
+
+### 操作
+
+***
+
+1. 将本地文件复制到远程
+
+   ```shell
+   scp -r /home/administrator/ root@192.168.6.129:/etc/squid
+   ```
+
+2. 将远程文件复制到本地
+
+   ```
+   scp remote@www.abc.com:/usr/local/sin.sh /home/administrator
+   ```
+
+
+
+
+### 免密码复制
+
+***
+
+```shell
+# 生成公钥和私钥
+ssh-keygen -t rsa -P ""
+# 拷贝公钥到远程主机
+scp ~/.ssh/id_rsa.pub root@10.10.10.61:/root/.ssh
+# 登录远程主机，将公钥id_rsa.pub输入到authorized_keys文件中
+cd ~/.ssh
+cat id_rsa.pub >> authorized_keys 
+```
+
+
+
+# ssh秘钥登录
+
+1. 生成密钥（公钥和私钥）
+2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
+3. 配置ssh客户端使用密钥登录

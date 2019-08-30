@@ -10,4 +10,7 @@
 - [ ] 学习IM相关，里面有很多技术含量特别高的地方！！！
 - [ ] 配置MySQL各种日志文件的路径，配置MySQL数据的路径
 - [ ] 测试部署redis，protobuf和pb2tars的脚本是否有问题
+- [ ] windows开启共享目录，linux挂载，samba 有点卡顿
+- [ ] gdb调试tars
+- [ ] 
 
