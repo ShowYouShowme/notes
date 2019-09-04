@@ -3,7 +3,6 @@
 - [ ] 学习C++的future和promise
 - [ ] 学习pb文件的使用，用Visual studio自己编译执行
 - [ ] 阅读项目代码dz、roomserver、userinfoserver、loginserver
-- [ ] 编写脚本，将全部RPC服务的.h文件放到一个文件夹里面
 - [ ] [tars_cpp_user_guide.md](https://github.com/TarsCloud/TarsCpp/blob/master/docs/tars_cpp_user_guide.md)
 - [ ] [tars_push.md](https://github.com/TarsCloud/TarsCpp/blob/49b96f7a74ce96c411be280f34b55bc80f3d9497/docs/tars_push.md)
 - [ ] shell脚本自动更新全部项目
@@ -11,6 +10,8 @@
 - [ ] 配置MySQL各种日志文件的路径，配置MySQL数据的路径
 - [ ] 测试部署redis，protobuf和pb2tars的脚本是否有问题
 - [ ] windows开启共享目录，linux挂载，samba 有点卡顿
-- [ ] gdb调试tars
-- [ ] 
+- [ ] gdbserver 如何attach    gdbserver localhost:2334 --attach 20497
+- [ ] vs2017 如何用gdbserver远程调试？？？
+- [ ] 学习用CLion写代码！！！！！！！！！！！！！！
+- [ ] 修改GDB优化选项，否则调试乱序
 
