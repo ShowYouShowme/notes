@@ -87,6 +87,30 @@
 
 
 
+# 防火墙
+
+```shell
+firewall-cmd --state # 查看防火墙状态
+systemctl stop firewalld.service # 停止防火墙
+systemctl disable firewalld.service  # 禁止防火墙开机启动
+```
+
+
+
+# SELinux
+
+```shell
+# 查看SELinux状态
+getenforce
+
+# 临时关闭SELinux
+setenforce 0
+
+# 永久关闭SELinux
+vim /etc/selinux/config 
+SELINUX=permissive
+```
+
 
 
 # SCP
@@ -130,6 +154,9 @@ scp ~/.ssh/id_rsa.pub root@10.10.10.61:/root/.ssh
 # 登录远程主机，将公钥id_rsa.pub输入到authorized_keys文件中
 cd ~/.ssh
 cat id_rsa.pub >> authorized_keys 
+
+# 秘钥文件权限全部设置为600
+id_rsa、id_rsa.pub和authorized_keys
 ```
 
 

@@ -10,8 +10,15 @@
 - [ ] 配置MySQL各种日志文件的路径，配置MySQL数据的路径
 - [ ] 测试部署redis，protobuf和pb2tars的脚本是否有问题
 - [ ] windows开启共享目录，linux挂载，samba 有点卡顿
-- [ ] gdbserver 如何attach    gdbserver localhost:2334 --attach 20497
 - [ ] vs2017 如何用gdbserver远程调试？？？
-- [ ] 学习用CLion写代码！！！！！！！！！！！！！！
-- [ ] 修改GDB优化选项，否则调试乱序
+- [ ] 看懂写DataProxy的接口
+- [ ] 阅读coolshell的文章，为什么代码会非常复杂！！！
+- [ ] 框架会杀死60秒无心跳的进程，影响调试
+- [ ] SQL语句一次性把全部数据库导出和导入，方便部署自己的机器
+- [ ] 读懂tars的makefile
+- [ ] 有时间读一下tars生成的proto.h 和 Servant.h里面的代码
+- [ ] 阅读router代码
+- [ ] 带条件的查询，dataproxy应该无法缓存吧，因为条件可以更换！！！--阅读代码验证自己的观点
+- [ ] 写脚本，编译，copy，重启一键完成
+- [ ] makefile 中如何调用Shell的命令，不行的话就用python吧
 
