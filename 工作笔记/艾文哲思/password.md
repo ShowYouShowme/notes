@@ -80,3 +80,27 @@ zuotian
 账号：wzc_0618
 
 密码：nash0808HP
+
+
+
+# 禅道
+
+管理员账号：admin
+
+管理员密码：Nash0808
+
+
+
+自己的账号：wenzc
+
+自己的密码：poker123456
+
+
+
+
+
+# 126的MySQL密码
+
+账号：root
+
+密码：Pe4YA4$D2QNB
