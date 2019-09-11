@@ -1,0 +1,115 @@
+import re
+import os
+headers = []
+cpp_files    = []
+dirs = []
+def get_file_path(root_path,file_list,dir_list,start):
+    #获取该目录下所有的文件名称和目录名称
+    dir_or_files = os.listdir(root_path)
+    for dir_file in dir_or_files:
+        #获取目录或者文件的路径
+        dir_file_path = os.path.join(root_path,dir_file)
+        #判断该路径为文件还是路径
+        if os.path.isdir(dir_file_path):
+            if dir_file == ".git":
+                continue
+            dir_list.append(dir_file_path)
+            #递归获取所有文件和目录的路径
+            get_file_path(dir_file_path,file_list,dir_list,start)
+        else:
+            file_list.append(dir_file_path)
+            project_file_name = dir_file_path[start:]
+            valid_cpp_types = ["cpp","c","cc","cxx"]
+            valid_header_types = ["h","hh","hpp","hxx"]
+            valid_ext_type = valid_cpp_types + valid_header_types
+            for t in valid_ext_type:
+                cmd = ".*\." + t + "$"
+                pattern = re.compile(cmd)
+                # print("cmd:" + cmd)
+                if pattern.match(project_file_name):
+                    if t in valid_header_types:
+                        headers.append(project_file_name)
+                    else:
+                        cpp_files.append(project_file_name)
+                # if t in project_file_name:
+                #     print(project_file_name)
+                #
+                #     if ".cpp" in project_file_name:
+                #         cpp_files.append(project_file_name)
+                #     else:
+                #         headers.append(project_file_name)
+                    vs_filter_end = str(project_file_name).rfind("\\")
+                    if vs_filter_end != -1:
+                        dir_name = project_file_name[0 :vs_filter_end]
+                        if dir_name not in dirs:
+                            dirs.append(dir_name)
+                        # print(project_file_name[0 :vs_filter_end])
+
+
+def create_cpp_item_group(cpp_file_names):
+    msg = '<ItemGroup>\n'
+    for file_name in cpp_file_names:
+        msg += '\t<ClCompile Include="' + file_name + '" />\n'
+    msg += '</ItemGroup>\n'
+    return msg
+
+def create_header_item_group(header_file_names):
+    msg = '<ItemGroup>\n'
+    for file_name in header_file_names:
+        msg += '\t<ClInclude Include="' + file_name + '" />\n'
+    msg += '</ItemGroup>\n'
+    return msg
+
+def get_vcxproj_name(root_path):
+    dir_or_files = os.listdir(root_path)
+    for dir_file in dir_or_files:
+        #获取目录或者文件的路径
+        dir_file_path = os.path.join(root_path,dir_file)
+        #判断该路径为文件还是路径
+        if not os.path.isdir(dir_file_path):
+            pattern = re.compile(".*\.vcxproj$")
+            if pattern.match(dir_file):
+                print(dir_file)
+                return dir_file_path
+    return None
+
+file_list = []
+dir_list = []
+root_path = "."
+get_file_path(root_path, file_list,dir_list,len(root_path)+1)
+
+vcsproj_file_name = get_vcxproj_name(root_path)
+
+if vcsproj_file_name is None:
+    raise NameError("Can not find vcsproj_file!")
+
+file = open(vcsproj_file_name, "r", encoding="utf8")
+
+lines = file.readlines()
+
+file.close()
+start = False
+
+item_group_start = -1
+item_group_end   = -1
+for i in range(len(lines)):
+    line = lines[i]
+    line = str(line).strip()
+    if line == '<ItemGroup>' and item_group_start == -1:
+        item_group_start = i
+        continue
+    if line == '</ItemGroup>':
+        item_group_end = i
+
+cpp_items = create_cpp_item_group(cpp_files)
+headers_items = create_header_item_group(headers)
+lines = lines[0:item_group_start] + [cpp_items,headers_items] + lines[item_group_end+1:]
+print(''.join(lines))
+
+# 写入文件
+file = open(vcsproj_file_name, "w", encoding="utf8")
+for line in lines:
+    file.write(line)
+file.close()
+
+
