@@ -3,6 +3,7 @@ import os
 headers = []
 cpp_files    = []
 dirs = []
+other_files = [] # .conf makefile
 def get_file_path(root_path,file_list,dir_list,start):
     #获取该目录下所有的文件名称和目录名称
     dir_or_files = os.listdir(root_path)
@@ -21,6 +22,7 @@ def get_file_path(root_path,file_list,dir_list,start):
             project_file_name = dir_file_path[start:]
             valid_cpp_types = ["cpp","c","cc","cxx"]
             valid_header_types = ["h","hh","hpp","hxx"]
+            other_types = ["makefile","conf","tars"]        # 其它文件类型
             valid_ext_type = valid_cpp_types + valid_header_types
             for t in valid_ext_type:
                 cmd = ".*\." + t + "$"
@@ -44,6 +46,17 @@ def get_file_path(root_path,file_list,dir_list,start):
                         if dir_name not in dirs:
                             dirs.append(dir_name)
                         # print(project_file_name[0 :vs_filter_end])
+            # conf 和makefileif  和 tars
+            for t in other_types:
+                cmd = ".*" + t + "$"
+                pattern = re.compile(cmd)
+                if pattern.match(project_file_name):
+                    other_files.append(project_file_name)
+                    vs_filter_end = str(project_file_name).rfind("\\")
+                    if vs_filter_end != -1:
+                        dir_name = project_file_name[0 :vs_filter_end]
+                        if dir_name not in dirs:
+                            dirs.append(dir_name)
 
 
 def create_cpp_item_group(cpp_file_names):
@@ -57,6 +70,18 @@ def create_header_item_group(header_file_names):
     msg = '<ItemGroup>\n'
     for file_name in header_file_names:
         msg += '\t<ClInclude Include="' + file_name + '" />\n'
+    msg += '</ItemGroup>\n'
+    return msg
+def create_other_item_group(other_file_names):
+    msg = '<ItemGroup>\n'
+    for file_name in other_file_names:
+        idx = str(file_name).rfind('\\')
+        if idx == -1:
+            msg += '<None Include="' + file_name + '" />\n'
+        else:
+            msg += '<None Include="' + file_name + '">\n'
+            msg += '<Filter>' + file_name[0:idx] + '</Filter>\n'
+            msg += '</None>\n'
     msg += '</ItemGroup>\n'
     return msg
 
@@ -103,7 +128,8 @@ for i in range(len(lines)):
 
 cpp_items = create_cpp_item_group(cpp_files)
 headers_items = create_header_item_group(headers)
-lines = lines[0:item_group_start] + [cpp_items,headers_items] + lines[item_group_end+1:]
+other_items = create_other_item_group(other_files)
+lines = lines[0:item_group_start] + [cpp_items,headers_items, other_items] + lines[item_group_end+1:]
 print(''.join(lines))
 
 # 写入文件
