@@ -28,30 +28,36 @@ def get_file_path(root_path,file_list,dir_list,start):
             valid_header_types = ["h","hh","hpp","hxx"]     #头文件类型
             other_types = ["makefile","conf","tars"]        # 其它文件类型
             valid_ext_type = valid_cpp_types + valid_header_types
+            has_dir = False
             for t in valid_ext_type:
                 cmd = ".*\." + t + "$"
                 pattern = re.compile(cmd)
                 if pattern.match(project_file_name):
+                    has_dir = True
                     if t in valid_header_types:
                         headers.append(project_file_name)
                     else:
                         cpp_files.append(project_file_name)
-                    vs_filter_end = str(project_file_name).rfind("\\")
-                    if vs_filter_end != -1:
-                        dir_name = project_file_name[0 :vs_filter_end]
-                        if dir_name not in dirs:
-                            dirs.append(dir_name)
             # conf 和makefileif  和 tars
             for t in other_types:
                 cmd = ".*" + t + "$"
                 pattern = re.compile(cmd)
                 if pattern.match(project_file_name):
                     other_files.append(project_file_name)
-                    vs_filter_end = str(project_file_name).rfind("\\")
-                    if vs_filter_end != -1:
-                        dir_name = project_file_name[0 :vs_filter_end]
-                        if dir_name not in dirs:
-                            dirs.append(dir_name)
+                    has_dir = True
+
+            if has_dir:
+                vs_filter_end = str(project_file_name).rfind("\\")
+                if vs_filter_end != -1:
+                    dir_name = project_file_name[0 :vs_filter_end]
+                    dir_name_list = str(dir_name).split('\\')
+                    sub_name = ""
+                    for name in dir_name_list:
+                        if sub_name != "":
+                            sub_name += "\\"
+                        sub_name += name
+                        if sub_name not in dirs:
+                            dirs.append(sub_name)
 
 def get_unique_id():
     s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwzyx"
