@@ -81,6 +81,9 @@ ldd main #查看可执行文件依赖的库
 #静态编译
 g++ main.cpp -o main_static -static
 ldd main_static
+
+# 生成静态库
+ar r libtest.a a.o b.o c.o
 ```
 
 
@@ -105,4 +108,20 @@ g++ main.cpp  -o main -I ../Person/ -L ../Person -l Person
    export LD_LIBRARY_PATH=../Person
    ```
 
-   
+
+
+
+
+
+# 其它选项
+
++ -Wno-deprecated ：不要警告使用已弃用的功能
++ -Wall：使用警告
++ -O${level}：优化，level为0时不优化。**注意：优化后调试会错乱**
+
+
+
+# 相关命令
+
++ nm：查看可执行文件中的符号信息
++ strip：去掉可执行文件中的符号信息，减小文件体积

@@ -1,7 +1,6 @@
 - [ ] 看Tars文档
 - [ ] 如何保存多个终端的history命令
 - [ ] 学习C++的future和promise
-- [ ] 学习pb文件的使用，用Visual studio自己编译执行
 - [ ] 阅读项目代码dz、roomserver、userinfoserver、loginserver
 - [ ] [tars_cpp_user_guide.md](https://github.com/TarsCloud/TarsCpp/blob/master/docs/tars_cpp_user_guide.md)
 - [ ] [tars_push.md](https://github.com/TarsCloud/TarsCpp/blob/49b96f7a74ce96c411be280f34b55bc80f3d9497/docs/tars_push.md)
@@ -20,5 +19,5 @@
 - [ ] 带条件的查询，dataproxy应该无法缓存吧，因为条件可以更换！！！--阅读代码验证自己的观点
 - [ ] 写脚本，编译，copy，重启一键完成
 - [ ] makefile 中如何调用Shell的命令，不行的话就用python吧
-- [ ] 记录win和linux中安装pb的步骤到md里面
+- [ ] 如果在makefile里面指定CONFIG，会把配置文件打包，那么发布的时候是不是不需要手动指定配置文件了呢
 

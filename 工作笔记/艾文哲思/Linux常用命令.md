@@ -166,3 +166,39 @@ id_rsa、id_rsa.pub和authorized_keys
 1. 生成密钥（公钥和私钥）
 2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
 3. 配置ssh客户端使用密钥登录
+
+
+
+
+
+# 开机启动服务或脚本
+
+1. 编写脚本，在脚本前加入下面三行
+
+   ```shell
+   #!/bin/bash
+   # chkconfig:   2345 90 10
+   # description:  myservice
+   ```
+
+2. 给脚本赋予执行权限，并移动至**/etc/rc.d/init.d**
+
+   ```shell
+   chmod u+x ./autostart.sh
+   mv  ./autostart.sh /etc/rc.d/init.d
+   ```
+
+3. 添加脚本至开机启动项目
+
+   ```shell
+   cd /etc/rc.d/init.d
+   chkconfig --add autostart.sh
+   chkconfig autostart.sh on
+   ```
+
+
+
+
+# uname -r
+
+查看当前使用的内核
