@@ -727,7 +727,7 @@ num2=4+5
   	echo " root user ";
   fi
   
-  # 跟着命令
+  # 跟着命令,如果命令不存在或者执行失败则不执行then
   if pwd;then
   	echo " pwd running";
   fi
@@ -737,5 +737,106 @@ num2=4+5
 
 ## 5-4 使用 if - then - else 语句
 
++ 基本用法
+
+  if [ 测试条件成立 ]
+
+  then 执行相应命令
+
+  else 测试条件不成立，执行相应命令
+
+  fi 结束
+
++ 高级用法
+
+  if [ 测试条件成立 ]
+
+  then 执行相应命令
+
+  elif [ 测试条件成立 ]
+
+  then 执行相应命令
+
+  else 测试条件不成立，执行相应命令
+
+  fi 结束
+
++ 示例代码
+
+  ```shell
+  if [ ${USER} = root ]; then
+          echo " user root"
+          echo ${UID}
+  else
+          echo "other user"
+          echo ${UID}
+  fi
+  ```
+
+  ```shell
+  SCORE=${1}
+  if [ ${SCORE} -gt 90 ]; then
+          echo "A"
+  elif [ ${SCORE} -gt 80 ]; then
+          echo "B"
+  elif [ ${SCORE} -gt 70 ]; then
+          echo "C"
+  else
+          echo "D"
+  fi
+  ```
+
 ## 5-5 嵌套 if 的使用
 
++ 基本用法
+
+  >if [ 测试条件成立 ]
+  >
+  >then 执行相应命令
+  >
+  >​		if [ 测试条件成立 ]
+  >
+  >​		then 执行相应命令
+  >
+  >​		fi
+  >
+  >fi
+
++ 代码示例
+
+  ```shell
+  #!/bin/bash
+  
+  
+  if [ ${UID} = 0 ]; then
+          echo " please run"
+          if [ -x ./10.sh ]; then
+                  ./10.sh 98
+          fi
+  
+  else
+          echo "switch user root"
+  fi
+  ```
+
+
+
+## 5-6 case分支
+
++ 基本用法
+
+  > case "${变量}" in
+  >
+  > ​		"情况1")
+  >
+  > ​			命令...;;
+  >
+  > ​		“情况2”)
+  >
+  > ​			命令...;;
+  >
+  > ​			*)
+  >
+  > ​			命令...;;
+  >
+  > esac
