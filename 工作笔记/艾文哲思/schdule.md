@@ -1,23 +1,29 @@
 - [ ] 看Tars文档
 - [ ] 如何保存多个终端的history命令
 - [ ] 学习C++的future和promise
-- [ ] 阅读项目代码dz、roomserver、userinfoserver、loginserver
+- [ ] 阅读项目代码dz、roomserver、[userinfoserver]、[loginserver]
 - [ ] [tars_cpp_user_guide.md](https://github.com/TarsCloud/TarsCpp/blob/master/docs/tars_cpp_user_guide.md)
 - [ ] [tars_push.md](https://github.com/TarsCloud/TarsCpp/blob/49b96f7a74ce96c411be280f34b55bc80f3d9497/docs/tars_push.md)
-- [ ] shell脚本自动更新全部项目
+- [ ] shell脚本自动更新全部项目(更新出错的处理，)、自动检测是有有项目代码和配置未提交，提交了未push，自动获取gitlab上面全部的项目的url、是否有源文件和配置文件未跟踪
 - [ ] 学习IM相关，里面有很多技术含量特别高的地方！！！
 - [ ] 配置MySQL各种日志文件的路径，配置MySQL数据的路径
 - [ ] 测试部署redis，protobuf和pb2tars的脚本是否有问题
 - [ ] vs2017 如何用gdbserver远程调试？？？
 - [ ] 看懂写DataProxy的接口
+- [ ] 弄懂dataproxy和dbAgent的原理，如何缓存如何写入DB等
 - [ ] 阅读coolshell的文章，为什么代码会非常复杂！！！
 - [ ] 框架会杀死60秒无心跳的进程，影响调试
-- [ ] SQL语句一次性把全部数据库导出和导入，方便部署自己的机器
-- [ ] 读懂tars的makefile
 - [ ] 有时间读一下tars生成的proto.h 和 Servant.h里面的代码
 - [ ] 阅读router代码
 - [ ] 带条件的查询，dataproxy应该无法缓存吧，因为条件可以更换！！！--阅读代码验证自己的观点
-- [ ] 写脚本，编译，copy，重启一键完成
-- [ ] makefile 中如何调用Shell的命令，不行的话就用python吧
 - [ ] 如果在makefile里面指定CONFIG，会把配置文件打包，那么发布的时候是不是不需要手动指定配置文件了呢
-
+- [ ] E_REDIS_WRITE 默认是更新操作，更新用户信息貌似是不带条件的，查看log试试看sql语句是怎样的
+- [ ] 查看一个服务被rpc调用的接口，然后每个服务只需要阅读onRequest 和被rpc调用的接口即可
+- [ ] 查看MySQL全部的表结构
+- [ ] 网络数据字节序的处理
+- [ ] wbl::ReadLocker lock(m_rwlock); 是什么玩意儿？？？
+- [ ] 设计消息系统的表结构和接口
+- [ ] tars管理后台的接口调试如何使用
+- [ ] 查看protocols里面的全部文件，对项目有个整体的了解
+- [ ] 多线程学习，文件锁，变量锁等要理解
+- [ ] 实现添加新服务时，自动生成router需要的代码的脚本
