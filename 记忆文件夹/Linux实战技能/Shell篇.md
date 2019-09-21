@@ -196,6 +196,7 @@
 ## 3-1 变量的定义
 
 + 命名规则：包含数字、字母、下划线，不能以数字开头
++ Shell里面只有字符串一种变量类型
 
 ## 3-2 变量的赋值
 
@@ -840,3 +841,175 @@ num2=4+5
   > ​			命令...;;
   >
   > esac
+
+
+
+
+
+
+
+# 6 循环
+
+## 6-1 for循环
+
++ 语法
+
+  > for	参数	in	列表
+  >
+  > do	执行的命令
+  >
+  > done	封闭一个循环
+
++ Tips
+
+  1. **列表中包含多个变量，用空格分隔**
+  2. 对文本处理，使用文本查看命令取出文本内容
+  3. 默认逐行处理文本，如果出现空格当做多行处理
+
++ 代码示例
+
+  ```shell
+  for i in {1..9}
+          do
+          echo ${i}
+  done
+  ```
+
+  ```shell
+  # 文件批量改名
+  for filename in $(ls *.mp3)
+  do
+          mv ${filename} $(basename ${filename} .mp3).mp4
+  done
+  ```
+
++ C语言风格的for循环(很少用到)
+
+  > for((变量初始化；循环判断条件；变量变化))
+  >
+  > do
+  >
+  > ​	循环执行的命令
+  >
+  > done
+
++ 示例代码
+
+  ```shell
+  for (( i=1; i<=10; i++ ))
+  do
+          echo ${i}
+  done
+  ```
+
+
+
+## 6-2 while 循环
+
++ 语法
+
+  > while	test测试是否成立
+  >
+  > do
+  >
+  > ​	命令
+  >
+  > done
+
++ 代码
+
+  ```shell
+  a=1
+  
+  while [ ${a} -lt 10 ]
+  do
+          echo ${a}
+          ((a++))
+  done
+  ```
+
+  ```shell
+  # 无限循环
+  while :
+  do
+          echo always
+  done
+  ```
+
+  
+
+## 6-3 until 循环
+
+```shell
+# 条件为假则一直执行
+until [ 5 -lt 4 ]
+do
+        echo always
+done
+```
+
+
+
+## 6-4 嵌套
+
+```shell
+for     script_name in /etc/profile.d/*.sh
+do
+        echo ${script_name}
+        if [ -x ${script_name} ] ; then
+                source %{script_name}
+        fi
+done
+```
+
+```shell
+for num in {1..9}
+do
+        if [ ${num} -eq 5 ] ; then
+        break
+        fi
+        echo ${num}
+done
+```
+
+```shell
+for num in {1..9}
+do
+        if [ ${num} -eq 5 ] ; then
+        continue
+        fi
+        echo ${num}
+done
+```
+
+## 6-5 处理命令行参数
+
++ 小知识
+
+  1. 命令行参数用${1}	${2}	...获取
+  2. ${0}表示脚本名称
+  3. $*和$@表示全部位置参数
+  4. $#表示位置参数的数量
+
++ 代码
+
+  ```shell
+  while [ $# -ge 1 ]
+  do
+          echo $#
+          echo "do something "
+          shift
+  done
+  
+  ```
+
+  ```shell
+  for param in $*
+  do
+         if [ ${param} = help ]; then
+                 echo ${param} ${param}  
+         fi
+  done
+  ```
+
+  
