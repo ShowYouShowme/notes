@@ -1013,3 +1013,67 @@ done
   ```
 
   
+
+# 7 函数
+
+## 7-1 自定义函数
+
++ 函数作用范围内的变量
+
+  local 变量名
+
++ 函数的参数
+
+  ${1} ${2} ... ${n}
+
++ 示例
+
+  ```shell
+  function cdls(){
+  cd /
+  ls
+  }
+  
+  cdls
+  ```
+
+  
+
+  ```shell
+  # 可以省略function关键字
+  cdls(){
+  cd ${1}
+  ls
+  }
+  
+  cdls /tmp
+  ```
+
+  ```shell
+  checkpid()
+  {
+  		# 仅在函数内部生效的变量
+          local i
+          for i in $* ; do
+                  [ -d "/proc/$i" ] && return 0
+          done
+  
+          return 1
+  }
+  
+  ```
+
+  
+
+## 7-2 系统脚本
+
++ 系统自建函数库，可以在脚本中引用*/etc/init.d/functions*
+
++ 自建函数库，使用*source /etc/init.d/functions*
+
++ 常用的脚本
+
+  > 1. /etc/profile
+  > 2. ~/.bashrc
+  > 3. ~/.bash_profile
+  > 4. /etc/init.d/functions
