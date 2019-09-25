@@ -1101,3 +1101,114 @@ done
   > 2. ~/.bashrc
   > 3. ~/.bash_profile
   > 4. /etc/init.d/functions
+
+
+
+## 7-3 脚本控制
+
++ 脚本优先级控制[占用资源的控制]
+
+  > 1. CPU占用：nice 和 renice
+  >
+  >    ```shell
+  >    ulimit -a
+  >    #max user processes              (-u) 15022
+  >    
+  >    # 无限递归,会耗完CPU  FORK炸弹  普通用户受到ulimit 的限制,系统不会假死;root用户不受限制
+  >    func()
+  >    {
+  >    	func | func&
+  >    }
+  >    func
+  >    ```
+  >
+  >    
+  >
+  > 2. 内存占用：controlGroup
+
++ 捕获信号
+
+  > 1. kill默认发送15号信号给应用程序
+  >
+  > 2. Ctri+C发送2号信号给应用程序
+  >
+  > 3. 9号信号不可阻塞
+  >
+  > 4. 代码示例
+  >
+  >    ```shell
+  >    # 捕获15号信号,并打印提示信息
+  >    trap "echo sig 15" 15
+  >    trap "echo sig 2" 2
+  >    # 显示进程号
+  >    echo $$
+  >    
+  >    while :
+  >    
+  >    do
+  >            sleep 1
+  >            echo "111"
+  >    done
+  >    
+  >    ```
+
+
+
+# 8 计划任务
+
++ at命令安装
+
+  ```shell
+  yum install -y at
+  
+  # 启动atd服务
+  systemctl start atd
+  ```
+
+  
+
+## 8-1 一次性计划任务
+
+关键：
+
+> 1. 计划任务中的命令可能不在搜索路径下
+> 2. 计划任务执行时无终端，记得输出重定向
+> 3. Ctrl+D结束at的输入
+
+```shell
+# 查看系统时间
+date
+
+at 18:31
+at> echo hello > ./hello.txt
+at> <EOT>
+
+# 查询计划任务
+atq
+
+cat ./hello.txt
+```
+
+## 8-2 周期性计划任务
+
++ cron
+
+  > 1. 配置方式
+  >
+  >    ```shell
+  >    crontab -e
+  >    ```
+  >
+  > 2. 查看现有的计划任务
+  >
+  >    ```shell
+  >    crontab -l
+  >    ```
+  >
+  > 3. 配置格式
+  >
+  >    + 分钟	小时	日期	月份	星期	执行的命令
+  >    + 注意命令的路径问题
+
+## 8-3 计划任务加锁
+
