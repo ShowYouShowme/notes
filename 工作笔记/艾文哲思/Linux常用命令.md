@@ -202,3 +202,19 @@ id_rsa、id_rsa.pub和authorized_keys
 # uname -r
 
 查看当前使用的内核
+
+
+
+
+
+# trap
+
+捕获系统信号，并打印提示信息
+
+```shell
+# 捕获Ctrl+C
+trap "echo sig 2" 2
+```
+
+
+
