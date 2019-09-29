@@ -1195,20 +1195,109 @@ cat ./hello.txt
 
   > 1. 配置方式
   >
-  >    ```shell
-  >    crontab -e
-  >    ```
+  > ```shell
+  > crontab -e
+  > ```
   >
   > 2. 查看现有的计划任务
   >
-  >    ```shell
-  >    crontab -l
-  >    ```
+  > ```shell
+  > crontab -l
+  > ```
   >
   > 3. 配置格式
   >
-  >    + 分钟	小时	日期	月份	星期	执行的命令
+  >    + 分钟	小时	日	月	星期	执行的命令
   >    + 注意命令的路径问题
+  >    
+  > 4. 示例代码
+  >
+  >    41. 每分钟执行一次
+  >
+  >        ```shell
+  >        * * * * * /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    42. 每个星期一执行
+  >
+  >        ```shell
+  >        * * * * 1 /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    43. 每个星期一和星期五执行
+  >
+  >        ```shell
+  >        * * * * 1,5 /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    44. 星期一至星期五执行
+  >
+  >        ```shell
+  >        * * * * 1-5 /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    45. 指定月和日
+  >
+  >        ```shell
+  >        # 七月七日如果是星期一到星期五,则每分钟执行
+  >        * * 7 7 1-5 /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    46. 每个星期一凌晨3点30分执行
+  >
+  >        ```shell
+  >        30 3 * * 1 /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    47. 每个月15号执行脚本
+  >
+  >        ```shell
+  >        * * 15 * * /usr/bin/date  >> /tmp/data.txt
+  >        ```
+  >
+  >    48. 每个月15号3点整执行脚本
+  >
+  >        ```shell
+  >        0 3 15 * * /usr/bin/date  >> /tmp/data.txt
+  >        
+  >        # 分钟不要写成*了,否则就成了3点的每一分钟都执行脚本
+  >        ```
+  >
+  > 5. 查看计划任务执行的log
+  >
+  >    ```shell
+  >    tail -f /var/log/cron
+  >    ```
+  >
+  > 6. 查看计划任务内容
+  >
+  >    ```shell
+  >    vim /var/spool/cron/${USER}
+  >    ```
 
 ## 8-3 计划任务加锁
 
++ anacontab：延时计划任务**[了解]**
+
+  > 情景：在计划任务制定的时间电脑关机或重启了，开机后运行未执行的计划任务
+  >
+  > 文件：
+  >
+  > > 1. vim /etc/cron.d/0hourly
+  > > 2. vim /etc/anacrontab
+  > > 3. vim /etc/cron.daily/logrotate
+  >
+  > 目录：
+  >
+  > > 1. /etc/cron.daily
+  > > 2. /etc/cron.weekly
+  > > 3. /etc/cron.monthly
+
++ flock ：锁文件
+
+  ```shell
+  # 排他锁执行脚本,防止一个脚本同时执行多次
+  flock -xn "/tmp/f.lock" -c "bash /root/a.sh"
+  ```
+
+  
