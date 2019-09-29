@@ -52,7 +52,9 @@
 
 ## 1-2 网络配置
 
-网卡设置
+网卡设置命令
+
+***
 
 ```shell
 ifconfig	${接口}	${ip}	netmask ${子网掩码}
@@ -63,16 +65,19 @@ ifdown	${接口} # 禁用网卡
 
 
 
-添加和删除网关
+示例
+
+***
 
 ```shell
-route add default gw ${网关ip}
-route add-host ${ip} gw ${网关}
-route add-net ${指定网段} netmask ${子网掩码} gw ${网关ip}
-route del default gw ${网关ip}
+# 更改ip和子网掩码
+ifconfig eno16777728 192.168.0.201 netmask 255.255.255.0
 ```
 
-
+```shell
+ifup eno16777728  # 启动网卡
+ifdown eno16777728 # 关闭网卡
+```
 
 使用命令ip配置
 
@@ -90,13 +95,541 @@ ip route add 10.0.0.1/24 via 192.168.0.1
 
 ## 1-3 路由命令
 
+相关命令
+
+***
+
+```shell
+route -n # 查看路由信息
+# 添加默认网关
+route add default gw ${网关ip}
+# 添加明细路由
+route add -host ${ip} gw ${网关}3
+route add -net ${指定网段} netmask ${子网掩码} gw ${网关ip}
+# 删除默认网关
+route del default gw ${网关ip}
+```
+
+
+
+示例代码
+
+***
+
+1. 给指定机器指定路由
+
+   ```shell
+   route add -host 10.0.0.1 gw 192.168.0.2
+   ```
+
+2. 给指定网段指定路由
+
+   ```shell
+   route add -net 10.5.5.0  netmask 255.255.255.0 gw 192.168.0.1
+   ```
+
 ## 1-4 网络故障排除
+
+<h3>相关命令</h3>
+***
+
+> - ping：查看与目标机器是否连通
+> - traceroute：追踪路由
+> - mtr：检查是否有数据包丢失
+> - nslookup：查看域名对应的ip
+> - telnet：检查端口的连接状态
+> - tcpdump：抓包
+> - netstat：查询服务的监听范围
+> - ss：功能和netstat一致
+
+
+
+<h3>示例</h3>
+***
+
+1. 查看详细路由
+
+   ```shell
+   # 安装
+   yum install -y traceroute
+   
+   # -w 1 最多等待1s
+   traceroute -w 1 www.baidu.com
+   ```
+
+2. 查看网络统计信息
+
+   ```shell
+   # 安装
+   yum install -y mtr
+   
+   # 执行
+   mtr
+   ```
+
+3. 域名解析
+
+   ```shell
+   # 安装nslookup
+   yum install bind-utils -y
+   
+   # 查看百度的IP
+   nslookup www.baidu.com 
+   ```
+
+4. 查看到目的主机指定端口是否畅通
+
+   ```shell
+   # telent 域名
+   telnet www.baidu.com 80
+   
+   # telnet IP
+   telnet 198.168.0.229 8080
+   ```
+
+5. 抓包
+
+   ```shell
+   yum install -y tcpdump
+   
+   # -i any:抓取全部网卡数据包
+   # -n 将域名显示为ip
+   tcpdump  -i any -n  port 80
+   
+   # 抓取发送至10.0.0.1和从10.0.0.1发来的数据包
+   tcpdump  -i any -n  host 10.0.0.1
+   
+   tcpdump  -i any -n  host 10.0.0.1 and port 80
+   
+   # 保存到指定文件
+   tcpdump  -i any -n  host 10.0.0.1 and port 80 -w /tem/file/1.txt
+   ```
+
+6. 查看服务监听地址
+
+   ```shell
+   # n:显示ip而不是域名
+   # t:tcp协议
+   # p:显示进程
+   # l:显示监听状态的服务
+   netstat -ntpl
+   
+   
+   
+   ss -ntpl
+   ```
+
+   
 
 ## 1-5 网络服务管理
 
+### 服务管理程序
+
+***
+
+> 1. SysV
+>
+>    ```shell
+>    service network start|stop|restart
+>    chkconfig -list network
+>    ```
+>
+>    
+>
+> 2. systemd
+>
+>    ```shell
+>    systemctl list-unit-files NetworkManager.service
+>    systemctl start|stop|restart NetworkManager
+>    systemctl enable|disable NetworkManager
+>    ```
+
+
+
+### 案例
+
+***
+
+```shell
+# 查看网络状态
+service network status
+
+# 重启网卡
+service network restart
+```
+
+
+
+### 控制服务的脚本[两套]
+
+***
+
+1. network
+
+   ```shell
+   # 查看运行级别
+   chkconfig --list network
+   
+   # 禁用network
+   chkconfig --level 2345 network  off
+   ```
+
+   
+
+2. NetworkManager：服务器一般沿用network
+
+   ```shell
+   # 禁用
+   systemctl disable NetworkManager
+   
+   # 启用
+   systemctl enable NetworkManager
+   ```
+
+   
+
 ## 1-6 常用的网络配置文件
 
++ ifcfg-eth0
++ /etc/hosts
+
+
+
+### 配置文件
+
+***
+
+1. 配置文件路径
+
+   ```shell
+   ls /etc/sysconfig/network-scripts/ifcfg-*
+   ```
+
+2. 配置文件内容
+
+   ```shell
+   # 等号前后无空格
+   TYPE=Ethernet
+   BOOTPROTO=static  # dhcp 或static
+   DEFROUTE=yes
+   PEERDNS=yes
+   PEERROUTES=yes
+   IPV4_FAILURE_FATAL=no
+   IPV6INIT=yes
+   IPV6_AUTOCONF=yes
+   IPV6_DEFROUTE=yes
+   IPV6_PEERDNS=yes
+   IPV6_PEERROUTES=yes
+   IPV6_FAILURE_FATAL=no
+   NAME=eno16777728 # 名称
+   UUID=5f4a9d65-a6e9-4c8f-aa06-24223190def0
+   DEVICE=eno16777728 # 名称
+   ONBOOT=yes # 开机启用该网卡
+   
+   
+   IPADDR=192.168.0.200
+   GATEWAY=192.168.0.1
+   NETMASK=255.255.255.0
+   DNS1=223.6.6.6
+   ```
+
+3. 让配置文件立即生效
+
+   ```shell
+   service network restart
+   ```
+
+4. 查看是否生效
+
+   ```shell
+   # 查看网卡配置
+   ifconfig
+   
+   # 查看网关设置
+   route -n
+   
+   # 查看dns服务器
+   nslookup
+   > server
+   > exit
+   ```
+
+
+
+### 主机名
+
+***
+
+```shell
+## 查看主机名
+hostname
+
+# 临时修改主机名
+hostname c7.test11
+
+# 永久修改主机名
+hostnamectl set-hostname feynman
+
+# 更改主机名后记得修改/etc/hosts 文件,加下面一行
+127.0.0.1   feynman
+```
+
+
+
 # 2- 安装软件
+
+### 软件包管理器
+
+***
+
++ 作用
+  1. 解决软件依赖关系
+  2. 方便软件的安装和卸载
+
+
+
++ 分类
+  1. CentOS、RedHat使用yum包管理器，软件安装包格式为rpm
+  2. Debian、Ubuntu使用apt包管理器，软件安装包格式为deb
+
+
+
+### rpm包
+
+***
+
++ rpm包格式
+
+  > vim-common-7.4.10-5.el7.x86_64.rpm
+  >
+  > 1. vim-common：软件名称
+  > 2. 7.4.10-5：软件版本
+  > 3. el7：系统版本
+  > 4. x86_64：平台
+
++ rpm命令常用参数
+
+  > 1. -q：查询软件包
+  > 2. -i：安装软件包
+  > 3. -e：卸载软件包
+
++ 示例
+
+  ```shell
+  # 查看已安装的软件包
+  rpm -qa
+  
+  # 查看某个软件包是否安装
+  rpm -q ${软件包名}
+  rpm -q vim-common 或者 rpm -qa | grep vim-common
+  
+  
+  # 卸载软件包
+  rpm -e ${软件包名}
+  rpm -e vim-common
+  
+  # 安装软件包
+  rpm -i ${软件包完整名称}
+  rpm -i vim-common-7.4.160-6.el7_6.x86_64.rpm
+  ```
+
++ 缺陷
+
+  > 1. 必须手动解决软件包的依赖关系
+  > 2. 软件包来源不可靠
+  > 3. 可以把依赖的软件包放置于相同的目录
+
++ 拓展
+
+  ```shell
+  # 将光驱制作成ISO
+  dd if=/dev/sr0 of=/xxx/xxx.iso
+  
+  # 挂载光驱
+  mount /dev/sr0 /mnt -t ${类型}  # 类型也可以不指定,自动识别
+  ```
+
+
+
+### yum包管理器
+
+***
+
++ 阿里源
+
+  > 1. 备份
+  >
+  >    ```shell
+  >    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+  >    ```
+  >
+  > 2. 下载新的CentOS-Base.repo 到/etc/yum.repos.d/
+  >
+  >    ```shell
+  >    wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+  >    ```
+  >
+  > 3. 生成缓存 
+  >
+  >    ```shell
+  >    yum makecache
+  >    ```
+
++ yum命令常用选项
+
+  > 1. install 安装软件包
+  >
+  > 2. remove 卸载软件包
+  >
+  > 3. list | grouplist 查看软件包
+  >
+  >    ```shell
+  >    # 查看已安装的软件包
+  >    yum list
+  >    ```
+  >
+  >    
+  >
+  > 4. update 升级软件包
+  >
+  >    ```shell
+  >    # 更新所有软件包
+  >    yum update
+  >    
+  >    # 更新指定软件包--->就是windows中的更新某个软件
+  >    yum update ${软件包名}
+  >    ```
+  >
+  >    
+
++ 镜像网站
+
+  ```shell
+  http://mirror.centos.org/
+  ```
+
+  
+
+### 源代码编译安装
+
+***
+
++ 安装openresty
+
+  ```shell
+  wget https://openresty.org/download/openresty-1.15.8.1.tar.gz
+   
+  tar -zxvf openresty-1.15.8.1.tar.gz
+   
+  # 安装openssl和pcre的开发库
+  yum install openssl-devel pcre-devel -y
+   
+  # 指定安装目录,以后卸载时把整个目录删除即可
+  # 如果不指定安装目录,安装文件会分散到多处
+  ./configure --prefix=/usr/local/openresty
+  
+  
+  gmake -j4
+  
+  make install
+  ```
+
+  
+
+### 内核升级
+
+***
+
++ rpm格式内核
+
+  > 1. 查看内核版本
+  >
+  >    ```shell
+  >    uname -r
+  >    ```
+  >
+  > 2. 升级内核版本
+  >
+  >    ```shell
+  >    yum install kernel-3.10.0
+  >    ```
+  >
+  > 3. 升级已安装的其他软件包和内核
+  >
+  >    ```shell
+  >    yum update
+  >    ```
+
++ 源代码编译安装内核
+
+  > 1. 安装依赖包
+  >
+  >    ```shell
+  >    yum install gcc gcc-c++ make ncurses-devel openssl-devel elfutils-libelf-devel
+  >    ```
+  >
+  > 2. 下载并解压缩内核
+  >
+  >    ```shell
+  >    # 内核下载页面
+  >    https://www.kernel.org
+  >    
+  >    wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.3.1.tar.xz
+  >    
+  >    tar xvf linux-5.3.1.tar.xz  -C /usr/src/kernels/
+  >    
+  >    # 将当前内核配置拷贝过来
+  >    cp /boot/config-3.10.0-327.el7.x86_64 /usr/src/kernels/linux-5.3.1/.config
+  >    cd /usr/src/kernels/linux-5.3.1/
+  >    
+  >    # 配置内核
+  >    make menuconfig 或者 make allyesconfig
+  >    # 查看CPU个数
+  >    lscpu
+  >    
+  >    # 编译
+  >    make -j${CPU个数} all
+  >    
+  >    # 查看分区空间 /dev/mapper/centos-root 至少保留10G
+  >    df -h
+  >    
+  >    # 安装内核 -- 保证磁盘分区至少有10G空间
+  >    make modules_install  # 安装内核模块
+  >    make install		 # 安装内核
+  >    ```
+  >
+  > 3. 内核版本说明
+  >
+  >    ```
+  >    mainline:尝鲜版本
+  >    longterm:长期维护版本
+  >    stable:稳定版本
+  >    stabel:5.0.21[EOL]  不再更新的稳定版
+  >    ```
+
++ yum安装内核
+
+  > 1. 拓展yum仓库
+  >
+  >    ```shell
+  >    yum install epel-release -y
+  >    ```
+  >
+  > 2. 安装最新版本内核
+  >
+  >    ```shell
+  >    yum install kernel 或者 yum update -->此命令会升级内核与全部安装的软件包
+  >    ```
+  >
+  > 3. 安装指定版本内核
+  >
+  >    ```shell
+  >    yum install kernel-3.10.0
+  >    ```
+
+### grub配置文件
+
+
 
 # 3- 进程管理
 
