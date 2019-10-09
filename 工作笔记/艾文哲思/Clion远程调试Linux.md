@@ -16,7 +16,7 @@
 
    ```shell
    # 启动的方式调试
-   gdbserver localhost:2334 ./gdb_remote ${arg1} ${arg2} ${arg3}
+   gdbserver localhost:2334 ${app} ${arg1} ${arg2} ${arg3}
    
    # attach的方式调试
    gdbserver localhost:2334 --attach ${pid}

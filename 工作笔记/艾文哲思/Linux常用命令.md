@@ -218,3 +218,14 @@ trap "echo sig 2" 2
 
 
 
+# tree
+
+以目录树的方式显示指定目录下全部文件
+
+```shell
+yum install tree -y
+```
+
+
+
+# screen
