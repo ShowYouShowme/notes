@@ -229,3 +229,34 @@ yum install tree -y
 
 
 # screen
+
+
+
+
+
+
+
+# grep
+
+功能：文本查找
+
+1. 查找指定名称的进程
+
+   ```shell
+   ps -ef | grep tarsnode
+   ```
+
+2. 在文件中查找指定文本，并显示所在行号
+
+   ```shell
+   grep -n 'home' mount_wzc.sh
+   ```
+
+3. 正则表达式查找
+
+   ```shell
+   # -E 选项指定使用正则表达式
+   grep -n -E '[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}' mount_wzc.sh
+   ```
+
+   

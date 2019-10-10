@@ -419,19 +419,45 @@ HelloServer --config=config.conf
 
 
 
-# 3 异步嵌套
+# 3 异步嵌套[未阅读--重点]
 
 
 
-# 4 染色
+# 4 染色[未阅读]
 
 
 
 
 
-# 5 tars 协议数据包大小
+# 5 tars 协议数据包大小[一般默认即可]
 
++ tars协议对数据包大小进行了限制
 
+  > 1. 通信器（客户端）对发出去的包大小没有限制，对收到的回包有限制，默认是10000000字节（接近10M）
+  > 2. 服务端对发送的包没有限制，对收到的包有大小限制，默认是100000000字节（接近100M）
+
++ 修改数据包大小限制
+
+  > 1. 修改服务器接收数据包大小
+  >
+  >    ```c++
+  >    addServantProtocol(ServerConfig::Application + "." + ServerConfig::ServerName + ".BObj",AppProtocol::parseLenLen<100000000>);
+  >    ```
+  >
+  > 2. 修改客户端接收数据包大小
+  >
+  >    ```c++
+  >    Communicator comm;
+  >    
+  >    HelloServantPrx prx;
+  >    comm.stringToProxy("Test.HelloServer.HelloServantObj@tcp -h 10.10.10.168 -p 10016", prx);
+  >    ProxyProtocol prot;
+  >    prot.requestFunc = ProxyProtocol::tarsRequest;
+  >    prot.responseFunc = ProxyProtocol::tarsResponseLen<1000000000>;
+  >    prx->tars_set_protocol(prot);
+  >    ```
+  >
+  >    
 
 
 
@@ -445,9 +471,128 @@ HelloServer --config=config.conf
 
 # 7 日志
 
+## 7-1 滚动日志
 
++ API
 
+  ```c++
+  #define LOG             (TarsRollLogger::getInstance()->logger())
+  
+  #define LOGMSG(level,msg...) do{ if(LOG->IsNeedLog(level)) LOG->log(level)<<msg;}while(0)
+  
+  
+  #define TLOGINFO(msg...)    LOGMSG(TarsRollLogger::INFO_LOG,msg) // 信息
+  #define TLOGDEBUG(msg...)   LOGMSG(TarsRollLogger::DEBUG_LOG,msg) //调试
+  #define TLOGWARN(msg...)    LOGMSG(TarsRollLogger::WARN_LOG,msg) // 警告
+  #define TLOGERROR(msg...)   LOGMSG(TarsRollLogger::ERROR_LOG,msg) //错误
+  ```
 
++ 用法
+
+  ```c++
+  // 设置日志级别
+  TarsRollLogger::getInstance()->logger()->setLogLevel(TC_RollLogger::INFO_LOG);
+  
+  // 设置同步打印日志
+  TarsRollLogger::getInstance()->sync(true);
+  
+  // 替换ostream
+  ostream &print(ostream &os);
+  
+  print(LOG->debug());
+  ```
+
++ 注意事项
+
+  > 1. 可以在web管理设置服务LOG的当前级别
+  > 2. 滚动日志大小在配置文件中用logsize配置
+  > 3. 滚动日志文件名为：${app}.${server}.log
+  > 4. TLOGXXX是全局的单件，任何地方可以使用
+  > 5. 滚动日志不会发送到远程tarslog服务
+
+## 7-2 按天日志
+
++ API
+
+  ```shell
+  # 日志文件名：${app}.${server}_${滚动方式}.log
+  DLOG
+  
+  # 日志文件名:${app}.${server}_${fileName}_${滚动方式}.log
+  FDLOG(${fileName})
+  ```
+
++ 说明
+
+  > 1. 保存日志的方式：
+  >    11. 仅保存到本地
+  >    12. 仅保存至tarslog
+  >    13. 保存到本地和tarslog，这是默认的选项
+  > 2. 可以修改滚动的时间，比如按分钟，小时等；默认按天滚动
+
++ 代码
+
+  ```c++
+  int main(int argc, char ** argv)
+  {
+  
+  
+      CommunicatorPtr c = new Communicator();
+  
+      string logObj = "tars.tarslog.LogObj@tcp -h 127.0.0.1 -p 20500";
+  
+      //初始化本地滚动日志
+      TarsRollLogger::getInstance()->setLogInfo("Test", "TestServer", "./");
+  
+      //初始化时间日志
+      TarsTimeLogger::getInstance()->setLogInfo(c, logObj, "Test", "TestServer", "./");
+  
+      //如果是Tars服务，不需要上面部分的代码，框架已经自动完成初始化，不用业务自己初始化
+  
+      //缺省的按天日志不用上传到服务器
+      TarsTimeLogger::getInstance()->enableRemote("", false);
+  
+      //缺省的按天日志按分钟滚动
+      TarsTimeLogger::getInstance()->initFormat("", "%Y%m%d%H%M");
+  
+      //abc2文件不用上传到服务器
+      TarsTimeLogger::getInstance()->enableRemote("abc2", false);
+  
+      //abc2文件按小时滚动
+      TarsTimeLogger::getInstance()->initFormat("abc2", "%Y%m%d%H");
+  
+      //abc3文件不记本地
+      TarsTimeLogger::getInstance()->enableLocal("abc3", false);
+  
+      int i = 100000;
+      while (i--)
+      {
+          //与上一个一样
+          TLOGDEBUG(i << endl);
+  
+          //error级别
+          TLOGERROR(i << endl);
+  
+          DLOG << "+++++++++++" << i  << "++++++++++" << endl;
+  
+          FDLOG("abc1") << i << endl;
+          FDLOG("abc2") << i << endl;
+          FDLOG("abc3") << i << endl;
+  
+          if (i % 1000 == 0)
+          {
+              cout << i << endl;
+          }
+          usleep(10);
+      }
+      getchar();
+  
+  
+      return 0;
+  }
+  ```
+
+  
 
 # 8 服务管理
 
@@ -505,7 +650,7 @@ HelloServer --config=config.conf
 
 
 
-# 10 统计上报
+# 10 统计上报[未弄懂]
 
 + 定义
 
@@ -536,7 +681,7 @@ HelloServer --config=config.conf
 
 
 
-# 异常上报
+# 异常上报[未弄懂]
 
 可以在程序中上报三种不同类型的异常
 
@@ -553,7 +698,7 @@ TARS_NOTIFY_ERROR(info)
 
 
 
-# 属性统计
+# 属性统计[未弄懂]
 
 + 统计类型
 
