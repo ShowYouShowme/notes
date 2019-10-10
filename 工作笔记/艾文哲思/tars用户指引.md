@@ -437,7 +437,7 @@ HelloServer --config=config.conf
 
 
 
-# 6 业务配置
+# 6 业务配置[过时]
 
 
 
@@ -451,3 +451,162 @@ HelloServer --config=config.conf
 
 # 8 服务管理
 
++ 功能
+
+  > 动态接收命令，来处理相关的业务逻辑，例如：动态更新配置等
+
++ 相关宏
+
+  > - TARS_ADD_ADMIN_CMD_PREFIX：添加前置的命令处理方法，在所有Normal方法之前执行，多个前置方法之间顺序不确定
+  > - TARS_ADD_ADMIN_CMD_NORMAL：添加Normal命令处理方法，在所有前置方法最后执行，多个Normal方法之间顺序不确定
+
++ 注册接口处理
+
+  1. 全局接口处理：该接口处理与服务相关
+
+     ```c++
+     bool HelloServer::procDLOG(const string& command, const string& params, string& result)
+     {
+         TarsTimeLogger::getInstance()->enableLocal(params, false);
+         return false;
+     }
+     
+     void HelloServer::initialize()
+     {
+         addServant(...);
+         addConfig(…);
+     
+     	//注册处理函数：
+         TARS_ADD_ADMIN_CMD_NORMAL("DISABLEDLOG", HelloServer::procDLOG);
+     }
+     ```
+
+     
+
+
+
+# 9 发送管理命令
+
++ 发送方式
+
+  > 将TARS服务发布到平台上，通过管理平台发送命令
+
++ 可用命令
+
+  > - tars.help //查看所有管理命令
+  > - tars.loadconfig //从配置中心, 拉取配置下来: tars.loadconfig filename
+  > - tars.setloglevel //设置滚动日志的等级: tars.setloglevel [NONE, ERROR, WARN, DEBUG]
+  > - tars.viewstatus //查看服务状态
+  > - tars.connection //查看当前链接情况
+  > - tars.loadproperty //使配置文件的property信息生效
+  > - tars.setdyeing    //设置染色信息 tars.setdyeing key servant [interface]
+
+
+
+
+
+# 10 统计上报
+
++ 定义
+
+  > Tars框架内部，向tarsstat上报调用耗时等信息
+
++ 原理
+
+  > 客户端调用上报接口后，实际先暂存在内存中，当到达某个时间点后才正式上报到tarsstat服务
+
++ 使用上报
+
+  > 1. web管理系统上部署的服务会自动上报
+  >
+  > 2. 不在web上部署的服务按如下设置
+  >
+  >    ```c++
+  >    //初始化通信器
+  >    CommunicatorPtr pcomm = new Communicator();
+  >    //初始化tarsregistry服务地址
+  >    pcomm->setProperty("locator", "tars.tarsregistry.QueryObj@tcp -h xxx.xxx.xxx.xx -p xxxx"
+  >    //初始化stat服务
+  >    pcomm->setProperty("stat", "tars.tarsstat.StatObj");
+  >    //设置上报间隔
+  >    pcomm->setProperty("report-interval", "1000");
+  >    //设置上报主调名称
+  >    pcomm->setProperty("modulename", "Test.TestServer_Client");
+  >    ```
+
+
+
+# 异常上报
+
+可以在程序中上报三种不同类型的异常
+
+```c++
+//上报普通信息
+TARS_NOTIFY_NORMAL(info) 
+//上报警告信息
+TARS_NOTIFY_WARN(info) 
+//上报错误信息
+TARS_NOTIFY_ERROR(info)
+```
+
+
+
+
+
+# 属性统计
+
++ 统计类型
+
+  > 1. 求和（sum）
+  > 2. 平均（avg）
+  > 3. 分布（distr）
+  > 4. 最大值（max）
+  > 5. 最小值（min）
+  > 6. 计数（count）
+
++ 使用
+
+  ```c++
+  //初始化通信器
+  Communicator _comm;
+  //初始化property服务地址
+  _comm.setProperty("property", "tars.tarsproperty.PropertyObj@ tcp -h xxx.xxx.xxx.xxx -p xxxx");
+  
+  //初始化分布数据范围
+  vector<int> v;
+  v.push_back(10);
+  v.push_back(30);
+  v.push_back(50);
+  v.push_back(80);
+  v.push_back(100);
+  
+  //创建test1属性，该属性用到了上诉所有的集中统计方式，注意distrv的初始化
+  PropertyReportPtr srp = _comm.getStatReport()->createPropertyReport("test1", 
+  PropertyReport::sum(), 
+  PropertyReport::avg(), 
+  PropertyReport::count(),
+  PropertyReport::max(), 
+  PropertyReport::min(),
+  PropertyReport::distr(v));
+  
+  //上报数据，property只支持int类型的数据上报
+  int iValue = 0;
+  for ( int i = 0; i < 10000000; i++ )
+  {
+          sleep(1);
+       srp->report(rand() % 100 );
+  }
+  ```
+
+  说明：
+
+  1. 调用createPropertyReport时，必须在服务启动以后创建并保存好创建的对象，后续拿这个对象report即可，不要每次使用的时候create
+  2. createPropertyReport的参数可以是任何统计方式的集合
+
+
+
+
+
+# tars调用链
+
+功能：上报rpc调用路径至zipkin，以协助定位网络调用问题
