@@ -68,7 +68,12 @@ struct ServerConfig
 };
 ```
 
+重点关注的服务
 
+> 1. Node：定时发送心跳[可选，只有发布到框架的服务才需要此参数，把此参数去掉远程调试不会中断]
+> 2. Log：远程日志[可选]
+> 3. Config：配置中心，不配置的话无法从远程配置中心拉取配置文件
+> 4. Notify：上报中心，统计上报数据[可选]
 
 ## 1-5 服务启动
 
@@ -138,7 +143,7 @@ HelloServer --config=config.conf
 
 # 2 C++ 客户端
 
-## 2-1 通信器
+## 2-1 通信器[~~~]
 
 + 初始化
 
@@ -266,7 +271,7 @@ HelloServer --config=config.conf
 
 ***
 
-+ 服务器在主控注册：通过服务名寻址，在生成通信器时指定registry（主控）的地址
++ 服务名在主控注册：通过服务名寻址，在生成通信器时指定registry（主控）的地址
 
   ```c++
   // 指定两个主控,用于容错
@@ -399,7 +404,7 @@ HelloServer --config=config.conf
 
    
 
-4. 指定set方式调用
+4. 指定set方式调用[TODO]
 
 5. Hash调用
 
@@ -419,11 +424,11 @@ HelloServer --config=config.conf
 
 
 
-# 3 异步嵌套[未阅读--重点]
+# 3 异步嵌套
 
 
 
-# 4 染色[未阅读]
+# 4 染色[未阅读--重点]
 
 
 
@@ -463,7 +468,27 @@ HelloServer --config=config.conf
 
 
 
-# 6 业务配置[过时]
+# 6 业务配置
+
+## 6-1 添加配置
+
+服务管理-->添加配置：将配置文件写入到表t_config_files
+
+
+
+
+
+## 6-2 配置拉取到服务可执行文件目录
+
+方法1：服务管理-->PUSH配置文件
+
+
+
+方法2：在SayHeyServer::initialize() 添加 ----->建议使用此方式
+
+```shell
+addConfig("HelloServer.conf");
+```
 
 
 
@@ -650,7 +675,7 @@ HelloServer --config=config.conf
 
 
 
-# 10 统计上报[未弄懂]
+# 10 统计上报
 
 + 定义
 
@@ -681,7 +706,7 @@ HelloServer --config=config.conf
 
 
 
-# 异常上报[未弄懂]
+# 异常上报
 
 可以在程序中上报三种不同类型的异常
 
@@ -698,7 +723,7 @@ TARS_NOTIFY_ERROR(info)
 
 
 
-# 属性统计[未弄懂]
+# 属性统计
 
 + 统计类型
 
@@ -755,3 +780,36 @@ TARS_NOTIFY_ERROR(info)
 # tars调用链
 
 功能：上报rpc调用路径至zipkin，以协助定位网络调用问题
+
+
+
+
+
+
+
+# db_tars表介绍
+
+1. t_adapter_conf：servant的配置
+2. t_config_files 和 t_config_history_files：管理后台发布的配置文件
+3. t_server_patchs ： 管理后台发布的包的记录
+4. t_server_notifys：异常上报信息，调用接口TARS_NOTIFY_NORMAL、TARS_NOTIFY_WARN和TARS_NOTIFY_ERROR上报的信息会存放于此处
+5. t_task 和 t_task_item：存放管理后台执行过的命令
+6. t_profile_template：存放配置文件的模板
+7. t_node_info：存放tarsnode 服务的信息
+8. t_registry_info ： 存放tarsregistry的信息
+9. t_server_conf ： 部署的各个服务的信息
+
+
+
+# tars_property
+
+按小时分表，记录上报数据，比如内存使用，用户自定义的上报信息
+
+
+
+# tars_stat
+
+按小时分表，记录接口调用耗时等信息
+
+
+

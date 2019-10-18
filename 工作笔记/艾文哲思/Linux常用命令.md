@@ -230,7 +230,55 @@ yum install tree -y
 
 # screen
 
+1. 显示正在运行的screen 会话
 
+   ```shell
+   screen -ls
+   ```
+
+2. 进入指定的screen会话
+
+   ```shell
+   screen -r ${sessionID}
+   ```
+
+3. screen会话与终端分离(detached)
+
+   + 进入指定的screen会话
+
+     ```shell
+      screen -r ${sessionID}
+     ```
+
+   + 按如下键盘
+
+   ```shell
+   Ctrl + A,D
+   ```
+
+4. 创建Screen会话
+
+   ```shell
+   screen
+   ```
+
+5. 关闭screen会话
+
+   + 进入指定的screen会话
+
+     ```shell
+     screen -r ${sessionID}
+     ```
+
+   + 关闭会话
+
+     ```shell
+     exit
+     ```
+
+     
+
+   
 
 
 

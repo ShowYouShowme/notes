@@ -104,3 +104,13 @@ zuotian
 账号：root
 
 密码：Pe4YA4$D2QNB
+
+
+
+
+
+# xterm
+
+账号：15112473165
+
+密码：Nash364324*
