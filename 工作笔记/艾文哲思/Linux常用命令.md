@@ -308,3 +308,16 @@ yum install tree -y
    ```
 
    
+
+# 下载软件包及其依赖
+
+```shell
+# 安装下载工具
+yum -y install yum-utils
+
+#下载依赖包
+yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
+```
+
+
+
