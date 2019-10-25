@@ -321,3 +321,85 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
 
 
 
+# 解决RPM包依赖问题
+
+1. 如上下载软件包及其依赖
+
+2. 进入目录安装
+
+   ```shell
+   rpm -Uvh *
+   ```
+
+   
+
+
+
+# 搭建本地yum仓库
+
+1. 安装createrepo
+
+   ```shell
+   yum -y install createrepo
+   ```
+
+2. 进入本地rpm包目录
+
+   ```shell
+   cd /root/packages/gcc
+   ```
+
+3. 构建yum仓库
+
+   ```shell
+   createrepo  ./
+   ```
+
+4. 如果添加或者删除了个人的rpm包，不用重新create，只需--update就可以了
+
+   ```shell
+   createrepo --update  ./
+   ```
+
+5. 编辑yum源repo文件
+
+   ```shell
+   vim /etc/yum.repos.d/local.repo
+   
+   # 文件内容
+   [localrepo]
+   name=localrepo
+   baseurl=file:///root/packages/gcc
+   gpgcheck=0
+   enabled=1
+   gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+   ```
+
+6. 备份系统yum源配置文件,只留下local.repo
+
+   ```shell
+   cd /etc/yum.repos.d/
+   mkdir ~/repos_bak
+   cp ./* ~/repos_bak/
+   rm -f /etc/yum.repos.d/CentOS*
+   ```
+
+7. 更新yum源
+
+   ```shell
+   # 清除资源
+   yum clean all
+   
+   # 建立yum资源缓存
+   yum makecache
+   ```
+
+   
+
+8. 安装软件包时指定yum源名称
+
+   ```shell
+   yum install ${packageName} --enablerepo=${yumRepo}
+   ```
+
+   
