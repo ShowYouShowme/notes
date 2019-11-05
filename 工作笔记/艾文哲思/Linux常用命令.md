@@ -276,8 +276,15 @@ yum install tree -y
      exit
      ```
 
-     
+   
 
+   
+   
+   
+   
+   
+   
+   
    
 
 
@@ -307,7 +314,23 @@ yum install tree -y
    grep -n -E '[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}' mount_wzc.sh
    ```
 
-   
+
+
+
+# unlink
+
+删除软连接
+
+
+
+# rz 上传二进制文件
+
+```shell
+# 可以一次性选择多个文件的
+rz -be ${fileName}
+```
+
+
 
 # 下载软件包及其依赖
 
