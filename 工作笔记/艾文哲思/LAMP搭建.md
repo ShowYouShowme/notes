@@ -32,7 +32,7 @@
                            phpinfo();
                    ?>
            </body>
-   </html
+   </html>
    ```
 
 5. 启动httpd服务并访问响应页面`http://10.10.10.126`

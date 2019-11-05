@@ -321,6 +321,23 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
 
 
 
+# 保存yum下载的包
+
+```shell
+1:修改 /etc/yum.conf 配置文件将keepcache=0 改为keepcache=1
+2:下载的包放在路径:/var/cache/yum/x86_64/${centOS版本}/${Repository}/packages 
+
+====================
+yum安装时会显示安装的Repository
+开发机上Repository有：
+1:base
+2:epel
+3:extras
+4:updates
+```
+
+
+
 # 解决RPM包依赖问题
 
 1. 如上下载软件包及其依赖
