@@ -107,6 +107,16 @@ g++ main.cpp  -o main -I ../Person/ -L ../Person -l Person
    ```shell
    export LD_LIBRARY_PATH=../Person
    ```
+   
+3. 利用ldconfig
+
+   > 1. 将dll所在的目录写入文件`/etc/ld.so.conf`
+   >
+   >    ```shell
+   >    echo "/usr/local/protobuf/lib" >> /etc/ld.so.conf
+   >    ```
+   >
+   > 2. 执行命令`ldconfig`
 
 
 
