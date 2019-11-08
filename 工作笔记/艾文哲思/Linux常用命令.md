@@ -382,7 +382,7 @@ yum install tree -y
 # rz 上传二进制文件
 
 ```shell
-# 可以一次性选择多个文件的
+# 可以一次性选择多个文件的 ==此方式可以替代SFTP客户端上传
 rz -be ${fileName}
 ```
 
