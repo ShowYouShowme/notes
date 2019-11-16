@@ -124,7 +124,8 @@
    # (静态库搜索路径) 
    export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/protobuf/lib
    export PATH=$PATH:/usr/local/protobuf/bin
-   
+   echo "/usr/local/protobuf/lib" >> /etc/ld.so.conf
+   ldconfig
    # 执行命令重新加载环境变量
    source /etc/profile
    

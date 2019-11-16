@@ -15,3 +15,13 @@ make -j4
 
 
 make install
+
+
+
+## nginx 的配置修改
+
+##        location / {
+##            root   html;
+##            autoindex on;   ## 加上这条即可显示文件夹
+##            index  index.html index.htm;
+##        }
