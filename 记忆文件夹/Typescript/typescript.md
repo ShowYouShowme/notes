@@ -1,4 +1,4 @@
-# 创建项目
+## 创建项目
 
 1. 初始化npm包管理器
 
@@ -17,12 +17,19 @@
    ```shell
    "sourceMap": true,
    "outDir": "./bin",
-   "allowJs": true
+   "allowJs": true,
+   "target": "es6",
    ```
 
 
 
-## redis安装
+
+
+## 第三方包安装
+
+### redis安装
+
+***
 
 1. 安装redis包
 
@@ -30,13 +37,46 @@
    npm install redis --save
    ```
 
-2. 安装代码提示
+2. 安装声明文件
 
    ```shell
    npm install @types/redis
    ```
 
-   
+
+
+
+### MySQL安装
+
+***
+
+1. 安装MySQL包
+
+   ```shell
+   npm install mysql --save
+   ```
+
+2. 安装MySQL声明文件
+
+   ```shell
+   npm install @types/mysql
+   ```
+
+### typescript安装
+
+***
+
+```shell
+npm install typescript -g
+```
+
+### 安装node声明文件
+
+***
+
+```shell
+npm install @types/node
+```
 
 ## npm教程
 
@@ -145,6 +185,25 @@
    >    ```
    >
    >    
+
+## 示例代码
+
+```js
+import redis = require('redis') //引入nodejs的包
+import http =  require('http')
+
+let port : number = 6379;
+let host : string = "0.0.0.0";
+
+let client : redis.RedisClient = redis.createClient(port, host);
+
+
+let server:http.Server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void =>{
+    console.log("data comming!");
+});
+
+server.listen( 9999, "0.0.0.0" );
+```
 
 
 
