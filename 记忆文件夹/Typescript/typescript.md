@@ -49,36 +49,64 @@
 
 ***
 
-1. 安装redis包
+1. 普通redis
 
-   ```shell
-   npm install redis --save
-   ```
+   1. 安装redis包
 
-2. 安装声明文件
+      ```shell
+      npm install redis --save
+      ```
 
-   ```shell
-   npm install @types/redis
-   ```
+   2. 安装声明文件
 
+      ```shell
+      npm install @types/redis
+      ```
 
+2. ioredis：可以直接await操作
 
+   1. 安装ioredis
+
+      ```shell
+      npm install ioredis
+      ```
+
+   2. 安装声明文件
+
+      ```shell
+      npm install @types/ioredis
+      ```
+
+      
 
 ### MySQL安装
 
 ***
 
-1. 安装MySQL包
+1. 普通MySQL
 
-   ```shell
-   npm install mysql --save
-   ```
+   1. 安装MySQL包
 
-2. 安装MySQL声明文件
+      ```shell
+      npm install mysql --save
+      ```
 
-   ```shell
-   npm install @types/mysql
-   ```
+   2. 安装MySQL声明文件
+
+      ```shell
+      npm install @types/mysql
+      ```
+
+2. typeorm
+
+   1. 安装orm
+
+      ```shell
+      
+      ```
+
+      
+
 
 ### typescript安装
 
