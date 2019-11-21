@@ -102,7 +102,15 @@
    1. 安装orm
 
       ```shell
-      
+      npm install typeorm 
+      ```
+
+3. sequelize
+
+   1. 安装sequelize
+
+      ```shell
+      npm install sequelize
       ```
 
       
