@@ -43,6 +43,8 @@ zuotian
 
 # OA
 
+网址：https://oa.xteam.vip
+
 账号：
 
 密码：Nash364324*
@@ -122,4 +124,32 @@ zuotian
 # 广州机器
 
 mysql密码：/data/save
+
+
+
+
+
+##  10.10.10.188
+
+smb账号:guan_hong
+
+smb密码:123
+
+
+
+
+
+## 广州机器web后台地址
+
+http://103.215.44.162:3000
+
+
+
+
+
+## postman
+
+邮箱：861949775@qq.com
+
+密码：B6aammLPMAhuYHRe
 

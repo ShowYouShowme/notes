@@ -23,6 +23,24 @@
 
 
 
+## 调试项目
+
+1. 编译生成javascript代码
+
+   ```shell
+   tsc
+   ```
+
+2. 断点调试
+
+   > 1. webstorm
+   >
+   >    在ts代码里面打断点，然后启动bin目录下生成的js文件即可
+   >
+   > 2. vscode
+   >
+   >    添加debug配置，然后设置启动的js文件，最后断点启动项目即可
+
 
 
 ## 第三方包安装
@@ -31,36 +49,72 @@
 
 ***
 
-1. 安装redis包
+1. 普通redis
 
-   ```shell
-   npm install redis --save
-   ```
+   1. 安装redis包
 
-2. 安装声明文件
+      ```shell
+      npm install redis --save
+      ```
 
-   ```shell
-   npm install @types/redis
-   ```
+   2. 安装声明文件
 
+      ```shell
+      npm install @types/redis
+      ```
 
+2. ioredis：可以直接await操作
 
+   1. 安装ioredis
+
+      ```shell
+      npm install ioredis
+      ```
+
+   2. 安装声明文件
+
+      ```shell
+      npm install @types/ioredis
+      ```
+
+      
 
 ### MySQL安装
 
 ***
 
-1. 安装MySQL包
+1. 普通MySQL
 
-   ```shell
-   npm install mysql --save
-   ```
+   1. 安装MySQL包
 
-2. 安装MySQL声明文件
+      ```shell
+      npm install mysql --save
+      ```
 
-   ```shell
-   npm install @types/mysql
-   ```
+   2. 安装MySQL声明文件
+
+      ```shell
+      npm install @types/mysql
+      ```
+
+2. typeorm
+
+   1. 安装orm
+
+      ```shell
+      npm install typeorm 
+      ```
+
+3. sequelize
+
+   1. 安装sequelize
+
+      ```shell
+      npm install sequelize
+      ```
+
+      
+
 
 ### typescript安装
 
