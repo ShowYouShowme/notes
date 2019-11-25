@@ -74,17 +74,39 @@
 
 # GCC静态编译
 
-```shell
-g++ main.cpp -o main
-ldd main #查看可执行文件依赖的库
+1. 安装依赖
 
-#静态编译
-g++ main.cpp -o main_static -static
-ldd main_static
+   ```shell
+   yum install libstdc++-static
+   yum install glibc-static
+   ```
 
-# 生成静态库
-ar r libtest.a a.o b.o c.o
-```
+2. 示例
+
+   ```shell
+   g++ main.cpp -o main
+   ldd main #查看可执行文件依赖的库
+   
+   #静态编译
+   g++ main.cpp -o main_static -static
+   ldd main_static
+   
+   # 生成静态库
+   ar r libtest.a a.o b.o c.o
+   
+   
+   ## 生成静态库并静态编译链接
+   
+   ## step1:生成静态库
+   g++ -c hello.cpp   # 生成目标文件
+   ar r libhello.a hello.o # 目标文件打包为.a静态库文件
+   
+   ## step2:编译时连接静态库
+   ### 方法1：
+   g++ test.cpp -lhello -L. -static -o test
+   ### 方法2：
+   g++ test.cpp libhello.a -L. -o test_1
+   ```
 
 
 
