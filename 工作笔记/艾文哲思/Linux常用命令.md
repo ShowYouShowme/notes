@@ -498,4 +498,17 @@ yum安装时会显示安装的Repository
    yum install ${packageName} --enablerepo=${yumRepo}
    ```
 
+
+
+
+
+
+# wget
+
+1. 下载网站全部资源
+
+   ```shell
+   wget -k -r -p -np http://www.cplusplus.com/reference/
+   ```
+
    
