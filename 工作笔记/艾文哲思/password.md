@@ -153,3 +153,16 @@ http://103.215.44.162:3000
 
 密码：B6aammLPMAhuYHRe
 
+
+
+
+
+# 管理后台
+
+host：http://103.215.44.162:10808 
+
+user：wzc
+
+passwd：Nash364324*
+
+key：215499
