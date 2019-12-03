@@ -49,3 +49,32 @@ static std::string DatetimeToString(time_t time)
 }
 ```
 
+
+
+## 指定长度数据类型
+
+```c++
+#include <stdint.h>
+int main()
+{
+	int8_t a1		= INT8_MIN;
+	int8_t a2		= INT8_MAX;
+
+	int16_t b1		= INT16_MIN;
+	int16_t b2		= INT16_MAX;
+
+	int32_t c1		= INT32_MIN;
+	int32_t c2		= INT32_MAX;
+
+	int64_t d1		= INT64_MIN;
+	int64_t d2		= INT64_MAX;
+
+
+	uint8_t aa1		= UINT8_MAX;
+	uint16_t bb1	= UINT16_MAX;
+	uint32_t cc1	= UINT32_MAX;
+	uint64_t dd1	= UINT64_MAX;
+	return 0;
+}
+```
+
