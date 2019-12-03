@@ -425,39 +425,149 @@ console.log("写入字节数:" + len);
 
 ***
 
+```javascript
+let buf : Buffer = new Buffer(26);
+for (let i : number = 0; i < 26; ++i){
+    buf[i] = i + 97;
+}
+console.log(buf.toString('ascii'));
+console.log(buf.toString('ascii', 0, 4));
+```
 
-
-### 将Buffer转换为JSON对
+### 将Buffer转换为JSON对象
 
 ***
 
-
+```javascript
+let buf : Buffer = new Buffer("i am BatMan");
+let json : object = buf.toJSON();
+console.log(json);
+```
 
 ### 缓冲区合并
 
 ***
 
+```javascript
+let buf1 : Buffer = new Buffer("我的职业是");
+let buf2 : Buffer = new Buffer("科学家");
 
+
+let buf3 : Buffer = Buffer.concat([buf1, buf2]);
+
+console.log("合并后的buf是:" + buf3.toString());
+```
 
 ### 缓冲区比较
 
 ***
 
+```javascript
+let buf1 : Buffer = new Buffer("ABE");
+let buf2 : Buffer = new Buffer("ABCD");
 
+let result = buf1.compare(buf2);
+if (result < 0){
+    console.log(buf1 + "在" + buf2 + "之前!");
+} else if(result == 0){
+    console.log(buf1 + "与" + buf2 + "相同!");
+}else{
+    console.log(buf1 + "在" + buf2 + "之后!");
+}
+```
 
 ### 缓冲区裁剪
 
 ***
 
+```javascript
+let buf = new Buffer("ABCDEFHIJK");
 
+let buf2 = buf.slice(1,3);
+
+console.log(buf2.toString());
+```
+
+### 拷贝缓冲区
+
+***
+
+```javascript
+// 与旧缓冲区指向同一块内存,只是索引不同
+let buf = new Buffer("ABC");
+let buf2 = new Buffer(3);
+buf.copy(buf2);
+console.log(buf2.toString());
+```
 
 ### 缓冲区长度
 
 ***
 
+```javascript
+let buf : Buffer = new Buffer("1234567890");
 
+console.log(buf.length)
+```
 
 ### 方法参考手册
 
 ***
+
+[Buffer文档](http://nodejs.cn/api/buffer.html)
+
+
+
+
+
+## 1-9 模块系统
+
++ 定义：模块就是Node.JS代码文件
+
+### 创建模块
+
+***
+
+> 1. hello.js
+>
+>    ```javascript
+>    exports.world = ():void=>{
+>        console.log("Hello World!");
+>    }
+>    ```
+>
+> 2. main.js
+>
+>    ```javascript
+>    let hello = require("./hello");
+>    hello.world();
+>    ```
+
+### 服务端模块
+
+***
+
+> + 模块分类
+>
+>   1. 原生模块(系统自带)
+>   2. 自定义模块
+>
+> + 加载方式
+>
+>   1. 原生模块
+>
+>      ```javascript
+>      let fs = require("fs");
+>      ```
+>
+>   2. 自定义模块
+>
+>      ```javascript
+>      //相对路径 == 推荐使用
+>      let Hello = require("./hello");
+>      //绝对路径 == 无法跨平台
+>      let Hello = require("D:\\MyCode\\SayHeyToNode\\hello");
+>      ```
+>
+> + 模块加载策略
 
