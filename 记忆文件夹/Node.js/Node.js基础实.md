@@ -265,9 +265,309 @@ console.log("程序执行完毕!");
 
 ***
 
-
+> + 遇到异常时触发，如果未注册回调，会退出程序并输出错误信息。
+>
+> + 代码
+>
+>   ```javascript
+>   import events = require('events');
+>   let emitter = new events.EventEmitter();
+>   emitter.emit('error');
+>   ```
 
 ### 继承EventEmitter
 
 ***
+
+1. 一般不会直接使用EventEmitter，而是在对象中继承
+2. fs、net、http都是继承EventEmitter。
+
+
+
+
+
+## 1-7 Stream
+
+> 1. 定义：stream是个抽象接口，所有流对象都是EventEmitter的实例
+>
+> 2. 四种类型
+>
+>    > + Readable：可读操作
+>    > + Writeable：可写操作
+>    > + Duplex：可读可写操作
+>    > + Transform：操作被写入数据，然后读出结果
+>
+> 3. 事件
+>
+>    > + data：有数据可读
+>    > + end：没有更多数据可读
+>    > + error：接收和写入过程中发生错误触发
+>    > + finish：所有数据已被写入底层系统时触发
+
+### 从流中读取数据
+
+***
+
+```javascript
+import fs = require("fs");
+let data : string = "";
+let readStream = fs.createReadStream('input.txt');
+readStream.setEncoding("utf8");
+readStream.on("data",(chunk : any) : void=>{
+    data += chunk;
+});
+readStream.on("end", ()=>{
+   console.log(data);
+});
+readStream.on("error", (err : Error)=>{
+    console.log(err.stack);
+});
+console.log("程序执行完毕!");
+```
+
+### 写入流
+
+***
+
+```javascript
+import fs = require("fs");
+let data : string = "我爱你,伟大的祖国!";
+let writeStream = fs.createWriteStream('output.txt');
+writeStream.write(data, 'utf8');
+writeStream.end();
+writeStream.on('finish', ():void=>{
+   console.log("写入完成!");
+});
+writeStream.on('err', (err):void=>{
+    console.log(err.stack);
+});
+console.log("程序执行完毕!");
+```
+
+### 管道流
+
+***
+
++ 作用：从一个流中获取数据，并传递至另一个流中！
+
++ 示例
+
+  ```javascript
+  import fs = require("fs");
+  let readStream : fs.ReadStream = fs.createReadStream('input.txt');
+  let writeStream : fs.WriteStream = fs.createWriteStream("output.txt");
+  //从readStream读取数据,然后写入到writeStream里面去
+  readStream.pipe(writeStream);
+  console.log("程序执行完毕!");
+  ```
+
+### 链式流
+
+***
+
++ 定义：连接输出流到另外一个流，并创建多个流操作链的机制。一般用于管道操作！
+
++ 示例
+
+  > 1. 压缩文件
+  >
+  >    ```javascript
+  >    import fs   = require("fs");
+  >    import zlib = require("zlib");
+  >    fs.createReadStream('input.txt')
+  >        .pipe(zlib.createGzip())
+  >        .pipe(fs.createWriteStream('input.txt.gz'));
+  >    console.log("程序执行完毕!");
+  >    ```
+  >
+  > 2. 解压文件
+  >
+  >    ```javascript
+  >    import fs   = require("fs");
+  >    import zlib = require("zlib");
+  >    fs.createReadStream('input.txt.gz')
+  >    .pipe(zlib.createGunzip())
+  >    .pipe(fs.createWriteStream('input2.txt'));
+  >    console.log("文件解压完成!");
+  >    ```
+
+
+
+
+
+## 1-8 Buffer
+
++ 定义：存放二进制数据的缓冲区，类似一个整数数组
+
+### 创建Buffer类
+
+***
+
+```javascript
+let b1 : Buffer = new Buffer(10);
+let b2 : Buffer = new Buffer([10, 20, 30, 40, 50]);
+let b3 : Buffer = new Buffer("www.runoob.com", "utf-8");
+```
+
+### 写入缓冲区
+
+***
+
+```javascript
+let buf : Buffer = new Buffer(10);
+let len : number = buf.write("hello World!");
+console.log("写入字节数:" + len);
+```
+
+
+
+### 从缓冲区读取数据
+
+***
+
+```javascript
+let buf : Buffer = new Buffer(26);
+for (let i : number = 0; i < 26; ++i){
+    buf[i] = i + 97;
+}
+console.log(buf.toString('ascii'));
+console.log(buf.toString('ascii', 0, 4));
+```
+
+### 将Buffer转换为JSON对象
+
+***
+
+```javascript
+let buf : Buffer = new Buffer("i am BatMan");
+let json : object = buf.toJSON();
+console.log(json);
+```
+
+### 缓冲区合并
+
+***
+
+```javascript
+let buf1 : Buffer = new Buffer("我的职业是");
+let buf2 : Buffer = new Buffer("科学家");
+
+
+let buf3 : Buffer = Buffer.concat([buf1, buf2]);
+
+console.log("合并后的buf是:" + buf3.toString());
+```
+
+### 缓冲区比较
+
+***
+
+```javascript
+let buf1 : Buffer = new Buffer("ABE");
+let buf2 : Buffer = new Buffer("ABCD");
+
+let result = buf1.compare(buf2);
+if (result < 0){
+    console.log(buf1 + "在" + buf2 + "之前!");
+} else if(result == 0){
+    console.log(buf1 + "与" + buf2 + "相同!");
+}else{
+    console.log(buf1 + "在" + buf2 + "之后!");
+}
+```
+
+### 缓冲区裁剪
+
+***
+
+```javascript
+let buf = new Buffer("ABCDEFHIJK");
+
+let buf2 = buf.slice(1,3);
+
+console.log(buf2.toString());
+```
+
+### 拷贝缓冲区
+
+***
+
+```javascript
+// 与旧缓冲区指向同一块内存,只是索引不同
+let buf = new Buffer("ABC");
+let buf2 = new Buffer(3);
+buf.copy(buf2);
+console.log(buf2.toString());
+```
+
+### 缓冲区长度
+
+***
+
+```javascript
+let buf : Buffer = new Buffer("1234567890");
+
+console.log(buf.length)
+```
+
+### 方法参考手册
+
+***
+
+[Buffer文档](http://nodejs.cn/api/buffer.html)
+
+
+
+
+
+## 1-9 模块系统
+
++ 定义：模块就是Node.JS代码文件
+
+### 创建模块
+
+***
+
+> 1. hello.js
+>
+>    ```javascript
+>    exports.world = ():void=>{
+>        console.log("Hello World!");
+>    }
+>    ```
+>
+> 2. main.js
+>
+>    ```javascript
+>    let hello = require("./hello");
+>    hello.world();
+>    ```
+
+### 服务端模块
+
+***
+
+> + 模块分类
+>
+>   1. 原生模块(系统自带)
+>   2. 自定义模块
+>
+> + 加载方式
+>
+>   1. 原生模块
+>
+>      ```javascript
+>      let fs = require("fs");
+>      ```
+>
+>   2. 自定义模块
+>
+>      ```javascript
+>      //相对路径 == 推荐使用
+>      let Hello = require("./hello");
+>      //绝对路径 == 无法跨平台
+>      let Hello = require("D:\\MyCode\\SayHeyToNode\\hello");
+>      ```
+>
+> + 模块加载策略
 
