@@ -528,20 +528,38 @@ console.log(buf.length)
 
 ***
 
-> 1. hello.js
+> 1. hello.ts
 >
->    ```javascript
->    exports.world = ():void=>{
->        console.log("Hello World!");
->    }
->    ```
+> ```javascript
+> // 属性和方法默认为public
+> export class Hello{
+>     name : string = "";
+>     constructor(){}
+>     public setName(thyName : string){
+>         this.name = thyName;
+>     }
+> 
+>     public sayHello(){
+>         console.log("Hello" + this.name);
+>     }
+> }
+> 
+> export function world(){
+>     console.log("Hello World!");
+> }
+> ```
 >
-> 2. main.js
+> 2. main.ts
 >
->    ```javascript
->    let hello = require("./hello");
->    hello.world();
->    ```
+> ```javascript
+> import {Hello, world} from './hello'
+> 
+> let hello = new Hello();
+> 
+> hello.setName("wzc");
+> hello.sayHello();
+> world();
+> ```
 
 ### 服务端模块
 
@@ -569,5 +587,184 @@ console.log(buf.length)
 >      let Hello = require("D:\\MyCode\\SayHeyToNode\\hello");
 >      ```
 >
-> + 模块加载策略
+> + 模块加载策略[了解]
 
+
+
+
+
+## 1-10 函数
+
+### 创建函数
+
+***
+
+```javascript
+function printOut(content : string) {
+    console.log(content)
+}
+
+function execute(fun : (param : string)=>void, value : string) {
+    fun(value);
+}
+execute(printOut, "Hello Function!");
+```
+
+
+
+### 匿名函数
+
+***
+
+```javascript
+function nodeFun(fun : (param : string)=>void, value : string) {
+    fun(value);
+}
+
+nodeFun((param : string) : void =>{
+    console.log("param:" + param);
+}, "Hello second Function!")
+```
+
+
+
+### 函数传递的工作原理
+
+***
+
+```javascript
+import http = require("http");
+
+let host : string = "0.0.0.0";
+let port : number = 8888;
+let server : http.Server = http.createServer((req: IncomingMessage, res: ServerResponse) : void=>{
+    res.writeHead(200, {"content-Type":"text/plain"});
+    res.write("Hello function!");
+    res.end();
+});
+
+server.listen(port, host);
+```
+
+
+
+## 1-11 路由
+
++ 定义：访问路径
+
+  > 获取请求的URL和GET/POST参数，然后执行相应的代码。所有的数据都在request对象当中
+
++ 路由定义
+
+  ```javascript
+  import http = require("http");
+  import url  = require("url");
+  import fs   = require("fs");
+  
+  let host : string   = "0.0.0.0";
+  let port : number   = 8888;
+  function handler(req: IncomingMessage, res: ServerResponse) : void{
+      let pathName : string = url.parse(<string>req.url).pathname as string;
+      console.log("Request for " + pathName + " receive!");
+  
+      function showPage(path : string, status : number) {
+          let content : Buffer = fs.readFileSync(path);
+          res.writeHead(status, {"Content-Type":"text/html;charset=utf8"});
+          res.write(content.toString('ascii'));
+          res.end();
+      }
+      switch (pathName) {
+          case "/index":{
+              showPage("./view/index.html", 200);
+              break;
+          }
+          case "/about": {
+              showPage("./view/about.html", 200);
+              break;
+          }
+          default:{
+              showPage("./view/404.html", 200);
+              break;
+          }
+      }
+  }
+  let server = http.createServer(handler);
+  server.listen(port, host);
+  ```
+
+
+
+## 1-12 全局系列
+
+### 全局对象
+
+***
+
+> 浏览器中，window是全局对象；Node.js中，global是全局对象，所有全局对象都是global的属性。
+
+### 全局对象与全局变量
+
+***
+
++ 全局变量分类
+
+  > 1. 在最外层定义的变量
+  > 2. 全局对象的属性
+  > 3. 隐式定义的变量
+
++ 注意
+
+  > 1. Node.js中不可能在最外层定义变量，以为用户代码属于当前模块，模块本身不是最外层上下文
+  > 2. 用let定义变量避免引入全局变量
+
++ 所有模块都可以调用
+
+  > 1. global
+  > 2. process：内置process模块，允许开发者与当前进程互动。
+  > 3. console
+
++ 全局变量
+
+  > 1. __filename
+  >
+  > 2. __dirname
+  >
+  > 3. setTimeout(cb,ms)
+  >
+  > 4. process
+  >
+  >    > 1. exit：`process.exit()` 方法以退出状态 `code` 指示 Node.js 同步地终止进程
+  >    > 2. beforeExit：node清空事件循环，并且没有其他安排时触发这个事件！
+  >    > 3. uncaughtException：当未捕获的 JavaScript 异常一直冒泡回到事件循环时，会触发 `'uncaughtException'` 事件
+  >    > 4. Signal：进程收到信号时触发
+
++ 代码
+
+  ```javascript
+  console.log(__filename);
+  console.log(__dirname)
+  
+  setTimeout(()=>{
+      console.log("call setTimeout!");
+  }, 3000);
+  ```
+
+  ```javascript
+  process.on('exit', (code : number):void=>{
+      console.log("退出码为:" + code);
+  });
+  
+  console.log("程序执行结束!");
+  ```
+
+  
+
+### 全局函数
+
+***
+
+
+
+### 准全局变量
+
+***
