@@ -1,6 +1,7 @@
 ## 跨域配置
 
 ```nginx
+# 浏览器跨域POST请求时,先发起OPTIONS请求再发起POST请求
 location / { 
     #root   html;
     #index  index.html index.htm;
