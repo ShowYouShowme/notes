@@ -22,7 +22,7 @@ int main(){
 
 
 
-## 获取日期
+# 获取日期
 
 ```cpp
 static std::string DatetimeToString(time_t time)
@@ -51,7 +51,7 @@ static std::string DatetimeToString(time_t time)
 
 
 
-## 指定长度数据类型
+# 指定长度数据类型
 
 ```c++
 #include <stdint.h>
@@ -77,4 +77,34 @@ int main()
 	return 0;
 }
 ```
+
+
+
+# 宏定义
+
+```c++
+// A(m) 展开为 'm' 
+#define A(x)　　#@x
+
+// B(m) 展开为 "m"
+#define B(x)　　#x
+
+// C(List) 展开为 ClassList
+#define C(x)　　Class##x
+```
+
+
+
+# 异步编程
+
+[异步编程](https://www.cnblogs.com/moodlxs/p/10111601.html)
+
+
+
+
+
+# 全局变量与类的静态成员变量
+
+1. 用**函数返回静态局部变量**替代全局变量
+2. 用静态成员函数返回静态局部变量替代静态成员变量
 

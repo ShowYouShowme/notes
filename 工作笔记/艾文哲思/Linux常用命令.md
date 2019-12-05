@@ -511,4 +511,35 @@ yum安装时会显示安装的Repository
    wget -k -r -p -np http://www.cplusplus.com/reference/
    ```
 
-   
+
+
+
+# nslookup
+
++ 安装
+
+  ```shell
+  yum install -y bind-utils
+  ```
+
++ 作用：DNS查询
+
++ 使用方式
+
+  1. 使用默认DNS服务器
+
+     ```shell
+     nslookup ${hostname}
+     
+     nslookup httpbin.org
+     ```
+
+  2. 使用指定DNS服务器
+
+     ```shell
+     nslookup ${hostname} ${DNS_SERVER}
+     
+     nslookup httpbin.org 8.8.8.8
+     ```
+
+  
