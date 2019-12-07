@@ -166,3 +166,13 @@ user：wzc
 passwd：Nash364324*
 
 key：215499
+
+
+
+
+
+# 公网SVN
+
+svn://[sdk.dzsvn.mb1768.cn](http://sdk.dzsvn.mb1768.cn)
+user：zhanglb
+passed：rCv359qu
