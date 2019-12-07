@@ -763,8 +763,121 @@ server.listen(port, host);
 
 ***
 
-
+> 1. setTimeout
+> 2. clearTimeout
+> 3. setInterval
+> 4. clearInterval
+> 5. require
 
 ### 准全局变量
+
+***
+
+> 1. module：当前模块
+> 2. module.exports：当前模块对外输出接口，其它文件加载该模块，实际就是读取module.exports变量
+> 3. module.id：模块的识别符
+> 4. module.filename：模块文件名
+> 5. module.loaded：模块是否完成加载
+> 6. module.parent：返回使用该模块的模块
+> 7. module.children：返回一个数组，表示模块用到的其它模块
+
+**注意：用typescript的模块替代node.js的模块**
+
+
+
+## 1-13 文件系统
+
+### 异步和同步
+
+***
+
+```javascript
+// 文件系统的所有API都有同步和异步的版本
+import fs = require("fs");
+
+// 异步读取
+fs.readFile("../output.txt",(err: NodeJS.ErrnoException | null, data: Buffer):void=>{
+    if (err){
+        return console.error(err);
+    }
+    console.log("异步读取:" + data.toString());
+});
+
+//同步读取
+let data : Buffer = fs.readFileSync("../output.txt");
+console.log("同步读取:" + data.toString());
+
+console.log("程序执行完毕!");
+```
+
+### 打开文件
+
+***
+
+
+
+### 获取文件信息
+
+***
+
+
+
+### 写入文件
+
+***
+
+
+
+### 读取文件
+
+***
+
+
+
+### 关闭文件
+
+***
+
+
+
+### 截取文件
+
+***
+
+
+
+### 删除文件
+
+***
+
+
+
+### 创建目录
+
+***
+
+
+
+
+
+### 读取目录
+
+***
+
+
+
+### 删除目录
+
+***
+
+
+
+### 参考手册
+
+***
+
+
+
+### 补充知识点
 
 ***
