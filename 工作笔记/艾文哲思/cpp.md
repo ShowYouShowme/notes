@@ -161,3 +161,71 @@ namespace
 
 
 
+# 智能指针包装对象
+
++ 关键点
+
+  > 1. 构造函数设置为私有
+  > 2. 用静态Create函数返回包装后的指针
+
++ 代码
+
+  ```c++
+  class Cup
+  {
+  private:
+  	std::string name;
+  	std::string color;
+  	Cup(){
+  		std::cout << "construct a Cup object!" << std::endl;
+  	}
+  public:
+  	static std::shared_ptr<Cup> Create()
+  	{
+  		return std::shared_ptr<Cup>(new Cup());
+  	}
+  	~Cup()
+  	{
+  		std::cout << "delete a Cup Object" << std::endl;
+  	}
+  };
+  
+  int main()
+  {
+  	auto p1 = Cup::Create();
+  	auto p2 = Cup::Create();
+  	p2 = p1;
+  	return 0;
+  }
+  ```
+
+
+
+# 前置声明
+
+1. 类的前置声明
+
+   ```c++
+   class Person;
+   struct App;
+   ```
+
+2. 枚举的前置声明
+
+   ```C++
+   enum Region : int;
+   ```
+
+3. 命名空间里的类的前置声明
+
+   ```c++
+   namespace tars
+   {
+       class Application;
+   }
+   ```
+
+   
+
+
+
