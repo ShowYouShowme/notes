@@ -69,7 +69,6 @@ int main()
 	int64_t d1		= INT64_MIN;
 	int64_t d2		= INT64_MAX;
 
-
 	uint8_t aa1		= UINT8_MAX;
 	uint16_t bb1	= UINT16_MAX;
 	uint32_t cc1	= UINT32_MAX;
@@ -114,7 +113,7 @@ int main()
 
 # 匿名空间
 
-
+用匿名空间函数替代静态全局函数。隐藏实现。
 
 
 
@@ -157,6 +156,152 @@ namespace
 		return toStringVec(args...);
 	}
 }
+```
+
+
+
+# JSON
+
+## map打印为JSON
+
+```c++
+template<typename T>
+std::string mToString(const T& param)
+{
+	ostringstream os;
+	os << param;
+	return os.str();
+}
+
+template<>
+std::string mToString<std::string>(const std::string& param)
+{
+	ostringstream os;
+	os << "\"" << param << "\"";
+	return os.str();
+}
+template<typename Key, typename Value>
+std::string mToString(const map<Key, Value>& param)
+{
+	ostringstream os;
+	os << "{";
+	size_t len = param.size();
+	size_t idx = 0;
+	for (auto& elem : param) {
+		os << "\"" << elem.first << "\":" << mToString(elem.second);
+		if (idx != len - 1) {
+			os << ",";
+		}
+		idx += 1;
+	}
+	os << "}";
+	return os.str();
+}
+```
+
+
+
+## Vector转换为JSON
+
+```c++
+template<typename Value>
+std::string VectorToString(const Value& param)
+{
+	ostringstream os;
+	os << param;
+	return os.str();
+}
+
+template<>
+std::string VectorToString<std::string>(const std::string& param)
+{
+	ostringstream os;
+	os << "\"" << param << "\"";
+	return os.str();
+}
+
+template<typename Value>
+std::string VectorToString(const std::vector<Value>& param)
+{
+	ostringstream os;
+	os << "[";
+	size_t len = param.size();
+	size_t idx = 0;
+	for (auto& elem : param) {
+		os << VectorToString(elem);
+		if (idx != len - 1) {
+			os << ",";
+		}
+		idx += 1;
+	}
+	os << "]";
+	return os.str();
+}
+
+struct Company
+{
+	std::string address;
+	int			phone;
+};
+
+template<>
+std::string VectorToString<Company>(const Company& param)
+{
+	ostringstream os;
+	os << "{";
+	os << "\"" << "address" << "\":";
+	os << param.address << ",";
+	os << "\"" << "phone" << "\":";
+	os << param.phone;
+	os << "}";
+	return os.str();
+}
+```
+
+测试代码
+
+```c++
+int main()
+{
+
+	std::vector<int> v1 = { 1, 2, 3, 4, 5, 6, 7 };
+	auto s1 = VectorToString(v1);
+	std:vector<std::string> v2 = { "11","222","555","990" };
+	auto s2 = VectorToString(v2);
+	std::vector<Company> v3 = {
+		{
+			"北京中关村", 8619223
+		},
+		{
+			"深圳南山科技园", 129334
+		},
+		{
+			"深圳坂田", 8888434
+		}
+	};
+	auto ss = VectorToString(v3);
+	return 0;
+}
+```
+
+
+
+# 常见报错信息
+
+1. 模板报错
+
+   > + 查看实例化时传入的模板参数类型
+   > + 找不到匹配的函数，会试图类型转换，然后转换失败
+
+
+
+
+
+# 去除变量未使用的警告
+
+```c++
+int a = 127;
+(void)a; // 去除警告
 ```
 
 

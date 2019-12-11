@@ -52,4 +52,27 @@
    mysql -u${user} -p${passwd} -e "DROP DATABASE ${dbName}"
    ```
 
+
+
+
+# 增加字段
+
+> 用Navicat Premium增加字段，提示Incorrect column name 'aa' 的原因:字段里面包含空格
+
+
+
+
+
+# 常用命令
+
+1. 重启
+
+   ```shell
+   # 第一种方法
+   service mysqld restart 
+   
+   # 第二种方法
+   /etc/init.d/mysql restart
+   ```
+
    
