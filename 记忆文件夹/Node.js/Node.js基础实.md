@@ -763,8 +763,539 @@ server.listen(port, host);
 
 ***
 
-
+> 1. setTimeout
+> 2. clearTimeout
+> 3. setInterval
+> 4. clearInterval
+> 5. require
 
 ### 准全局变量
 
 ***
+
+> 1. module：当前模块
+> 2. module.exports：当前模块对外输出接口，其它文件加载该模块，实际就是读取module.exports变量
+> 3. module.id：模块的识别符
+> 4. module.filename：模块文件名
+> 5. module.loaded：模块是否完成加载
+> 6. module.parent：返回使用该模块的模块
+> 7. module.children：返回一个数组，表示模块用到的其它模块
+
+**注意：用typescript的模块替代node.js的模块**
+
+
+
+## 1-13 文件系统
+
+### 异步和同步
+
+***
+
+```javascript
+// 文件系统的所有API都有同步和异步的版本
+import fs = require("fs");
+
+// 异步读取
+fs.readFile("../output.txt",(err: NodeJS.ErrnoException | null, data: Buffer):void=>{
+    if (err){
+        return console.error(err);
+    }
+    console.log("异步读取:" + data.toString());
+});
+
+//同步读取
+let data : Buffer = fs.readFileSync("../output.txt");
+console.log("同步读取:" + data.toString());
+
+console.log("程序执行完毕!");
+```
+
+### 打开文件
+
+***
+
++ 函数
+
+  ```javascript
+  fs.open(path, flags[,mode], callback)
+  ```
+
++ 打开方式
+
+  > + r：读取文件
+  > + w：写入文件，文件不存在则创建
+  > + a：追加模式
+
++ 示例
+
+  ```javascript
+  import fs = require("fs");
+  
+  // 异步打开
+  console.log("准备打开文件!");
+  
+  fs.open('1.jss', "r", (err, fd)=>{
+     if (err){
+         return console.error(err);
+     }
+     console.log("文件打开成功!");
+  });
+  ```
+
+### 获取文件信息
+
+***
+
++ 函数
+
+  ```javascript
+  fs.stat(path, callback)
+  ```
+
++ 文件属性stats类
+
+  ```javascript
+  // 是否为文件
+  stats.isFile()
+  
+  // 是否为目录
+  stats.isDirectory()
+  
+  // 是否为块设备
+  stats.isBlockDevice()
+  
+  // 是否为字符设备
+  stats.isCharacterDevice()
+  
+  // 是否为软连接
+  stats.isSymbolicLink()
+  
+  // 是否为FIFO 管道
+  stats.isFIFO()
+  
+  // 是否为Socket
+  stats.isSocket()
+  ```
+
++ 示例代码
+
+  ```javascript
+  import fs = require("fs");
+  
+  // 文件属性读取
+  fs.stat('1.js',(err: NodeJS.ErrnoException | null, stats: fs.Stats):void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log(stats);
+      console.log("读取文件信息成功!");
+      console.log("是否为文件:" + stats.isFile());
+      console.log("是否为目录:" + stats.isDirectory());
+  });
+  ```
+
+  
+
+### 写入文件
+
+***
+
++ 函数
+
+  ```javascript
+  // file：文件描述符 或者文件名
+  // data：可以是String或者Buffer
+  // options：{encoding, mode, flag}
+  // callback：写入失败时回调函数
+  fs.writeFile(file, data[,options],callback)
+  ```
+
++ 示例代码
+
+  ```javascript
+  import fs = require("fs");
+  
+  console.log("准备写入文件!");
+  
+  fs.writeFile("hello.txt", '我是写入的内容,我骄傲!',(err):void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log("内容写入成功!");
+  
+      console.log("读取写入的内容:");
+      fs.readFile('hello.txt', (err, data):void=>{
+          if (err){
+              return console.error(err);
+          }
+          console.log("异步读取:" + data.toString());
+      })
+  });
+  ```
+
+### 读取文件
+
+***
+
++ 函数
+
+  ```c++
+  // fd : 文件描述符
+  // buffer：缓冲区
+  // offset：缓冲区偏移量
+  // length：要从文件中读取的字节数
+  // position：文件读取的起始位置
+  // callback：回调函数
+  fs.read(fd, buffer, offset, length, position, callback)
+  ```
+
++ 示例代码
+
+  ```javascript
+  import fs = require("fs");
+  
+  let buf : Buffer = Buffer.alloc(1024);
+  fs.open("hello.txt", "r", (err : NodeJS.ErrnoException | null, fd : number) : void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log("文件打开成功!");
+      console.log("准备读取文件:");
+  
+      fs.read(fd, buf, 0, buf.length, 0,(err:NodeJS.ErrnoException | null, bytesRead: number, buffer: Buffer):void=>{
+          if (err){
+              return console.error(err);
+          }
+          console.log(bytesRead + " 字节被读取!");
+          if (bytesRead > 0){
+              console.log(buf.slice(0,bytesRead).toString())
+          }
+      })
+  });
+  ```
+
+### 关闭文件
+
+***
+
++ 函数
+
+  ```javascript
+  fs.close(fd, callback)
+  ```
+
++ 示例代码
+
+  ```javascript
+  import fs = require("fs");
+  
+  let buf : Buffer = Buffer.alloc(1024);
+  
+  fs.open('hello.txt', "r", (err, fd):void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log("文件打开成功!");
+      console.log("准备读取文件:");
+  
+      fs.read(fd, buf, 0, buf.length, 0,(err, bytesReaded):void=>{
+          if (err){
+              return console.error(err);
+          }
+          if (bytesReaded > 0){
+              console.log(buf.slice(0, bytesReaded).toString());
+          }
+  		// 关闭文件
+          fs.close(fd,(err):void=>{
+              if (err){
+                  return console.error(err);
+              }
+              console.log("文件关闭成功!");
+          })
+      })
+  })
+  ```
+
+### 截取文件 == TODO
+
+***
+
++ 函数
+
+  ```c++
+  // fd : 文件描述符
+  // len: 文件内容截取的长度
+  // callback: 回调函数,没有参数
+  fs.ftruncate(fd, len, callback)
+  ```
+
+  
+
+### 删除文件
+
+***
+
++ 函数
+
+  ```c++
+  // path:文件路径
+  // callback:回调函数,没有参数
+  fs.unlink(path, callback)
+  ```
+
++ 示例
+
+  ```javascript
+  import fs = require("fs");
+  
+  console.log("准备删除文件:");
+  fs.unlink('output.txt', (err ):void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log("文件删除成功!");
+  })
+  ```
+
+### 创建目录
+
+***
+
++ 函数
+
+  ```javascript
+  // path: 文件路径
+  // mode: 设置目录权限,默认为0777
+  // callback: 回调函数,没有参数
+  fs.mkdir(path[,mode],callback)
+  ```
+
++ 代码
+
+  ```javascript
+  import fs = require('fs');
+  
+  console.log("创建目录: ./view/tmp/");
+  
+  fs.mkdir("./view/temp/", (err):void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log("创建目录完毕!");
+  })
+  ```
+
+### 读取目录
+
+***
+
++ 函数
+
+  ```javascript
+  // path: 文件路径
+  // callback: 回调函数,参数为err和files
+  fs.readdir(path, callback)
+  ```
+
++ 代码
+
+  ```javascript
+  import fs = require("fs");
+  
+  console.log("查看./view目录");
+  
+  fs.readdir('./view', (err: NodeJS.ErrnoException | null, files: string[]):void=>{
+      if (err){
+          return console.error(err);
+      }
+      files.forEach((file)=>{
+          console.log(file);
+      })
+  });
+  ```
+
+  
+
+### 删除目录
+
+***
+
++ 函数
+
+  ```javascript
+  // path: 文件路径
+  // callback: 回调函数,没有参数
+  fs.rmdir(path, callback)
+  ```
+
++ 示例
+
+  ```javascript
+  import fs = require("fs");
+  console.log("删除./view/temp目录");
+  fs.rmdir('./view/temp', (err):void=>{
+      if (err){
+          return console.error(err);
+      }
+      console.log("删除目录成功!");
+  })
+  ```
+
+  
+
+### 参考手册
+
+***
+
+[File System](https://nodejs.org/dist/latest-v12.x/docs/api/fs.html)
+
+### 补充知识点
+
+***
+
+```javascript
+// 附加写入文件
+import fs = require("fs");
+
+fs.open("1.js", "a",(err, fd):void=>{
+    if (err){
+        return console.error(err);
+    }
+    fs.writeFile(fd, "bb", (err):void=>{
+        if (err){
+            return console.error(err);
+        }
+        fs.close(fd,():void=>{
+            console.log("关闭文件!");
+        });
+    })
+})
+```
+
+
+
+
+
+## 1-14 GET-POST请求
+
+### GET请求
+
+***
+
+```javascript
+import http = require("http");
+import url = require("url");
+import util = require("util");
+import {IncomingMessage, ServerResponse} from "http";
+
+
+http.createServer((req: IncomingMessage, res: ServerResponse):void=>{
+    res.writeHead(200,{'Content-Type':'text/plain;charset=utf-8'});
+    res.end(util.inspect((url.parse(req.url as string, true))));
+}).listen(3000);
+
+// 请求url：http://127.0.0.1:3000/gm?name=xiaoming&age=90
+// 浏览器打印结果：
+Url {
+  protocol: null,
+  slashes: null,
+  auth: null,
+  host: null,
+  port: null,
+  hostname: null,
+  hash: null,
+  search: '?name=xiaoming&age=90',
+  query: [Object: null prototype] { name: 'xiaoming', age: '90' },
+  pathname: '/gm',
+  path: '/gm?name=xiaoming&age=90',
+  href: '/gm?name=xiaoming&age=90' }
+```
+
+
+
+### 获取URL参数
+
+***
+
+```javascript
+// request:http://127.0.0.1:3000/gm?name=xiaoming&age=90
+import http = require("http");
+import url = require("url");
+import util = require("util");
+import {IncomingMessage, ServerResponse} from "http";
+
+
+http.createServer((req: IncomingMessage, res: ServerResponse):void=>{
+    let params = url.parse(req.url as string, true).query;
+
+    res.writeHead(200, {'Content-Type':'text/plain;charset=UTF-8'});
+    res.write("姓名:" + params.name);
+    res.write('\n');
+    res.write("年龄:" + params.age);
+    res.end(); // 这个函数是什么意思?
+}).listen(3000);
+```
+
+### 如何获取URL头部
+
+****
+
+
+
+
+
+### POST请求
+
+***
+
+```javascript
+// node.js默认不会解析请求body
+import http = require("http");
+import querystring = require("querystring");
+import  fs = require("fs");
+
+let postHtml : string = "";
+let buf : Buffer = Buffer.alloc(2048);
+let fd = fs.openSync("./demo.html", 'r');
+fs.readSync(fd,buf,0,buf.length,0);
+fs.closeSync(fd);
+postHtml = buf.toString();
+http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
+    let body : string = "";
+    req.on('data', (chunk : any):void=>{
+        body += chunk;
+    });
+
+    req.on('end', ():void=>{
+        let query : querystring.ParsedUrlQuery = querystring.parse(body);
+        res.writeHead(200, {'Content-Type': 'text/html;charset=UTF-8'});
+        if (query.name && query.age) {
+            res.write("姓名:" + query.name);
+            res.write("<br/>");
+            res.write("年龄:" + query.age);
+        }else{
+            res.write(postHtml);
+        }
+        res.end();
+    })
+}).listen(3000);
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>post提交表单</title>
+</head>
+<body>
+
+<form method="post">
+    姓名: <input name = "name" /> <br/>
+    职位: <input name = "age" /> <br/>
+    <input type="submit">
+</form>
+</body>
+</html>
+```
+
