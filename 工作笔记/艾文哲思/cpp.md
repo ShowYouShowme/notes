@@ -113,7 +113,10 @@ int main()
 
 # 匿名空间
 
+
 用匿名空间函数替代静态全局函数。隐藏实现。
+作用：符号仅在本编译单元可见。在cpp里面匿名空间里定义符号，比如全局变量，全局函数，类，枚举等，不会与其它cpp的符号重定义
+
 
 
 
@@ -157,6 +160,7 @@ namespace
 	}
 }
 ```
+
 
 
 
@@ -303,6 +307,72 @@ int main()
 int a = 127;
 (void)a; // 去除警告
 ```
+
+# 智能指针包装对象
+
++ 关键点
+
+  > 1. 构造函数设置为私有
+  > 2. 用静态Create函数返回包装后的指针
+
++ 代码
+
+  ```c++
+  class Cup
+  {
+  private:
+  	std::string name;
+  	std::string color;
+  	Cup(){
+  		std::cout << "construct a Cup object!" << std::endl;
+  	}
+  public:
+  	static std::shared_ptr<Cup> Create()
+  	{
+  		return std::shared_ptr<Cup>(new Cup());
+  	}
+  	~Cup()
+  	{
+  		std::cout << "delete a Cup Object" << std::endl;
+  	}
+  };
+  
+  int main()
+  {
+  	auto p1 = Cup::Create();
+  	auto p2 = Cup::Create();
+  	p2 = p1;
+  	return 0;
+  }
+  ```
+
+
+
+# 前置声明
+
+1. 类的前置声明
+
+   ```c++
+   class Person;
+   struct App;
+   ```
+
+2. 枚举的前置声明
+
+   ```C++
+   enum Region : int;
+   ```
+
+3. 命名空间里的类的前置声明
+
+   ```c++
+   namespace tars
+   {
+       class Application;
+   }
+   ```
+
+
 
 
 
