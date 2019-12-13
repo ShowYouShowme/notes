@@ -22,6 +22,16 @@ int main(){
 
 
 
+# 简化map插入元素
+
+```c++
+template<typename T>
+void mapInsert(T& m, const typename T::key_type& key, const typename T::mapped_type& value)
+{
+	m.insert(make_pair(key, value));
+}
+```
+
 # 获取日期
 
 ```cpp
@@ -445,9 +455,9 @@ int a = 127;
 
 + 原则
 
-  > 1. 不操作裸指针
+  > 1. 不操作裸指针   
   > 2. 不进行指针的算术运算，比如C语言里的+和-运算
-  > 3. 尽可能不操作迭代器
+  > 3. 尽可能不操作迭代器，非法迭代器的解引用会导致内存错误
 
 + 做法
 
