@@ -269,6 +269,69 @@ let server = app.listen(port, host, ():void=>{
 
 ***
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件上传演示</title>
+</head>
+<body>
+<h3>文件上传:</h3>
+选择一个文件上传:<br/>
+<form action="file_upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="image" size="50">
+    <br/>
+    <input type="submit" value="文件上传">
+</form>
+</body>
+</html>
+```
+
+```javascript
+import express = require("express");
+import fs = require("fs");
+import bodyParser = require("body-parser");
+import multer = require("multer");
+
+
+
+let app : express.Application = express();
+app.use(express.static('public'));
+app.use(bodyParser.urlencoded({extended : false}));
+app.use(multer({dest:'/tmp'}).array('image'));
+
+app.get("/", (req: express.Request, res : express.Response):void=>{
+    res.sendFile(__dirname + "/" + "file_upload.html");
+});
+
+app.post('/file_upload', (req : express.Request, res : express.Response):void=>{
+    let files   : Express.Multer.File[] = req.files as Express.Multer.File[];
+    let file    : Express.Multer.File   = files[0];
+    console.log(file);
+
+    let des_file : string = __dirname + "/" + file.originalname;
+    fs.readFile(file.path, (err, data):void=>{
+        fs.writeFile(des_file, data, (err):void=>{
+            let response : any = null;
+            if (err){
+                console.error(err);
+            } else{
+                response = {
+                    message:'File uploaded successfully',
+                    filename:file.originalname
+                }
+            }
+            console.log(response);
+            res.end(JSON.stringify(response));
+        })
+    })
+
+});
+
+let server = app.listen(8081);
+```
+
 
 
 ### cookie管理
