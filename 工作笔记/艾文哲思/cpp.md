@@ -436,6 +436,11 @@ int a = 127;
   extern int num; // num 在其它编译单元定义
   
   extern void fun(); // 函数声明,该函数在其它地方定义
+  
+  // 符号不重整,CPP支持函数重载,因此编译的时候会重整符号,C语言则不会
+  extern "C" {
+  // ....
+  }
   ```
 
 
@@ -484,26 +489,30 @@ int a = 127;
 + Linux安装动态库的步骤
 
   ```shell
-  # STEP 查找已存在的动态库
+  # STEP1 查找已存在的动态库
   find / -name "lib${soname}*"
   
-  # STEP 删除已存在的动态库 ==软链接也要删除
+  # STEP2 删除已存在的动态库 ==软链接也要删除
   rm -f `find / -name "lib${soname}*"`
   
+  # STEP3 安装需要的动态库
   
   # 例子  删除已经存在的libcurl库
   rm -f `find / -name "libcurl*"`
   ```
 
-  
-
-​     
 
 
+# 常用dll
 
-​     
++ ld-linux.so
 
+  > 加载动态链接库
 
++ libstdc++.so
 
-   
+  > gcc中C++的动态库
 
++ libc.so
+
+  > Linux下标准的C库，Linux系统中最底层的API，几乎其它任何的运行库都要依赖它。逐渐被glibc取代

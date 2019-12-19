@@ -314,3 +314,45 @@
 >   }
 >   ```
 
+
+
+
+
+# libcurl Linux编译
+
+1. 创建目录
+
+   ```shell
+   mkdir /usr/local/curl
+   ```
+
+2. 安装openssl开发库
+
+   ```shell
+   yum -y install openssl-devel 
+   ```
+
+3. 编译
+   
+   ```shell
+   # 配置安装目录
+   ./configure --prefix=/usr/local/curl/
+   
+   make -j4
+   make install
+   ```
+   
+4. 注意
+   
+   > 系统里可能以及存在libcurl的动态链接库，如果存在需要先删除
+   >
+   > ```shell
+   > # 查找libcurl的动态链接库
+   > find / -name "libcurl*"
+   > 
+   > # 删除libcurl的动态链接库和对应的软连接
+   > 
+   > ```
+   
+   
+   
