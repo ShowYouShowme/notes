@@ -20,6 +20,24 @@ int main(){
 }
 ```
 
+利用引用传出参数
+
+```cpp
+template<typename T1, typename T2, typename T3>
+void toString(string& out, T1 t1, T2 t2, T3 t3) {
+	ostringstream os;
+	os << t1 << ":" << t2 << ":" << t3;
+	out += os.str();
+}
+template<typename T1, typename T2, typename T3,typename... Args>
+void toString(string& out, T1 t1, T2 t2, T3 t3, Args... args) {
+	ostringstream os;
+	os << t1 << ":" << t2 << ":" << t3 << ":";
+	out += os.str();
+	toString(out, args...);
+}
+```
+
 
 
 # 简化map插入元素
