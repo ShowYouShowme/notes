@@ -556,4 +556,23 @@ yum安装时会显示安装的Repository
   chown ${user} ${file}
   ```
 
+
+
+
+# find
+
++ 作用：查找文件
+
++ 示例
+
+  ```shell
+  # 用通配符时必须用双引号包含
+  find / -name "libcurl*"
+  ```
+
+  ```shell
+  # 删除找到的文件
+  rm -f `find / -name "libcurl*"`
+  ```
+  
   
