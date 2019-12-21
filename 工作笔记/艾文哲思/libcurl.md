@@ -316,6 +316,108 @@
 
 
 
+## libcurl 使用场景
+
+### 1-url编解码
+
+***
+
++ urlEncode
+
+  ```c++
+  string urlEncode(const string& input)
+  {
+  	char * escape_control = curl_escape(input.c_str(), input.size());
+  	if (escape_control == nullptr){
+  		throw logic_error("urlEncode failed!");
+  	}
+  	return string(escape_control);
+  }
+  ```
+
++ urlDecode
+
+  ```c++
+  string urlDecode(const string& input)
+  {
+  	char * unescape_control = curl_unescape(input.c_str(), input.size());
+  	if (unescape_control == nullptr) {
+  		throw logic_error("urlEncode failed!");
+  	}
+  	return string(unescape_control);
+  }
+  ```
+
+
+
+### 2-设置请求url
+
+***
+
+```cpp
+CURL * conn = curl_easy_init();
+curl_easy_setopt(conn, CURLOPT_URL, url.c_str());
+```
+
+
+
+### 3-自定义请求头
+
+***
+
+```cpp
+struct curl_slist* headers = NULL;
+CURL * conn = curl_easy_init();
+headers = curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
+curl_easy_setopt(conn, CURLOPT_HTTPHEADER, headers);
+headers = curl_slist_append(headers, "X-silly-header;"); // 请求头设置空
+```
+
+
+
+### 4-设置请求方式为POST
+
+***
+
+```cpp
+curl_easy_setopt(conn, CURLOPT_POST, 1);//本次操作为POST
+```
+
+### 5-设置请求体
+
+***
+
+```c++
+// 默认不设置CURLOPT_POST 选择 和请求体,则为GET请求
+std::string jsonData;
+curl_easy_setopt(conn, CURLOPT_POSTFIELDS, jsonData.c_str());
+curl_easy_setopt(conn, CURLOPT_POSTFIELDSIZE, jsonData.size());
+```
+
+
+
+### 6-获取响应状态码
+
+***
+
+
+
+
+
+### 7-获取响应头
+
+***
+
+
+
+
+
+### 8-获取响应body
+
+***
+
+
+
 
 
 # libcurl Linux编译
