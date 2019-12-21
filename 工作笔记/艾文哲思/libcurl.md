@@ -354,5 +354,8 @@
    > 
    > ```
    
-   
+5. 使用
+
+   > 编译的时候加上选项 -I/usr/local/curl/include  -L/usr/local/curl/lib  -lcurl
+
    
