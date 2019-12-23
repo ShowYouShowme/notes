@@ -369,8 +369,8 @@ curl_easy_setopt(conn, CURLOPT_URL, url.c_str());
 struct curl_slist* headers = NULL;
 CURL * conn = curl_easy_init();
 headers = curl_slist_append(headers, "Content-Type:application/json;charset=UTF-8");
-curl_easy_setopt(conn, CURLOPT_HTTPHEADER, headers);
 headers = curl_slist_append(headers, "X-silly-header;"); // 请求头设置空
+curl_easy_setopt(conn, CURLOPT_HTTPHEADER, headers);
 ```
 
 
@@ -400,13 +400,61 @@ curl_easy_setopt(conn, CURLOPT_POSTFIELDSIZE, jsonData.size());
 
 ***
 
-
+```cpp
+// 调用响应状态码保存的statusCode里面;必须先调用curl_easy_perform
+long statusCode = -1;
+CURLcode code = curl_easy_getinfo(easy_handle, CURLINFO_RESPONSE_CODE, &statusCode);
+```
 
 
 
 ### 7-获取响应头
 
 ***
+
+```cpp
+#include <stdio.h>
+#include <string.h>
+#include <curl/curl.h>
+#include <string>
+#include <vector>
+using namespace std;
+
+
+static size_t read_head_fun(void *ptr, size_t size, size_t nmemb, void *stream) {
+	vector<string>* pHeaders = (vector<string>*)stream;
+	string header((const char*)ptr, (const char*)ptr + size*nmemb);
+	pHeaders->push_back(header);
+	return size*nmemb;
+}
+
+int main(int argc, char **argv)
+{
+	char* url = "http://127.0.0.1:3000";
+	CURL* curl_handle;
+	CURLcode res;
+
+	vector<string> headers;
+	curl_handle = curl_easy_init();
+	if (curl_handle) {
+		curl_easy_setopt(curl_handle, CURLOPT_URL, url);//set down load url
+		curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, read_head_fun);//set call back fun
+		curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &headers);//set call back fun
+
+		//start down load
+		res = curl_easy_perform(curl_handle);
+		printf("curl fetch code %d\n", res);
+	}
+	if (curl_handle) {
+		curl_easy_cleanup(curl_handle);
+	}
+	if (url) {
+		free(url);
+	}
+
+	return 0;
+}
+```
 
 
 
@@ -415,6 +463,39 @@ curl_easy_setopt(conn, CURLOPT_POSTFIELDSIZE, jsonData.size());
 ### 8-获取响应body
 
 ***
+
+```cpp
+// 注意回调函数的签名
+static size_t  process_data(void *buffer, size_t size, size_t nmemb, void *param)
+{
+    std::string* pJson = (std::string *)param;
+    pJson->assign((const char*)buffer, (const char*)buffer + size * nmemb);
+    return size * nmemb;
+}
+
+// body 会被写入到json里面
+std::string	json;
+curl_easy_setopt(easy_handle, CURLOPT_URL, url.c_str());
+curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, &Request::process_data);
+curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &json);
+```
+
+
+
+## 9-连接超时
+
+
+
+
+
+## 10-异步请求
+
+
+
+
+
+## 11-RPC超时
+
 
 
 
