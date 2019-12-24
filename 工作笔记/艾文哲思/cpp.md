@@ -13,6 +13,9 @@ std::string toString(T head, Args... args){
 	os << head;
 	return os.str() + toString(args...);
 }
+
+// 快速抛出异常
+#define THROW_LOGIC_ERROR(...) toString("[", __FILE__, ":" , __LINE__ , ":" , __FUNCTION__ , "] ", __VA_ARGS__)
 int main(){
 	std::string s1 = toString(12, "ABC", 12.5, true);
 	std::cout << s1 << std::endl;
