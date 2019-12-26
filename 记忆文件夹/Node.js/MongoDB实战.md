@@ -231,4 +231,255 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >   
 >   ```
 >
->   
+
+
+
+
+
+### 查询数据
+
++ 查询表里的全部记录
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  // 连接数据库
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbase = db.db("testdb");
+  
+      dbase.collection("user").find({}).toArray((error: MongoError, result: any[]): void=>{
+          if (error) throw err;
+  
+          console.log(result);
+          db.close();
+      })
+  });
+  ```
+
++ 指定条件查询
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbase = db.db("testdb");
+  
+  	// 指定查询条件
+      dbase.collection("user").find({name:'Tom'}).toArray((error: MongoError, result: any[]): void=>{
+          if (error) throw err;
+  
+          console.log(result);
+          db.close();
+      })
+  });
+  ```
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbase = db.db("testdb");
+  
+  	// 查询条件
+      let condition = {name : 'lucy'};
+      dbase.collection("user").find(condition).toArray((error: MongoError, result: any[]): void=>{
+          if (error) throw err;
+  
+          console.log(result);
+          db.close();
+      })
+  });
+  
+  ```
+
++ 多表查询
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbo = db.db("testdb");
+  
+      dbo.collection('user').aggregate(
+          [
+              {
+                  $lookup:
+                      {
+                          from:'job',         // 右集合
+                          localField:'job_id', // 左集合字段
+                          foreignField:"_id",  // 右集合字段
+                          as:"user_list"
+                      }
+              }
+          ]
+      ).toArray((err, res: any[]):void=>{
+          if (err) throw err;
+          res.forEach((elem)=>{
+              console.log(elem);
+          })
+          db.close();
+      })
+  });
+  ```
+
+  
+
+
+
+
+
+### 更新数据
+
++ 更新单条记录
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbo = db.db("testdb");
+  
+      let condition = {name:"lucy"};
+  
+      let updateStatement = {$set:{age:26}};
+  
+      dbo.collection('user').updateOne(condition, updateStatement,(err, res):void=>{
+          if (err) throw err;
+  
+          console.log("文档更新成功!");
+          db.close();
+      })
+  });
+  
+  ```
+
++ 更新多条记录
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbo = db.db("testdb");
+  
+      let condition = {age:18};
+  
+      let updateStatement = {$set:{job_id:24}};
+  
+      dbo.collection('user').updateMany(condition, updateStatement,(err, res):void=>{
+          if (err) throw err;
+  
+          console.log(res.result.nModified + " 条文档被更新!");
+          db.close();
+      })
+  });
+  ```
+
+### 删除数据
+
++ 删除一条数据
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbase = db.db("testdb");
+  
+      let condition = {name : "Tom"};
+  
+      dbase.collection("user").deleteOne(condition,(err, res):void=>{
+          if (err) throw err;
+  
+          console.log("文档删除成功!");
+          db.close();
+      })
+  });
+  ```
+
++ 删除多条数据
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbase = db.db("testdb");
+  
+      let condition = {age : 26};
+  
+      dbase.collection("user").deleteMany(condition,(err, res):void=>{
+          if (err) throw err;
+  
+          console.log(res.result.n + " 条记录被删除!");
+          db.close();
+      })
+  });
+  ```
+
+  
+
++ 删除文档
+
+  ```javascript
+  import Mongodb = require("mongodb");
+  import {MongoClient, MongoError} from "mongodb";
+  
+  let url = "mongodb://localhost:27017/testdb";
+  
+  Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
+      if (err) throw err;
+  
+      let dbase = db.db("testdb");
+  
+      dbase.collection("user").drop((err, delOK)=>{
+          if (err) throw err;
+          if(delOK) {
+              console.log("集合已删除!");
+          }
+          db.close();
+      })
+  });
+  ```
+
+  
