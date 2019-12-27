@@ -484,7 +484,9 @@ curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &json);
 
 ## 9-连接超时
 
-
+```cpp
+curl_easy_setopt(conn, CURLOPT_CONNECTTIMEOUT, 3);	//连接超时
+```
 
 
 
@@ -494,9 +496,31 @@ curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &json);
 
 
 
-## 11-RPC超时
+## 11-读取数据超时
+
+```cpp
+curl_easy_setopt(conn, CURLOPT_TIMEOUT, 10);		// 接收数据超时
+```
 
 
+
+## 12-设置代理
+
+```cpp
+curl_easy_setopt(conn, CURLOPT_PROXY, proxyAddr.c_str());//http://127.0.0.1:80
+curl_easy_setopt(conn, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);// 设置代理类型为http
+curl_easy_setopt(conn, CURLOPT_HTTPPROXYTUNNEL, 1L);//隧道转发流量
+```
+
+
+
+## 13-使用Cookie
+
+
+
+## 14-注意事项
+
+> 调用任意函数前，先调用`curl_global_init`,该函数只能调用一次且非线程安全。
 
 
 
