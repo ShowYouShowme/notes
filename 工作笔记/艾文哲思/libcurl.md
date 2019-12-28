@@ -518,9 +518,32 @@ curl_easy_setopt(conn, CURLOPT_HTTPPROXYTUNNEL, 1L);//隧道转发流量
 
 
 
-## 14-注意事项
+## 14-302重定向
+
+```cpp
+curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+```
+
+
+
+## 15-注意事项
 
 > 调用任意函数前，先调用`curl_global_init`,该函数只能调用一次且非线程安全。
+
+
+
+### 16-API
+
+***
+
+```cpp
+curl_global_init()		//初始化libcurl,只能调用一次
+curl_easy_init()		// 创建easy interface型指针
+curl_easy_setopt()		//设置传输选项
+curl_easy_perform()		// 发起http请求
+curl_easy_cleanup()		//释放内存
+curl_global_cleanup()	//清理libcurl
+```
 
 
 
