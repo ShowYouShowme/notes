@@ -423,4 +423,51 @@ let server = app.listen(8081);
   app.listen(8085);
   ```
 
+
+
+
+### 中间件
+***
+
++ bodyParser()
+
+  支持 JSON, urlencoded和multipart requests的请求体解析中间件
+
+  ```javascript
+  app.use(express.bodyParser());
+   
+  // 等同于:
+  app.use(express.json());
+  app.use(express.urlencoded());
+  app.use(express.multipart());
+  ```
+
++ compress()
+
+  通过gzip / deflate压缩响应数据. 这个中间件应该放置在所有的中间件最前面以保证所有的返回都是被压缩的
+
+  ```javascript
+  app.use(express.logger());
+  app.use(express.compress());
+  app.use(express.methodOverride());
+  app.use(express.bodyParser());
+  ```
+
++ cookieParser()
+
+  解析请求头里的Cookie, 并用cookie名字的键值对形式放在 `req.cookies` 你也可以通过传递一个`secret` 字符串激活签名了的cookie
+
+  ```javascript
+  app.use(express.cookieParser());
+  app.use(express.cookieParser('some secret'));
+  ```
+
++ basicAuth
+
+  基本的认证中间件，在req.user里添加用户名用户名和密码的例子
+
+  ```javascript
+  app.use(express.basicAuth('username', 'password'));
+  ```
+
   
