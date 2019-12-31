@@ -404,6 +404,10 @@ curl_easy_setopt(conn, CURLOPT_POSTFIELDSIZE, jsonData.size());
 // 调用响应状态码保存的statusCode里面;必须先调用curl_easy_perform
 long statusCode = -1;
 CURLcode code = curl_easy_getinfo(easy_handle, CURLINFO_RESPONSE_CODE, &statusCode);
+
+// 选项 CURLINFO_HEADER_SIZE 获取响应头大小
+
+// 选项 CURLINFO_COOKIELIST 获取cookies列表
 ```
 
 
@@ -499,6 +503,7 @@ curl_easy_setopt(conn, CURLOPT_CONNECTTIMEOUT, 3);	//连接超时
 ## 11-读取数据超时
 
 ```cpp
+// RPC 调用,10s超时时间
 curl_easy_setopt(conn, CURLOPT_TIMEOUT, 10);		// 接收数据超时
 ```
 
@@ -516,12 +521,18 @@ curl_easy_setopt(conn, CURLOPT_HTTPPROXYTUNNEL, 1L);//隧道转发流量
 
 ## 13-使用Cookie
 
+```cpp
+curl_easy_setopt(curl, CURLOPT_COOKIEFILE, "/tmp/cookie.txt"); // 指定cookie文件
+```
+
 
 
 ## 14-302重定向
 
 ```cpp
+curl_easy_setopt(curl, CURLOPT_AUTOREFERER, 1); // 设置referrer 信息
 curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 1);// 设置最大重定向次数
 ```
 
 
@@ -541,9 +552,63 @@ curl_global_init()		//初始化libcurl,只能调用一次
 curl_easy_init()		// 创建easy interface型指针
 curl_easy_setopt()		//设置传输选项
 curl_easy_perform()		// 发起http请求
+curl_easy_getinfo()
 curl_easy_cleanup()		//释放内存
 curl_global_cleanup()	//清理libcurl
 ```
+
+
+
+### 17-打印函数调用的错误信息
+
+***
+
+```cpp
+char errorBuffer[CURL_ERROR_SIZE];
+CURLcode code = curl_easy_setopt(conn, CURLOPT_ERRORBUFFER, errorBuffer);
+```
+
+
+
+
+
+## 18-内存泄漏处理
+
+```cpp
+// 单线程可以用这种方式,多线程有问题
+
+curl_global_init()
+curl_easy_init()
+// 设置选项 发起HTTP请求
+curl_easy_cleanup()
+curl_global_cleanup()
+```
+
+
+
+
+
+### 19-选项
+
+***
+
+```cpp
+CURLOPT_VERBOSE // 打印调试信息
+CURLOPT_RESUME_FROM_LARGE // 断点续传 -- 之前上/下载中断,可以从中断的地方继续上/下载
+
+```
+
+
+
+### 20-下载进度
+
+```CPP
+curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);// 开启下载进度功能
+curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, my_progress_func); // 回调
+curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, Bar); // 传给回调的参数
+```
+
+
 
 
 
