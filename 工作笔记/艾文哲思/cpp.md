@@ -127,7 +127,112 @@ int main()
 
 # 异步编程
 
-[异步编程](https://www.cnblogs.com/moodlxs/p/10111601.html)
+1. **std::async**
+
+   ```cpp
+   #include <future>
+   #include <iostream>
+   using namespace std;
+   
+   
+   bool is_prime(int x)
+   {
+   	for (int i = 1; i < x; i++)
+   	{
+   		int b = x / i;
+   	}
+   	return true;
+   }
+   
+   
+   int main()
+   {
+       // 调用函数is_prime,不等其结束直接返回
+   	std::future<bool> fut = std::async(is_prime, 700020007);
+   	std::cout << "please wait";
+   	std::chrono::milliseconds span(100);
+       
+       // 等待返回结果,100毫秒超时
+   	while (fut.wait_for(span) != std::future_status::ready)
+   		std::cout << ".";
+   	std::cout << std::endl;
+   
+   	bool ret = fut.get(); // 获取返回结果,如果函数尚未执行完毕,则阻塞
+   	std::cout << "final result: " << ret << std::endl;
+   	return 0;
+   }
+   ```
+
+2. **std::future**：传递其它线程中操作的数据结果，是std::async、std::promise、std::packaged_task的底层对象。
+
+3. **std::promise**：不同线程的同步机制
+
+   ```cpp
+   // promise example
+   #include <iostream>       // std::cout
+   #include <functional>     // std::ref
+   #include <thread>         // std::thread
+   #include <future>         // std::promise, std::future
+   
+   void print_int (std::future<int>& fut) {
+     int x = fut.get(); // 此函数最多只能调用一次
+     std::cout << "value: " << x << '\n';
+   }
+   
+   int main ()
+   {
+     std::promise<int> prom;                      // create promise
+   
+     std::future<int> fut = prom.get_future();    // engagement with future
+   
+     std::thread th1 (print_int, std::ref(fut));  // send future to new thread
+   
+     prom.set_value (10);                         // fulfill promise
+                                                  // (synchronizes with getting the future)
+     th1.join();
+     return 0;
+   }
+   ```
+
+4. **std::packaged_task**：存储一个函数操作，并将其返回值传递给对应的future， 而这个future在另外一个线程中也可以安全的访问到这个值。
+
+   ```cpp
+   // packaged_task example
+   #include <iostream>     // std::cout
+   #include <future>       // std::packaged_task, std::future
+   #include <chrono>       // std::chrono::seconds
+   #include <thread>       // std::thread, std::this_thread::sleep_for
+   
+   // count down taking a second for each value:
+   int countdown (int from, int to) {
+     for (int i=from; i!=to; --i) {
+       std::cout << i << '\n';
+       std::this_thread::sleep_for(std::chrono::seconds(1));
+     }
+     std::cout << "Lift off!\n";
+     return from-to;
+   }
+   
+   int main ()
+   {
+     std::packaged_task<int(int,int)> tsk (countdown);   // set up packaged_task
+     std::future<int> ret = tsk.get_future();            // get future
+   
+     std::thread th (std::move(tsk),10,0);   // spawn thread to count down from 10 to 0
+   
+     // ...
+   
+     int value = ret.get();                  // wait for the task to finish and get result
+   
+     std::cout << "The countdown lasted for " << value << " seconds.\n";
+   
+     th.join();
+   
+     return 0;
+   }
+   ```
+
+   
 
 
 
@@ -580,11 +685,11 @@ int a = 127;
 
 ***
 
-1. master-worker模型
+1. <span style="color:violet;font-weight:bold">master-worker模型</span>
 
    > master-worker模型类似于任务分发策略，开启一个master线程接收任务，然后在master中根据任务的具体情况进行分发给其它worker子线程，然后由子线程处理任务。如需返回结果，则worker处理结束之后把处理结果返回给master
 
-2. 生产者消费者模型
+2. <span style="color:violet;font-weight:bold">生产者消费者模型</span>
 
    > 其核心是使用一个缓存来保存任务。开启一个/多个线程来生产任务，然后再开启一个/多个来从缓存中取出任务进行处理。这样的好处是任务的生成和处理分隔开，生产者不需要处理任务，只负责向生成任务然后保存到缓存。而消费者只需要从缓存中取出任务进行处理
 
@@ -632,3 +737,61 @@ int a = 127;
    > 	return 0;
    > }
    > ```
+
+
+
+# 构造函数抛出异常
+
+1. 后果：内存泄漏
+
+2. 示例
+
+   ```cpp
+   #include <iostream>
+   using namespace std;
+   
+   class A
+   {
+   public:
+   	A() { cout << "in A constructor" << endl; }
+   	~A() { cout << "in A destructor" << endl; }
+   };
+   
+   class B
+   {
+   public:
+   	unique_ptr<A> pA;
+   	B():pA(new A)
+   	{
+   		cout << "in B constructor" << endl;
+   		throw - 1;
+   	}
+   	~B()
+   	{
+   		cout << "in B destructor" << endl;
+   	}
+   };
+   
+   int main()
+   {
+   	try
+   	{
+   		B b;
+   	}
+   	catch (int)
+   	{
+   		cout << "catched" << endl;
+   	}
+   }
+   ```
+
+   运行结果
+
+   ```shell
+   in A constructor
+   in B constructor
+   in A destructor
+   catched
+   ```
+
+   
