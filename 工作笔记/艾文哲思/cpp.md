@@ -249,7 +249,7 @@ int main()
 
 # 匿名空间
 
-用匿名空间函数替代静态全局函数。隐藏实现。
+用匿名空间函数替代静态全局函数和静态全局变量。隐藏实现。
 作用：符号仅在本编译单元可见。在cpp里面匿名空间里定义符号，比如全局变量，全局函数，类，枚举等，不会与其它cpp的符号重定义
 
 
@@ -680,7 +680,61 @@ int a = 127;
 
 
 # 多线程
+### 基本概念
 
+***
+
+1. 线程不安全
+
+   > 多个线程同时读/写数据(全局变量、类静态成员变量和静态局部变量等)，导致运行结果和单线程不一致
+
+2. 导致线程不安全的原因
+
+   > 1. 多个线程同时访问全局变量
+   > 2. 多个线程同时访问类的静态成员变量
+   > 3. 多个线程同时访问函数的静态局部变量
+   > 4. 线程A把局部变量的引用传入线程B，导致线程A和B可以同时访问A的局部变量
+
+
+
+### 示例
+
+***
+
+```cpp
+#include <stdio.h>
+#include <pthread.h>
+
+int count = 1;
+
+void* run(void * arg1)
+{
+    int i = 0;
+    while(1)
+    {
+        int val = count;
+        i++;
+        printf("count is %d  \n", count);
+        count = val+1;
+        if(5000 == i)
+            break;
+    }
+}
+
+
+int main()
+{
+    pthread_t tid1, tid2;
+    
+    // 线程t1 和 t2 同时访问全局变量count
+    pthread_create(&tid1, NULL, run, NULL);
+    pthread_create(&tid2, NULL, run, NULL);
+
+    pthread_join(tid1, NULL);
+    pthread_join(tid2, NULL);
+    return 0;
+}
+```
 ### 多线程常用模型
 
 ***
