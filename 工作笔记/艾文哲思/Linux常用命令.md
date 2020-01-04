@@ -87,7 +87,7 @@
 
 
 
-## rm
+# rm
 
 1. 删除文件夹
 
@@ -603,4 +603,14 @@ yum安装时会显示安装的Repository
   sed -i "s/10.10.10.168/${TARGET_HOST}/g" `grep 10.10.10.168 -rl XGame.*/bin/*`
   ```
 
-  
+
+
+
+# 打包+COPY
+
+> 文件从CentOS 复制至Windows再复制到CentOS权限和属性信息会丢失，因此如下操作
+>
+> > 1. tar打包
+> > 2. copy至win，再copy至CentOS
+> > 3. tar解压，此时文件权限和属性信息则不会丢失
+

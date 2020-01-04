@@ -568,6 +568,31 @@ int a = 127;
   // ....
   }
   ```
+  
++ extern "C"
+
+  1. C语言编译生成的DLL，符号名称(变量/函数)不会重整，C++调用时要特殊处理
+
+     ```cpp
+     extern "C"
+     {
+     #include <lua.h>
+     #include <lauxlib.h>
+     #include <lualib.h>
+     }
+     ```
+
+  2. C++编译生成的DLL，符号可以选择重整也可以不重整
+
+     + 默认情况下符号会重整(支持函数重载)，C++调用直接包含**头文件**即可
+     + 不重整符号[头文件用extern "C" 包含符号]，调用方式有以下几种
+       1. 其它语言，比如python调用；只需要动态库，不需要头文件
+       2. C++调用，依赖头文件，编译的时候链接
+       3. C++调用，动态加载，不需要头文件
+
+     
+
+  
 
 
 
@@ -848,4 +873,77 @@ int main()
    catched
    ```
 
+
+
+
+
+
+# 动态加载dll
+
+## 主程序
+
+1. 代码
+
+   ```cpp
+   #include <dlfcn.h>
+   extern "C"
+   {  
+       typedef void(*FunPtr)();
+   }
+   int main()
+   {
+       void* handle = dlopen("./libPerson.so", RTLD_NOW);
+       
+       FunPtr fun = (FunPtr)dlsym(handle, "printDesc");
+       
+       fun();
+       return 0;
+   }
+   ```
+
+2. 编译
+
+   ```shell
+   g++ -g ./main.cpp -ldl
+   ```
+
+
+
+## 动态库
+
+1. Person.h
+
+   ```cpp
+   extern "C" void printDesc();
+   ```
+
+2. Person.cpp
+
+   ```cpp
+   #include"Person.h"
+   #include<iostream>
+   using namespace std;
    
+   
+   void printDesc()
+   {
+       for(int i = 0; i < 19; ++i){
+           cout << "i = " << i << endl;
+       }
+       int a = 1;
+       int b =2;
+       int c =a +b;
+       cout << "c = " << c << endl;
+   }
+   ```
+
+3. 编译动态库
+
+   ```shell
+   g++ -g Person.cpp -fpic -shared -o libPerson.so
+   ```
+
+   
+
+
+

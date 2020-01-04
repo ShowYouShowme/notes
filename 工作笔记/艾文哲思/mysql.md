@@ -76,3 +76,22 @@
    ```
 
    
+
+
+
+# 删除没有密码的用户
+
+```shell
+use mysql;
+# 查看用户的权限
+select host,user,password from user;
+
+drop user 'zhangsan'@'%';
+
+# 没有名称的用户
+drop user ' '@'%';
+
+# 刷新权限
+flush  privileges;
+```
+
