@@ -648,7 +648,7 @@ int a = 127;
   	}
   private:
   	// 构造函数设为私有
-  	Person(const string&name, int age) :_name(name), _age(age) {}
+  	explicit Person(const string&name, int age) :_name(name), _age(age) {}
   private:
   	int _age;
   	string _name;
