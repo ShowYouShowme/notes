@@ -624,6 +624,53 @@ int a = 127;
   > 4. **使用STL的算法的时候，记得判断迭代器范围，非常容易越界**
   > 5. **STL算法仅操作STL的容器，不要操作C语言的数组之类的**
   > 6. 自定义类的对象用工厂方法创建，然后直接用智能指针包住；并且智能指针不提供获取裸指针api，智能指针可以判断是否为NULL；多线程安全
+  
++ 智能指针使用规范
+
+  ```cpp
+  class Person
+  {
+  public:
+  	static  shared_ptr<Person> Create(const string& name, int age){
+  		try
+  		{
+  			return shared_ptr<Person>(new Person(name, age)); //C++ new分配内存失败,默认会抛出异常
+  		}
+  		catch (const std::bad_alloc& e)
+  		{
+  			std::cerr << "allocate failed!" << endl;
+  			throw std::bad_alloc();
+  		}
+  	}
+  	void toString()
+  	{
+  		cout << "age : " << _age << " name : " << _name << endl;
+  	}
+  private:
+  	// 构造函数设为私有
+  	Person(const string&name, int age) :_name(name), _age(age) {}
+  private:
+  	int _age;
+  	string _name;
+  };
+  
+  
+  int main()
+  {
+  	// 允许对shared_ptr<Person> 的操作
+  	// 1：operator->
+  	// 2：拷贝构造
+  	// 禁止其它类型的操作
+  	shared_ptr<Person> ptr = Person::Create("wzc", 28);
+  	ptr->toString(); // operator 1
+  
+  	shared_ptr<Person> p2(ptr); // operator 2
+  	p2->toString();
+  	return 0;
+  }
+  ```
+
+  
 
 
 
