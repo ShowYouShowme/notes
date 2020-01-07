@@ -663,6 +663,52 @@ int a = 127;
   >2. 智能指针类型用explicit修饰，无法隐式类型转换，不能由nullptr之类的转换
   >3. 自定义类的静态函数Create里面用new产生对象，再判断返回指针是否为null，然后用智能指针包装
   >4. 智能指针无法获取其中的裸指针，无法operator =，无法reset，只能在构造的时候赋值一次；允许拷贝构造
++ 智能指针使用规范
+
+  ```cpp
+  class Person
+  {
+  public:
+  	static  shared_ptr<Person> Create(const string& name, int age){
+  		try
+  		{
+  			return shared_ptr<Person>(new Person(name, age)); //C++ new分配内存失败,默认会抛出异常
+  		}
+  		catch (const std::bad_alloc& e)
+  		{
+  			std::cerr << "allocate failed!" << endl;
+  			throw std::bad_alloc();
+  		}
+  	}
+  	void toString()
+  	{
+  		cout << "age : " << _age << " name : " << _name << endl;
+  	}
+  private:
+  	// 构造函数设为私有
+  	explicit Person(const string&name, int age) :_name(name), _age(age) {}
+  private:
+  	int _age;
+  	string _name;
+  };
+  
+  
+  int main()
+  {
+  	// 允许对shared_ptr<Person> 的操作
+  	// 1：operator->
+  	// 2：拷贝构造
+  	// 禁止其它类型的操作
+  	shared_ptr<Person> ptr = Person::Create("wzc", 28);
+  	ptr->toString(); // operator 1
+  
+  	shared_ptr<Person> p2(ptr); // operator 2
+  	p2->toString();
+  	return 0;
+  }
+  ```
+
+ 
 
 
 
