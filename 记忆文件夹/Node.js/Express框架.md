@@ -470,4 +470,181 @@ let server = app.listen(8081);
   app.use(express.basicAuth('username', 'password'));
   ```
 
-  
+
+
+
+
+
+### 例子
+
+***
+
++ 说明
+
+  > 浏览器发ajax请求web服务器获取数据，并将结果刷新到页面上
+
++ 代码
+
+  1. form.html
+
+     ```html
+     <!DOCTYPE html>
+     <html>
+     <body>
+     
+     <h2>The XMLHttpRequest Object</h2>
+     
+     
+     
+     <p id="demo"></p>
+     
+     <form>
+         设置时间:<br>
+         <input id = "_setTime" type="text" name="setTime">
+     <button type="button" onclick="set_time()">设置当前时间</button>  <a href="https://tool.lu/timestamp/">点这里复制时间戳</a>
+         <br><br><br>
+         当前时间:<br>
+         <input id = "_curTime" type="text" name="curTime">
+         <button type="button" onclick="query_time()">查询当前时间</button>
+         <br>
+     </form>
+     
+     <script>
+     
+         function update_time(timestamp) {
+             var _date = new Date(parseInt(timestamp) * 1000);
+     
+             var cur_date_str = _date.getFullYear() + "/" + (_date.getMonth() + 1) + "/" + _date.getDate() + " " + _date.getHours() + ":" + _date.getMinutes() + ":" + _date.getSeconds();
+             console.log("xxx" + _date.toString());
+             document.getElementById("_curTime")["value"] = cur_date_str;
+         }
+         function set_time() {
+             var xhttp = new XMLHttpRequest();
+             xhttp.onreadystatechange = function() {
+                 if (this.readyState == 4 && this.status == 200) {
+                     update_time(this.responseText)
+                 }
+             };
+             xhttp.open("POST", "/update_time", true);
+     
+             let curTime = document.getElementById("_setTime")["value"];
+     
+             let postData = "time=" + curTime;
+             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+             xhttp.send(postData);
+         }
+     
+     
+         function query_time() {
+             var xhttp = new XMLHttpRequest();
+             xhttp.onreadystatechange = function() {
+                 if (this.readyState == 4 && this.status == 200) {
+                     update_time(this.responseText)
+                 }
+             };
+             xhttp.open("GET", "/query_time", true);
+             xhttp.send();
+             console.log("12345");
+         }
+     
+         window.onload = function () {
+             console.log("开始执行查询!");
+             setInterval(()=>{
+                     query_time();
+                 },
+             1000)
+         }
+     </script>
+     
+     </body>
+     </html>
+     
+     ```
+
+  2. main.ts
+
+     ```javascript
+     import express = require("express");
+     import {AddressInfo} from "net";
+     import bodyParser = require("body-parser");
+     
+     
+     // redis 的部分
+     let Redis = require('ioredis');
+     let redis = new Redis(7111, '10.10.10.168');
+     setInterval(()=>{
+         redis.get('4:1100:1100',  (err : any, result : any)=> {
+                 if (err) throw  err;
+                 let timestamp : number = -1;
+                 if (result == null){
+                     timestamp = Math.floor(Date.now() / 1000);
+                     redis.set('4:1100:1100', timestamp.toString());
+                 }
+                 else{
+                     timestamp = parseInt(result);
+                     timestamp += 1;
+                     redis.set('4:1100:1100', timestamp.toString());
+                 }
+                 // 打印当前的时间
+     
+                 let now : Date = new Date(timestamp * 1000);
+                 console.log(now.toString());
+             }
+         )
+     }, 1000);
+     
+     
+     
+     
+     
+     
+     let app = express();
+     app.use(bodyParser.urlencoded({extended : false}));
+     app.get("/", (req, res):void=>{
+         res.sendFile(__dirname + "/" + "form.html");
+     });
+     
+     app.post("/update_time", (req, res):void=>{
+         let timestamp : number = parseInt(req.body["time"]);
+         if (timestamp < 1263009541 || timestamp > 3787617541 || req.body["time"] == "") {
+             res.end("时间参数错误!");
+             return;
+         }
+         redis.set('4:1100:1100', timestamp.toString()).then(
+             redis.get('4:1100:1100',  (err : any, result : any)=> {
+                 if (err) {
+                     res.end("数据库错误!");
+                     return;
+                 }
+                 res.end(result);
+             })
+         );
+     });
+     
+     app.get("/query_time", (req, res):void=>{
+         redis.get('4:1100:1100',  (err : any, result : any)=> {
+             if (err) {
+                 res.end("数据库错误!");
+                 return;
+             }
+             res.end(result);
+         })
+     });
+     
+     let port : number = 8081;
+     let host : string = "0.0.0.0";
+     let server = app.listen(port, host, ():void=>{
+         let addrInfo : AddressInfo =  server.address() as AddressInfo;
+         let h = addrInfo.address;
+         let p = addrInfo.port;
+         console.log("success", h, p );
+     });
+     
+     
+     
+     ```
+
+     
+
+
+
