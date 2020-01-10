@@ -614,3 +614,57 @@ yum安装时会显示安装的Repository
 > > 2. copy至win，再copy至CentOS
 > > 3. tar解压，此时文件权限和属性信息则不会丢失
 
+
+
+
+
+# firewall
+
+1. 查看全部放行的端口
+
+   ```shell
+   firewall-cmd --list-all
+   ```
+
+2. 放行指定的端口，tcp协议
+
+   ```shell
+   firewall-cmd --permanent --add-port=${port}/tcp
+   
+   firewall-cmd --permanent --add-port=3000/tcp
+   
+   firewall-cmd --reload
+   ```
+
+3. 关闭防火墙
+
+   ```shell
+   systemctl stop firewalld.service # 停止防火墙
+   systemctl disable firewalld.service  # 禁止防火墙开机启动
+   ```
+  
+4. 查看防火墙状态
+
+   ```shell
+   firewall-cmd --state
+   ```
+
+
+
+
+# rar解压命令
+
+```shell
+# 下载源码
+wget http://www.rarsoft.com/rar/rarlinux-x64-5.4.0.tar.gz
+
+tar -zxvf rarlinux-x64-5.4.0.tar.gz
+
+cd rar
+
+make
+
+# 解压文件
+rar x deploy.rar
+```
+

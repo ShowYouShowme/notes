@@ -75,6 +75,12 @@
    /etc/init.d/mysql restart
    ```
 
+2. 登录
+
+   ```shell
+   /usr/local/mysql-5.6.26/bin/mysql -uroot -p
+   ```
+
    
 
 
@@ -87,6 +93,8 @@ use mysql;
 select host,user,password from user;
 
 drop user 'zhangsan'@'%';
+
+drop user '${user}'@'${host}';
 
 # 没有名称的用户
 drop user ' '@'%';
