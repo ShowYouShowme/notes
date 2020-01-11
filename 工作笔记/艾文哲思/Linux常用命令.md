@@ -648,6 +648,21 @@ yum安装时会显示安装的Repository
    ```shell
    firewall-cmd --state
    ```
+   
+5. 开启防火墙
+
+   ```shell
+   systemctl start firewalld
+   ```
+
+6. 查看防火墙的状态
+
+   ```shell
+   # dead 是未开启
+   systemctl status firewalld
+   ```
+
+   
 
 
 
@@ -666,5 +681,73 @@ make
 
 # 解压文件
 rar x deploy.rar
+```
+
+
+
+
+
+# expect
+
++ 作用：实现自动的交互，无需人为干预。很多命令，比如ssh的登录命令是交互式的，输入命令，等待程序响应，再输入指令等。
+
++ 常用命令
+
+  1. send
+
+     > 向进程发送字符串
+     
+  2. expect
+  
+     > 等待反馈
+  
+  3. spawn
+  
+     > 启动新进程
+  
+  4. interact
+  
+     > 退出自动化，进入人工交互
+
++ 实例
+
+  ```shell
+  ##### 代码  文件名:login_hk.exp
+  set timeout 30
+  set host "47.56.112.9"
+  set username "root"
+  set password "X0xZ2xReP\$qvE%bonY2hVEoU"
+  
+  spawn ssh $username@$host
+  # 判断上次输出结果里是否包含“password”的字符串，如果有则立即返回；否则就等待一段时间后返回，这里
+  # 等待时长就是前面设置的30秒；
+  expect "*password*" {send "$password\r"}
+  interact
+  
+  ```
+
+  运行
+
+  ```shell
+  expect ./login_hk.exp
+  ```
+
+  
+
++ 安装
+
+  ```shell
+  yum  install expect
+  ```
+
+  
+
+
+
+
+# ssh 使用代理
+
+```shell
+# xshell 里面的'连接'有个代理的选项;可以设置http tunnel 或者 socket5 代理
 ```
 

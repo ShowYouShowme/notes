@@ -630,6 +630,7 @@ int a = 127;
 
   1. 空指针的解引用，比如*ptr 或 ptr->a
   2. 野指针的解引用，比如*ptr或 ptr->a
+  3. 运算符operator[]
 
 + 指针来源：如果没有指针，就没有此类问题，从根源上避免
 
@@ -768,10 +769,10 @@ int a = 127;
 1. 尽量不使用auto，影响代码可读性，尤其是在git上阅读的时候
 2. 禁止使用C语言的类型转换，用C++的替换
 
-   + static_cast：对应C语言的隐式类型转换，一般用这个就够了
-   + reinterpret_cast：**不建议使用**
-   + const_cast：删除变量的const属性，**不建议使用**
-   + dynamic_cast：父类指针转换为子类指针
+   + **static_cast**：对应C语言的隐式类型转换，一般用这个就够了
+   + **reinterpret_cast**：**不建议使用**
+   + **const_cast**：删除变量的const属性，**不建议使用**
+   + **dynamic_cast**：父类指针转换为子类指针
 3. 拒绝自定义类的隐式类型转换，用成员函数
    + toString()
    + toInt()
@@ -1032,6 +1033,59 @@ int main()
 
    ```shell
    g++ -g Person.cpp -fpic -shared -o libPerson.so
+   ```
+
+
+
+
+
+
+# 打印指针的值
+
+1. 函数原型
+
+   ```cpp
+   ostream& operator<< (void* val);
+   ```
+
+2. 示例代码
+
+   ```cpp
+   int main()
+   {
+   	int a = 165;
+   	int* p = &a;
+   	void* p2 = static_cast<void*>(p);
+   	cout << "p2 : " << p2 << endl;
+   	return 0;
+   }
+   ```
+
+
+
+
+# 异常
+
+1. 重新抛出异常
+
+   ```cpp
+   tars::Int64 RouterServer::PopUidFromClientIDMap(int64_t _id)
+   {
+   	try
+   	{
+   		TC_LockT<TC_ThreadMutex> lock(m_ThreadMutex);
+   
+   		tars::Int64 connid = m_clientIDMap.at(_id);
+   		m_clientIDMap.erase(_id);
+   
+   		return connid;
+   	}
+   	catch (const std::out_of_range& e)
+   	{
+   		ROLLLOG_ERROR << " _id : " << _id << endl;
+   		throw;// 重新抛出异常 throw 后面不需要跟表达式
+   	}
+   }
    ```
 
    

@@ -185,3 +185,13 @@ key：215499
 svn://[sdk.dzsvn.mb1768.cn](http://sdk.dzsvn.mb1768.cn)
 user：zhanglb
 passed：rCv359qu
+
+
+
+
+
+# 香港机器47.56.112.9
+
+账号：root
+
+密码：X0xZ2xReP$qvE%bonY2hVEoU
