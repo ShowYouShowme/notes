@@ -103,3 +103,44 @@ drop user ' '@'%';
 flush  privileges;
 ```
 
+
+
+# 数据库连接数太多
+
+
+
+
+
+
+
+# 锁
+
+1. **写锁[排他锁]**
+
+   ```sql
+   lock tables test write;
+   ```
+
+   其它会话读/写表`test`会阻塞，也无法获取表`test`的read或write锁。持有锁的会话可以读/写表！
+
+2. **读锁[共享锁]**
+
+   ```sql
+   lock tables test read;
+   ```
+
+   该会话和其它会话只能读，不能往表里写入数据。其它会话可以获取read锁！
+
+
+
+# 配置账户权限
+
+```shell
+mysql > GRANT ALL PRIVILEGES ON *.* TO '${账号}'@'%' IDENTIFIED BY '${访问密码}' WITH GRANT OPTION;
+mysql > flush privileges;
+
+
+## 限定账号tars只能在10.10.10.23上面登录
+grant all on *.* to 'tars'@'10.10.10.23' identified by 'tars2015';
+```
+

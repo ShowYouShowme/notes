@@ -1088,7 +1088,70 @@ int main()
    }
    ```
 
+
+
+
+# 类型转换
+
+1. static_cast
+
+   + 两种枚举之间的转换
+
+     ```cpp
+     orderProto::Eum_Channel_Type type = static_cast<orderProto::Eum_Channel_Type>(orderVerifyResp.type);
+     ```
+
+2. reinterpret_cast
+
+3. const_cast：去除变量的const属性
+
+4. dynamic_cast：父类指针转换为子类指针
+
+
+
+
+
+# 过度复杂的map类型
+
+```cpp
+//region-->platformName--> menuName(label)-->	QRCode -->mall::GoodsDetail
+map<int, map<int, map<int, map<int, mall::GoodsDetail>>>> mapData;
+
+// 上面的数据类型虽然查找速度快,但是嵌套层数太多,复杂度高;现在用原始数组表示,提高代码可读性
+// 查找直接遍历即可,配置文件一般数量不会很大
+struct CuctomeType
+{
+  int region;
+  int platformName;
+  int menuName;
+  int QRCode;
+  int consumeGoodsID;
+  int consumeGoodsCount;
+  int exchangeGoodsCount;
+  int exchangeGoodsID;
+  string product_id;
+  string icon;
+};
+vector<CuctomeType> mapData;
+```
+
+
+
+# debug 和release版本的代码的设定
+
+1. 使用条件编译
+
+   > 切换debug和release版本需要重新编译
+
+2. 使用配置文件
+
+   > 每个服务都有自己的配置文件，非常混乱
+
+3. 从数据库的一个表里读取字段，每个服务都有一条记录
+
+   ```shell
+   # 数据库的字段示例
+   serverName   debug   ...
+   ```
+
    
-
-
-

@@ -751,3 +751,13 @@ rar x deploy.rar
 # xshell 里面的'连接'有个代理的选项;可以设置http tunnel 或者 socket5 代理
 ```
 
+
+
+
+
+# 查看文件夹大小
+
+```shell
+du -sh ./protobuf/
+```
+
