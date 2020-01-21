@@ -161,8 +161,11 @@ scp [命令参数] [源路径] [目的路径]
 
 2. 将远程文件复制到本地
 
-   ```
+   ```shell
    scp remote@www.abc.com:/usr/local/sin.sh /home/administrator
+   
+   # 例子
+   scp root@10.10.10.168:/usr/local/tars/cpp/makefile/makefile.tars ./
    ```
 
 

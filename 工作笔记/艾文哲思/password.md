@@ -250,3 +250,12 @@ USER:root
 PASSWD:234qd7QH6#@rsd
 ```
 
+
+
+# 预发布环境
+
+```shell
+IP:47.75.37.140
+密码：AScv&#8Z==7#QH63
+```
+
