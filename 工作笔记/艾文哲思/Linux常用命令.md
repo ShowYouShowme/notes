@@ -384,6 +384,9 @@ yum install tree -y
 ```shell
 # 可以一次性选择多个文件的 ==此方式可以替代SFTP客户端上传
 rz -be ${fileName}
+
+# -y 选项可以替换-be
+rz -y ${fileName}
 ```
 
 
@@ -636,26 +639,32 @@ yum安装时会显示安装的Repository
    firewall-cmd --reload
    ```
 
-3. 关闭防火墙
+3. 删除端口
+
+   ```shell
+   firewall-cmd  --permanent --remove-port=80/tcp 
+   ```
+
+4. 关闭防火墙
 
    ```shell
    systemctl stop firewalld.service # 停止防火墙
    systemctl disable firewalld.service  # 禁止防火墙开机启动
    ```
-  
-4. 查看防火墙状态
+
+5. 查看防火墙状态
 
    ```shell
    firewall-cmd --state
    ```
-   
-5. 开启防火墙
+
+6. 开启防火墙
 
    ```shell
    systemctl start firewalld
    ```
 
-6. 查看防火墙的状态
+7. 查看防火墙的状态
 
    ```shell
    # dead 是未开启
@@ -667,7 +676,7 @@ yum安装时会显示安装的Repository
 
 
 
-# rar解压命令
+# rar解压命令[建议用zip替代]
 
 ```shell
 # 下载源码
@@ -684,6 +693,19 @@ rar x deploy.rar
 ```
 
 
+
+# zip解压
+
+```shell
+# 安装zip
+yum -y install zip unzip
+
+# 解压
+unzip we.zip
+
+# 压缩
+zip -r we.zip we
+```
 
 
 
@@ -712,7 +734,7 @@ rar x deploy.rar
 + 实例
 
   ```shell
-  ##### 代码  文件名:login_hk.exp
+  #!/usr/bin/expect
   set timeout 30
   set host "47.56.112.9"
   set username "root"
@@ -761,3 +783,10 @@ rar x deploy.rar
 du -sh ./protobuf/
 ```
 
+
+
+
+
+# rsync
+
+> 文件同步工具

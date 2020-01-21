@@ -195,3 +195,58 @@ passed：rCv359qu
 账号：root
 
 密码：X0xZ2xReP$qvE%bonY2hVEoU
+
+
+
+
+
+# 香港服务器上传文件
+
+1. 网页地址
+
+   ```shell
+   http://47.56.112.9:8071/
+   ```
+
+2. 文件保存路径
+
+   ```shell
+   /home/upload_dir/
+   ```
+
+
+
+
+
+
+# 生成服务器的密码
+
+1. 框架[生产]
+
+   ```shell
+   公网IP: 47.244.89.242
+   内网IP：172.31.31.179
+   USER: root
+   PASSWD:AScv&#8Z==7#QH63
+   ```
+
+2. 业务A
+
+3. 业务B
+
+4. 数据库
+
+   + 框架数据库
+   + 业务数据库MySQL
+   + 业务数据库Redis
+
+
+
+# 深圳跳板机器
+
+```shell
+HOST:39.108.152.56
+USER:root
+PASSWD:234qd7QH6#@rsd
+```
+

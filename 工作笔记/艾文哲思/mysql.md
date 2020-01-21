@@ -81,6 +81,18 @@
    /usr/local/mysql-5.6.26/bin/mysql -uroot -p
    ```
 
+3. 停止服务
+
+   ```shell
+   service mysql stop
+   ```
+
+4. 启动服务
+
+   ```shell
+   service mysql start
+   ```
+
    
 
 
@@ -90,7 +102,9 @@
 ```shell
 use mysql;
 # 查看用户的权限
-select host,user,password from user;
+select host,user,password from user; # 5.6版本
+
+select user,authentication_string,host from user; # 5.7版本
 
 drop user 'zhangsan'@'%';
 
@@ -142,5 +156,47 @@ mysql > flush privileges;
 
 ## 限定账号tars只能在10.10.10.23上面登录
 grant all on *.* to 'tars'@'10.10.10.23' identified by 'tars2015';
+
+# 授予局域网172.31.31 里面的任何机器
+grant all on db_tars.* to 'tars'@'172.31.31.%' identified by 'tars2015';
+
+
+grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密码}";
 ```
 
+
+
+# 连接数
+
+1. 查看配置的最大连接数
+
+   ```mysql
+   show variables like '%max_connections%';
+   ```
+
+2. 配置最大连接数
+
+   ```shell
+   # 在配置文件my.cnf里增加
+   max_connections=2048
+   # 重启mysql
+   service mysql restart
+   ```
+
+3. 显示正在执行的MySQL连接
+
+   ```shell
+   show  processlist;
+   ```
+
+4. 查看MySQL服务器状态
+
+   ```shell
+   show status;
+   
+   # Threads_connected  当前的连接数
+   # Connections  试图连接到(不管是否成功)MySQL服务器的连接数。
+   # Max_used_connections  服务器启动后已经同时使用的连接的最大数量。
+   ```
+
+   
