@@ -106,6 +106,10 @@
    g++ test.cpp -lhello -L. -static -o test
    ### 方法2：
    g++ test.cpp libhello.a -L. -o test_1
+   
+   
+   # 注意:g++ 4.8.5 CentOS7中,可以直接使用-l${libName} -L${libPath} 来链接
+   # 如果存在so,则链接so,否则链接.a;即此指令可以链接动态库和静态库
    ```
 
 

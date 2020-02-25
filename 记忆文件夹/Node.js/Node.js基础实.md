@@ -11,6 +11,8 @@
 2. 创建项目配置文件
 
    ```shell
+   # 安装 npm install -g typescript
+   
    tsc --init
    ```
 
