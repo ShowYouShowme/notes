@@ -114,6 +114,11 @@
 
 
 
+# 注意
+
+1. -l${soName}动态库链接的是lib${soName}.so,不是lib${soName}.so.1之类的
+2. -l${aName}静态库链接的是lib${soName}.a,不是lib${soName}.a.1之类的
+
 # GCC动态库编译和调用
 
 ```shell

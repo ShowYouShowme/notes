@@ -451,14 +451,127 @@
 11. 看懂框架初始化mysql的部分和mysql的配置文件
 12. debug相关的条件统一配置到数据库的一个表中；比如debug或者release；是否使用dataproxy
 13. 登录，任务和订单有debug和release版本，全部统一到数据库里面去
-14. 香港的服务器增加端口上传文件
 15. 香港的服务器配置http代理客户端的ssh[有无tunnel加密]，看看能不能增加速度
+15. 重新整理tars的部署，cmake，mysql，开发环境，服务等全部弄成copy直接可用的
+16. 排行榜增加删除的接口
+17. 整理新的部署方式[完全免编译的方式]，利用生成机器来整理
+18. 多花些时间加入tars社区，熟悉代码，为社区做贡献
+19. mysql无法启动，查看其日志文件
+20. 看懂框架预先提供的几个服务的源码
+21. 购买几个阿里云的服务器，分布式部署服务，整理部署脚本(全部服务在一台机器，分开不同机器之类的)
+22. **redis和mysql使用默认端口，反正没有暴露给公网，否则部署会非常麻烦**
+23. 重新免编译部署一遍框架开发环境和运行环境
+24. 把debug和release之类的配置写入到数据库里面
+25. 学习使用docker来部署服务器
+26. 学习Jenkins和docker，现在要部署的服务器太多，整个人已经濒临崩溃😫
+27. 服务器编译cpp速度变慢，MySQL有的时候响应延迟，查看是什么原因
 
 
+
+
+
+
+
+# 今日任务
+
+1. 周报
+3. 整理redis(头文件和可执行文件的目录)，整理项目用到的全部第三方依赖到modules里面
+3. 制作docker镜像[开发环境，nginx，禅道等等]
+4. 计数器组件嵌入
+5. so的代码规范查看，是否使用了虚函数
+6. 服务器被入侵，写个脚本监测登录的用户
+7. 分离redis的开发依赖和服务
+8. protobuf里面居然有hiredis的动态库!
+9. -lwbl 也可以链接静态库吗？？
+10. 跳过aiserver和dz
+11. 录制阿里云的操作视频
+12. 查看commom的编译过程
+
+
+
+# 依赖整理
+
+1. mysql客户端放到cpp_module里面
+2. protobuf放到cpp_module里面
 
 
 
 # 今日完成的任务
 
-5. 商城里推送商品的ICON给客户端
-6. 部署香港的服务器，ios和google审核使用
+1. 删除多余的tars_stat表，腾出服务器磁盘空间
+2. 
+
+
+
+
+
+# 临时问题记录
+
+1. web管理后台要修改
+
+   > + config/webConf.js
+   >
+   >   ```shell
+   >   修改数据库的IP和port
+   >   ```
+   >
+   > + config/tars.conf
+   >
+   >   ```shell
+   >   修改tarsregistry的地址
+   >   ```
+   
+2. 新的自动部署脚本
+
+   ```shell
+   # 数据库db_tars_web 好像要增加对应的表
+   ```
+
+3. 自动化部署服务是RouterServer始终少一个adapter
+
+   > 缺少RouterServantObj
+   
+4. 用python模拟ssh的操作，自动化部署
+
+   > 整理自动化部署用到了哪些操作，然后用python去模拟即可
+
+5. KOGameA.RoomServer 的SO没有
+
+6. 替换开发库的makefile
+
+   ```shell
+   /usr/local/tars/cpp/makefile/makefile.tars
+   ```
+
+7. python自动将本地某个文件夹的文件上传到远程服务器(sftp协议)
+
+
+
+
+
+# 部署业务服务A
+
+1. 把安装第三方包的部分提取出来
+
+2. db_tars.t_server_notifys  不存在
+
+   ```mysql
+   mysql -uroot -p0xZ2xReP\$qvE%bonY2h db_tars < t_server_notifys.sql
+   ```
+
+3. 记得修改框架服务连接的数据库的IP和端口
+
+   ```shell
+   [tarsconfig,tarsnode,tarspatch,tarsAdminRegistry,tarsregistry]
+   ```
+
+4. 生产服务器MySQL用自定义的端口和IP
+
+5. 整理项目中用到的第三方包，全部集成到cpp_modules里面，方便部署
+
+6. 之前的redis和hiredis合并到了一起，新的项目重新整理，需要修改部分的makefile文件
+
+
+
+
+
