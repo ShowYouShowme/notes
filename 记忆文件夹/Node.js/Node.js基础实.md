@@ -42,6 +42,11 @@
    > 2. vscode
    >
    > 添加debug配置，然后设置启动的js文件，最后断点启动项目即可
+### 代码跳转
+
+***
+
+> 部分符号，比如函数跳转不正常，先执行断点下来，再跳转即可！
 
 
 
@@ -333,7 +338,9 @@ Node.js的交互式解释器
 >
 >    ```javascript
 >    import fs = require("fs");
->    let data : Buffer = fs.readFileSync("input.txt");
+> let fd : number = fs.openSync("configureNet.bat", "r");
+> let data : Buffer = Buffer.alloc(1024);
+> fs.readSync(fd, data, 0,1024,0);
 >    console.log(data.toString());
 >    console.log("程序执行完毕!");
 >    ```
