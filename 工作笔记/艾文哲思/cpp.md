@@ -770,8 +770,20 @@ int a = 127;
 2. 禁止使用C语言的类型转换，用C++的替换
 
    + **static_cast**：对应C语言的隐式类型转换，一般用这个就够了
-   + **reinterpret_cast**：**不建议使用**
+   
+     ```shell
+     # 普通指针转换为void* 用static_cast,比如 char* 转换为void*
+     ```
+   
+   + **reinterpret_cast****不建议使用**
+   
+     ```shell
+     #1: 不同类型指针转换(非void*),比如 char* 转换为 int*
+     #2: void* 转换为其它类型指针, 比如void* 转换为char*
+     ```
+   
    + **const_cast**：删除变量的const属性，**不建议使用**
+   
    + **dynamic_cast**：父类指针转换为子类指针
 3. 拒绝自定义类的隐式类型转换，用成员函数
    + toString()
