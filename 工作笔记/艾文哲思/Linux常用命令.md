@@ -38,7 +38,16 @@
    > [root@xiesshavip002 ~]# netstat -antp | grep 22
    > ```
    
-6. 部分参数介绍
+6. 查看指定ip的TCP连接
+
+   > ```shell
+   > # 可以查看到TCP连接的状态,TIME_WAIT  FIN_WAIT2 等等
+   > netstat -at | grep "${ip}"
+   > 
+   > netstat -at | grep "10.10.10.23"
+   > ```
+
+7. 部分参数介绍
 
    > + -n： Local Address这列的host和port均用数字表示
    >
