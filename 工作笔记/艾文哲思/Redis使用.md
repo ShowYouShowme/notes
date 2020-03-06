@@ -17,3 +17,11 @@ CONFIG SET requirepass ${passwd}
 CONFIG SET requirepass tars2015
 ```
 
+
+
+# 配置文件
+
+1. 关闭保护模式
+
+   > + protected-mode yes改为protected-mode no
+   > + 注释bind 127.0.0.1
