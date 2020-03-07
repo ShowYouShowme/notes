@@ -86,4 +86,43 @@
    docker run -t -i -p 4444:80 -v ${PWD}/nginx:/usr/local/nginx nginx:v1 /bin/bash
    ```
 
+
+
+
+## 2 sinatra镜像
+
+### 2.1 源码编译
+
+***
+
+1. dockerfile
+
+   ```dockerfile
+   FROM centos:7
+   ENV REFRESHED_AT 2020-03-05
+   WORKDIR /home
+   COPY ruby-2.5.7.tar.gz /home
+   RUN yum install -y gcc gcc-c++ make openssl-devel zlib-devel readline-devel gdbm-devel
+   RUN tar -zxvf ./ruby-2.5.7.tar.gz
+   WORKDIR ./ruby-2.5.7
+   RUN ./configure --prefix=/usr/local/ruby
+   RUN make
+   RUN make install
+   ENV PATH=$PATH:/usr/local/ruby/bin
+   RUN gem source -r https://rubygems.org/
+   RUN gem sources --add https://gems.ruby-china.com/
+   RUN gem sources -u
+   RUN gem install --no-rdoc --no-ri sinatra json redis
+   RUN mkdir -p /opt/webapp
+   EXPOSE 4567
+   RUN ln -s /usr/local/ruby/bin/ruby /usr/bin/ruby
+   RUN ls /usr/bin/ruby
+   ```
+
+2. 启动命令
+
+   ```shell
+   docker run -t -i -p 4567:4567 --privileged -v /home/yourDoom/sinatra/webapp:/opt/webapp sinatra:v5 /opt/webapp/bin/webapp
+   ```
+
    
