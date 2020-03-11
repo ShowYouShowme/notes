@@ -125,4 +125,23 @@
    docker run -t -i -p 4567:4567 --privileged -v /home/yourDoom/sinatra/webapp:/opt/webapp sinatra:v5 /opt/webapp/bin/webapp
    ```
 
-   
+
+
+
+# docker 配置
+
+## 1 配置文件路径
+
+```shell
+vim /etc/docker/daemon.json
+```
+
+## 2 配置内容
+
+```json
+{
+"registry-mirrors": ["http://hub-mirror.c.163.com"],
+"dns" : [ "223.5.5.5","223.6.6.6" ]
+}
+```
+
