@@ -213,3 +213,41 @@ mysql -h ${IP} -P ${PORT} -u ${ACCOUNT} -p
 mysql -h 127.0.0.1 -P 4406 -u tars -p
 ```
 
+
+
+
+
+# 日志
+
+## 1 日志类型
+
+> 1. 重做日志(redo log)
+> 2. 回滚日志(undo log)
+> 3. 二进制日志(binlog)
+> 4. 错误日志(errorlog)
+> 5. 慢查询日志(slow query log)
+> 6. 一般查询日志(general log)
+> 7. 中继日志(relay log)
+
+
+
+## 2 查看日志路径
+
+> 1. general_log_file
+>
+>    ```shell
+>    mysql> show variables like 'general_log_file';
+>    ```
+>
+> 2. log_error
+>
+>    ```shell
+>    mysql> show variables like 'log_error';
+>    ```
+>
+> 3. slow_query_log_file
+>
+>    ```shell
+>    mysql> show variables like 'slow_query_log_file';
+>    ```
+

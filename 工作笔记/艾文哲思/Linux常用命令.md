@@ -386,6 +386,13 @@ yum install tree -y
    grep "10.10.10.168" "XGame.*/bin/*
    ```
 
+5. 反选
+
+   ```shell
+   # 显示不匹配"aaa"的内容
+   grep -v "aaa" mount_wzc.sh
+   ```
+
    
 
 
@@ -931,4 +938,17 @@ du -sh ./protobuf/
      ps -ef | grep python3 | awk '{print "kill -9 " $2}' |sh
      ```
 
+  2. 查找进程pid
+  
+     ```shell
+     # 查找进程rsync的PID
+     bin="rsync"
+     PID=`ps -eopid,cmd | grep "$bin" |  grep -v "grep" |awk '{print $1}'`
+     # 进程存在则杀死
+     if [ "$PID" != "" ]; then
+             kill -9 $PID
+             echo "kill -9 $PID"
+     fi
+     ```
+  
      
