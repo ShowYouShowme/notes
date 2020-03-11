@@ -25,3 +25,18 @@ CONFIG SET requirepass tars2015
 
    > + protected-mode yes改为protected-mode no
    > + 注释bind 127.0.0.1
+   
+2. 指定配置文件启动redis
+
+
+
+# 连接服务器
+
+```shell
+redis-cli -h ${IP} -p ${PORT} -a ${PASSWD}
+
+redis-cli -h 127.0.0.1 -p 6666 -a 123456
+```
+
+
+

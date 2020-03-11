@@ -115,6 +115,9 @@ drop user ' '@'%';
 
 # 刷新权限
 flush  privileges;
+
+# 赋予权限
+grant all on *.* to 'tars'@'%' identified by 'tars2015' with grant option;
 ```
 
 
@@ -199,4 +202,14 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
    # Max_used_connections  服务器启动后已经同时使用的连接的最大数量。
    ```
 
-   
+
+
+
+# 登录
+
+```shell
+# 登录命令
+mysql -h ${IP} -P ${PORT} -u ${ACCOUNT} -p
+mysql -h 127.0.0.1 -P 4406 -u tars -p
+```
+
