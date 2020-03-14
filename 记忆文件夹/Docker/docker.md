@@ -145,3 +145,27 @@ vim /etc/docker/daemon.json
 }
 ```
 
+
+
+# docker与screen
+
+> 要保持docker容器处于活跃状态，运行的进程不能中断
+>
+> 1. 让服务前台运行
+> 2. 在screen里面启动docker
+> 3. 带参数-ti启动，执行完命令后再xshell里把窗口关闭
+
+
+
+
+
+# 常见操作
+
+## 1 查看日志
+
+```shell
+docker logs -f ${容器名}
+
+docker logs -f ${容器ID}
+```
+
