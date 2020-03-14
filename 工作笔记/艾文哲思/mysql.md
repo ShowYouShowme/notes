@@ -204,14 +204,29 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 
 
 
-
 # 登录
 
-```shell
-# 登录命令
-mysql -h ${IP} -P ${PORT} -u ${ACCOUNT} -p
-mysql -h 127.0.0.1 -P 4406 -u tars -p
-```
+1. 登录命令
+
+   ```shell
+   # 登录命令
+   mysql -h ${IP} -P ${PORT} -u ${ACCOUNT} -p
+   mysql -h 127.0.0.1 -P 4406 -u tars -p
+   ```
+
+2. localhost和127.0.0.1的区别
+
+   ```shell
+   # 采用TCP的方式连接
+   mysql -h 127.0.0.1 -P 4406 -u tars -p
+   
+   # 采用unix domain socket连接
+   mysql -h localhost -P 4406 -u tars -p
+   
+   # 查看账号权限时,同时存在localhost和127.0.0.1,次二者不一样
+   ```
+
+   
 
 
 
@@ -222,12 +237,36 @@ mysql -h 127.0.0.1 -P 4406 -u tars -p
 ## 1 日志类型
 
 > 1. 重做日志(redo log)
+>
+>    ```
+>    InnoDB的事务日志
+>    ```
+>
 > 2. 回滚日志(undo log)
+>
+>    ```
+>    InnoDB的事务日志
+>    ```
+>
 > 3. 二进制日志(binlog)
+>
+>    ```
+>    记录DDL(数据定义语言)和DML(数据操作语言)语句并包含语句执行时间
+>    ```
+>
 > 4. 错误日志(errorlog)
+>
 > 5. 慢查询日志(slow query log)
+>
 > 6. 一般查询日志(general log)
+>
 > 7. 中继日志(relay log)
+>
+>    ```
+>    MySQL通过binlog和relay log进行主从数据同步，binlog由主库产生，从库通过复制io线程拉取binlog，写入到relay log中，sql线程读取relay log中的事务信息，并进行应用！
+>    ```
+>
+>    
 
 
 
@@ -235,19 +274,25 @@ mysql -h 127.0.0.1 -P 4406 -u tars -p
 
 > 1. general_log_file
 >
->    ```shell
->    mysql> show variables like 'general_log_file';
->    ```
+> ```shell
+> mysql> show variables like 'general_log_file';
+> 
+> # /usr/local/mysql/data/localhost.log
+> ```
 >
 > 2. log_error
 >
->    ```shell
->    mysql> show variables like 'log_error';
->    ```
+> ```shell
+> mysql> show variables like 'log_error';
+> 
+> # /usr/local/mysql/data/localhost.localdomain.err
+> ```
 >
 > 3. slow_query_log_file
 >
->    ```shell
->    mysql> show variables like 'slow_query_log_file';
->    ```
+> ```shell
+> mysql> show variables like 'slow_query_log_file';
+> 
+> # /usr/local/mysql/data/localhost-slow.log
+> ```
 

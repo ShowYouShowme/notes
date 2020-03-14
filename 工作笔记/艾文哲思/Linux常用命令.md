@@ -303,7 +303,11 @@ yum install tree -y
 4. 创建Screen会话
 
    ```shell
+   # 方式一
    screen
+   
+   # 方式二 用指定名称创建会话
+   screen -S ${sessionName}
    ```
 
 5. 关闭screen会话
@@ -319,9 +323,18 @@ yum install tree -y
      ```shell
      exit
      ```
+    
+   + 不进入screen关闭
 
+     ```shell
+     screen -X -S ${SessionID} quit
+     screen -X -S 11584 quit
+     ```
    
-
+     
+   
+   
+   
    
    
 
@@ -391,6 +404,14 @@ yum install tree -y
    ```shell
    # 显示不匹配"aaa"的内容
    grep -v "aaa" mount_wzc.sh
+   ```
+
+6. 当前目录下的全部文件和文件夹里查找内容
+
+   ```shell
+   grep ${CONTENT} -r ./*
+   
+   grep 192.168.2.131 -r ./*
    ```
 
    
