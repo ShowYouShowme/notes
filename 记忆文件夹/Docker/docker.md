@@ -143,6 +143,8 @@ vim /etc/docker/daemon.json
 "registry-mirrors": ["http://hub-mirror.c.163.com"],
 "dns" : [ "223.5.5.5","223.6.6.6" ]
 }
+
+# 更改配置后必须重启服务 systemctl restart docker
 ```
 
 

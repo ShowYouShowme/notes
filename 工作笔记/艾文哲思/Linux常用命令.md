@@ -323,7 +323,7 @@ yum install tree -y
      ```shell
      exit
      ```
-    
+   
    + 不进入screen关闭
 
      ```shell
@@ -886,6 +886,8 @@ du -sh ./protobuf/
 # rsync
 
 > 文件同步工具
+
+
 # iptable
 
 1. 只允许指定ip的数据进来
@@ -972,4 +974,20 @@ du -sh ./protobuf/
      fi
      ```
   
-     
+
+
+
+# yum
+
+1. 查找软件包是否存在
+
+   ```shell
+   yum list | grep redis
+   ```
+
+2. 安装epel仓库
+
+   ```shell
+   # 安装EPEL(额外的软件包)
+   yum install epel-release
+   ```
