@@ -127,6 +127,26 @@
 
 
 
+## 3 apache
+
+1. dockerfile
+
+   ```dockerfile
+   FROM centos:7
+   
+   RUN yum install -y httpd
+   
+   CMD ["/usr/sbin/httpd", "-DFOREGROUND"] # 从httpd.service里面拿出来的
+   ```
+
+2. 启动命令
+
+   ```shell
+   docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
+   ```
+
+   
+
 
 # docker 配置
 
