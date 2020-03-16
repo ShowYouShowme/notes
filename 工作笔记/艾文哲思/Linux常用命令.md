@@ -886,8 +886,6 @@ du -sh ./protobuf/
 # rsync
 
 > 文件同步工具
-
-
 # iptable
 
 1. 只允许指定ip的数据进来
@@ -940,6 +938,7 @@ du -sh ./protobuf/
 1. 禁止root登录，只能用别的用户登录，再切换到root
 2. 只有业务端口暴露，其它端口(mysql，redis)用堡垒机映射到内网，并且用iptables限制这些端口只能被堡垒机访问
 3. 如果服务器部署在国外，可以映射到国内(用堡垒机)，然后客户端访问，避免被掐断
+4. 用vpn，这是最简单的方法
 
 
 
@@ -974,7 +973,38 @@ du -sh ./protobuf/
      fi
      ```
   
+     
 
+
+
+
+
+# systemctl 配置
+
+```shell
+[Unit]
+Description=The Apache HTTP Server  # 描述
+After=network.target remote-fs.target nss-lookup.target #在network.target,remote-fs.target和nss-lookup.target后启动
+Documentation=man:httpd(8)
+Documentation=man:apachectl(8)
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/sysconfig/httpd
+ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND # 启动服务的命令, $OPTIONS 在EnvironmentFile文件里面
+ExecReload=/usr/sbin/httpd $OPTIONS -k graceful # 重启命令
+ExecStop=/bin/kill -WINCH ${MAINPID}		# 停止命令
+# We want systemd to give httpd some time to finish gracefully, but still want
+# it to kill httpd after TimeoutStopSec if something went wrong during the
+# graceful stop. Normally, Systemd sends SIGTERM signal right after the
+# ExecStop, which would kill httpd. We are sending useless SIGCONT here to give
+# httpd time to finish.
+KillSignal=SIGCONT
+PrivateTmp=true  # 非服务分配独立的临时空间
+
+[Install]
+WantedBy=multi-user.target # 多用户模式下需要
+```
 
 
 # yum
@@ -991,3 +1021,4 @@ du -sh ./protobuf/
    # 安装EPEL(额外的软件包)
    yum install epel-release
    ```
+
