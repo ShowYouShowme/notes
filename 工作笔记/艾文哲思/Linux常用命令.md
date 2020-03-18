@@ -889,8 +889,25 @@ du -sh ./protobuf/
 # iptable
 
 1. 只允许指定ip的数据进来
+
 2. 端口映射
+
 3. 只允许指定目的地的流量出去
+
+4. 显示规则
+
+   ```shell
+   iptables -nL --line-number
+   ```
+
+5. 删除规则
+
+   ```shell
+   # 删除FORWARD链的第二条规则
+   iptables -D FORWARD 2
+   ```
+
+   
 
 
 
@@ -1012,7 +1029,12 @@ WantedBy=multi-user.target # 多用户模式下需要
 1. 查找软件包是否存在
 
    ```shell
+   # List a package or groups of packages
    yum list | grep redis
+   
+   # 建议用下面这个
+   # Search package details for the given string
+   yum search openssl
    ```
 
 2. 安装epel仓库
@@ -1021,4 +1043,8 @@ WantedBy=multi-user.target # 多用户模式下需要
    # 安装EPEL(额外的软件包)
    yum install epel-release
    ```
+
+
+
+# 堡垒机的web后台搭建
 
