@@ -974,7 +974,7 @@ du -sh ./protobuf/
   1. 批量删除任务
 
      ```shell
-     ps -ef | grep python3 | awk '{print "kill -9 " $2}' |sh
+     ps -ef | grep python3 | grep -v grep | awk '{print "kill -9 " $2}' |sh
      ```
 
   2. 查找进程pid
@@ -993,6 +993,16 @@ du -sh ./protobuf/
      
 
 
+
+# shutdown
+
+1. 重启
+
+   ```shell
+   shutdown -r now
+   ```
+
+   
 
 
 

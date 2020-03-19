@@ -191,3 +191,24 @@ docker logs -f ${容器名}
 docker logs -f ${容器ID}
 ```
 
+## 2 镜像导入导出
+
+1. 导出镜像
+
+   ```shell
+   docker save -o nginx.tar nginx:latest
+   
+   # 或者
+   docker save > nginx.tar nginx:latest
+   ```
+
+2. 导入镜像
+
+   ```shell
+   docker load -i nginx.tar
+   
+   # 或者
+   docker load < nginx.tar
+   ```
+
+   
