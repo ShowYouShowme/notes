@@ -907,6 +907,13 @@ du -sh ./protobuf/
    iptables -D FORWARD 2
    ```
 
+6. 只允许指定IP访问某个端口
+
+   ```shell
+   iptables -A INPUT -p tcp --dport 22 -s 47.106.120.244 -j ACCEPT
+   iptables -A INPUT -p tcp --dport 22 -j DROP
+   ```
+
    
 
 

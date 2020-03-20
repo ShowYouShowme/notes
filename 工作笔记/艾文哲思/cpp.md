@@ -261,8 +261,7 @@ int main()
 namespace
 {
 	// 占位符替换,类似Python
-	//Usage :	auto t = formatString("INSERT INTO {0} WHERE `id` = {1}, `value` = {0}, `name` = {2}", toStringVec(111, 999, "wzc"));
-	std::vector<std::string> subsVec;
+	//Usage :	auto t = formatString("INSERT INTO {0} WHERE `id` = {1}, `value` = {0}, `name` = {2}", toStringVec(Vec, 111, 999, "wzc"));
 	std::string formatString(std::string target, const std::vector<std::string>& subs) {
 		for (size_t i = 0; i < subs.size(); ++i) {
 			std::string placeholders = "{" + std::to_string(i) + "}";
@@ -277,21 +276,20 @@ namespace
 		return target;
 	}
 
+    // 丢弃全局变量,线程安全
 	template<typename T>
-	std::vector<std::string> toStringVec(T t) {
+	std::vector<std::string>& toStringVec(std::vector<std::string>& subsVec, T t) {
 		ostringstream os;
 		os << t;
 		subsVec.push_back(os.str());
-		std::vector<std::string> result = subsVec;
-		subsVec.clear();
-		return result;
+		return subsVec;
 	}
 	template<typename T, typename... Args>
-	std::vector<std::string> toStringVec(T head, Args... args) {
+	std::vector<std::string> toStringVec(std::vector<std::string>& subsVec, T head, Args... args) {
 		ostringstream os;
 		os << head;
 		subsVec.push_back(os.str());
-		return toStringVec(args...);
+		return toStringVec(subsVec, args...);
 	}
 }
 ```
