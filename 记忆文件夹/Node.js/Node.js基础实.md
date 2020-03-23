@@ -117,19 +117,30 @@ npm install @types/node
 
 ### npm教程
 
-1. 配置代理
+1. 切换阿里源
+
+   ```shell
+   npm config set registry https://registry.npm.taobao.org/
+   
+   # 查看切换是否成功
+   npm config get registry
+   ```
+
+   
+
+2. 配置代理
 
    ```shell
    npm config set proxy=http://127.0.0.1:8090
    ```
 
-2. 全局安装
+3. 全局安装
 
    ```shell
    npm install ${包名} -g
    ```
 
-3. 安装
+4. 安装
 
    ```shell
    npm install ${包名}
@@ -140,31 +151,31 @@ npm install @types/node
    npm install  gulp@3.9.1
    ```
 
-4. 卸载
+5. 卸载
 
    ```shell
    npm uninstall ${包名}
    ```
 
-5. 更新
+6. 更新
 
    ```shell
    npm update ${包名}
    ```
 
-6. 检查包是否过时
+7. 检查包是否过时
 
    ```shell
    npm outdated
    ```
 
-7. 列出安装的全部包
+8. 列出安装的全部包
 
    ```shell
    npm ls
    ```
 
-8. 参数说明
+9. 参数说明
 
    > 1. --save 或者-S
    >

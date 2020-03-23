@@ -211,4 +211,21 @@ docker logs -f ${容器ID}
    docker load < nginx.tar
    ```
 
+
+
+
+## 3 文件复制
+
+1. 宿主机文件复制到docker内部
+
+   ```shell
+   docker cp /path/filename 容器id或名称:/path/filename
+   ```
+
+2. docker内部文件复制到宿主机
+
+   ```shell
+   docker cp 容器id或名称:/path/filename /path/filename
+   ```
+
    
