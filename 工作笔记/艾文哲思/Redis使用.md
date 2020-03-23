@@ -28,6 +28,12 @@ CONFIG SET requirepass tars2015
    
 2. 指定配置文件启动redis
 
+   ```shell
+   redis-server /opt/redis/ect/redis.conf
+   ```
+
+   
+
 
 
 # 连接服务器
