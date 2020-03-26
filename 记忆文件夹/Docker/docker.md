@@ -228,4 +228,9 @@ docker logs -f ${容器ID}
    docker cp 容器id或名称:/path/filename /path/filename
    ```
 
-   
+
+
+
+## 4 挂载目录
+
+1. 目录不能是root或者其子目录，否则无法读写，除非加`--privileged`
