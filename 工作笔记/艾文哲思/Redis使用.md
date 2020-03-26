@@ -92,3 +92,21 @@ appendonly yes
 
 
 
+# 非交互式执行命令
+
+1. 列出键
+
+   ```shell
+   # 命令
+   redis-cli -h ${host} -p ${port} -a ${passwd} ${cmd} 
+   # 例子
+   redis-cli -p 7111 KEYS '*'
+   ```
+
+2. 清空全部键
+
+   ```shell
+   redis-cli -p 7111 FLUSHALL
+   ```
+
+   
