@@ -124,19 +124,6 @@
    rm -f /a.txt
    ```
 
-   
-
-
-
-# 防火墙
-
-```shell
-firewall-cmd --state # 查看防火墙状态
-systemctl stop firewalld.service # 停止防火墙
-systemctl disable firewalld.service  # 禁止防火墙开机启动
-```
-
-
 
 # SELinux
 
@@ -995,6 +982,12 @@ du -sh ./protobuf/
              kill -9 $PID
              echo "kill -9 $PID"
      fi
+     ```
+  
+  3. 递归删除当前目录下全部日志文件
+  
+     ```shell
+     find ./ -name *.log |  awk '{print "rm -f " $1}' | sh
      ```
   
      
