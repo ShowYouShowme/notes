@@ -990,7 +990,57 @@ du -sh ./protobuf/
      find ./ -name *.log |  awk '{print "rm -f " $1}' | sh
      ```
   
+  4. 选取指定行
+  
+     + 选取2到6行
+  
+       ```shell
+       docker images | sed -n "${n1},${n2}p" | awk '{print "rm -f " $1}'
+       
+       docker images | sed -n "2,6p"
+       ```
+  
+     + 选取1,2,5行
+  
+       ```shell
+       docker images | sed -n "${n1}p;${n2}p;${n3}p"
+       
+       docker images | sed -n "1p;2p;5p"
+       ```
+  
+     + 选取1，2，3，4和6行
+  
+       ```shell
+       docker images | sed -n "${n1},${n2}p;${n3}p"
+       
+       docker images | sed -n "1,2p;6p"
+       ```
+  
+  5. 批量删除docker镜像
+  
+     ```shell
+     docker images | sed -n "2,6p" | awk '{print "docker rmi " $3}' | sh
+     ```
+  
      
+
+# nl
+
+## 显示行号
+
+1. 打印文件，并显示行号
+
+   ```shell
+   nl sources.list
+   ```
+
+2. 和管道结合
+
+   ```shell
+   netstat -lntp | nl
+   ```
+
+   
 
 
 
