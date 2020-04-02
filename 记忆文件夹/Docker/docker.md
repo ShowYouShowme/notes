@@ -234,3 +234,77 @@ docker logs -f ${容器ID}
 ## 4 挂载目录
 
 1. 目录不能是root或者其子目录，否则无法读写，除非加`--privileged`
+
+
+
+
+
+
+
+# 进入docker容器
+
+## 1 docker attach
+
+```shell
+# 所有窗口同步显示,不推荐此方法
+docker attach ${容器ID}  
+
+docker attach 44fc0f0582d9  
+```
+
+
+
+## 2 ssh
+
+```shell
+# 需要安装ssh服务
+```
+
+
+
+## 3 nsenter
+
+1. 安装
+
+   ```shell
+   wget https://www.kernel.org/pub/linux/utils/util-linux/v2.24/util-linux-2.24.tar.gz
+   tar -xzvf util-linux-2.24.tar.gz
+   cd util-linux-2.24/
+   ./configure --without-ncurses
+   make nsenter
+   cp nsenter /usr/local/bin
+   ```
+
+2. 使用
+
+   > 1. 获取容器的进程ID
+   >
+   >    ```shell
+   >    # 命令格式
+   >    docker inspect -f {{.State.Pid}} ${容器ID}
+   >    
+   >    # 示例
+   >    docker inspect -f {{.State.Pid}} 44fc0f0582d9
+   >    ```
+   >
+   > 2. 访问容器
+   >
+   >    ```shell
+   >    # 命令格式
+   >    nsenter --target ${PID} --mount --uts --ipc --net --pid
+   >    
+   >    # 示例
+   >    nsenter --target 3326 --mount --uts --ipc --net --pid
+   >    ```
+   >
+   >    
+
+
+
+## 4 docker exec
+
+```shell
+# 会另外启一个进程[推荐此方法]
+docker exec -it 775c7c9ee1e1 /bin/bash
+```
+
