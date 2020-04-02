@@ -1,4 +1,4 @@
-# netstat
+# netstat[按字母排序]
 
 1. 列出所有端口情况
 
@@ -233,6 +233,20 @@ id_rsa、id_rsa.pub和authorized_keys
 # uname -r
 
 查看当前使用的内核
+
+
+
+
+
+# tail
+
+1. 查看倒数200行日志
+
+   ```shell
+   tail -n 200 redis-server.log
+   ```
+
+   
 
 
 
@@ -1038,6 +1052,18 @@ du -sh ./protobuf/
 
    ```shell
    netstat -lntp | nl
+   ```
+
+
+
+# wc
+
+统计行数
+
+1. 统计正在运行的容器数量
+
+   ```shell
+   docker ps | wc -l
    ```
 
    

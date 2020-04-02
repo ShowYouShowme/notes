@@ -1196,3 +1196,88 @@ vector<CuctomeType> mapData;
 
 1. 网络请求异常[解码失败，超时之类]，抛出异常
 2. 调用正常，通过函数的返回值确定是否调用正常，resp里面不用设置返回值了
+
+
+
+# RPC接口设计规范
+
+```cpp
+// 返回值表示接口调用成功失败
+// 入参:tLog2DBReq
+// 出参:TLog2DBRsp
+virtual tars::Int32 log2db(const DaqiGame::TLog2DBReq& tLog2DBReq, DaqiGame::TLog2DBRsp& tLog2DBRsp, tars::TarsCurrentPtr current);
+```
+
+
+
+# 错误处理
+
+0. 事件描述
+
+   > 接口`checkFriend`校验两个用户是否为好友，是则返回`True`否返回`False`，校验过程会查询MySQL，如果出现网络错误，则发生了错误！
+
+1. 函数返回值
+
+   + 代码
+
+     ```cpp
+     int nRet = DoThing1();
+     if(nRet != SUCCESS)
+     {
+          cout << "DoThing1 failed with error" << endl;
+          if（(nRet == -1）
+               cout << "DoThing1 failed with error -1" << endl;
+          if(nRet == -2)
+               cout << "DoThing1 failed with error -2" << endl;
+          goto err; // 负责清除资源
+     }
+     
+     err:
+          FreeSomeResource();
+     ```
+
+   + 缺陷
+
+     > 处理错误的职责在调用者身上
+
+2. 函数返回值变体`GetLastError`
+
+   + 代码
+   
+     ```cpp
+     if(DoThing1() == ERROR){
+          cout << "DoThing1 failed with error" << GetLastError() << endl;
+          return false;
+     }
+     if(DoThing2() == ERROR){
+          cout << "DoThing2 failed with error" << GetLastError() << endl;
+          return false;
+  }
+     ```
+   
+   + 缺点
+   
+     > 1. 处理错误的职责在调用者身上
+     > 2. 多线程不安全
+     > 3. 代码中充斥大量的if判断语句
+   
+3. 异常
+
+   + 代码
+
+     ```cpp
+     try{
+          DoThing1();
+          DoThing2();
+          DoThing3();
+     }
+     catch(Exeception &e){
+          cout << "Error occur!" << e.Msg() << endl;
+     }
+     ```
+
+   + 优点
+
+     > 错误处理代码和业务代码分开，提高代码可读性
+
+   
