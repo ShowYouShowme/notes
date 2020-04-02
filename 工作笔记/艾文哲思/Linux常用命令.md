@@ -1129,6 +1129,21 @@ WantedBy=multi-user.target # 多用户模式下需要
    # 安装EPEL(额外的软件包)
    yum install epel-release
    ```
+   
+3. 虚拟机阿里源连接超时
+
+   ```shell
+   # step1：在阿里云ECS上查询IP地址
+   nslookup mirrors.aliyun.com
+   
+   # step2: 逐个在虚拟机上测试速度
+   ping 110.80.139.243
+   
+   # step3: 找出速度最快的,写到虚拟机的hosts文件里
+   110.80.139.249    mirrors.aliyun.com
+   ```
+
+   
 
 
 
