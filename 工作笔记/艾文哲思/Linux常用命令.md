@@ -1,4 +1,4 @@
-# netstat
+# netstat[按字母排序]
 
 1. 列出所有端口情况
 
@@ -233,6 +233,20 @@ id_rsa、id_rsa.pub和authorized_keys
 # uname -r
 
 查看当前使用的内核
+
+
+
+
+
+# tail
+
+1. 查看倒数200行日志
+
+   ```shell
+   tail -n 200 redis-server.log
+   ```
+
+   
 
 
 
@@ -1040,6 +1054,18 @@ du -sh ./protobuf/
    netstat -lntp | nl
    ```
 
+
+
+# wc
+
+统计行数
+
+1. 统计正在运行的容器数量
+
+   ```shell
+   docker ps | wc -l
+   ```
+
    
 
 
@@ -1103,6 +1129,21 @@ WantedBy=multi-user.target # 多用户模式下需要
    # 安装EPEL(额外的软件包)
    yum install epel-release
    ```
+   
+3. 虚拟机阿里源连接超时
+
+   ```shell
+   # step1：在阿里云ECS上查询IP地址
+   nslookup mirrors.aliyun.com
+   
+   # step2: 逐个在虚拟机上测试速度
+   ping 110.80.139.243
+   
+   # step3: 找出速度最快的,写到虚拟机的hosts文件里
+   110.80.139.249    mirrors.aliyun.com
+   ```
+
+   
 
 
 
