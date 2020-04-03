@@ -308,3 +308,32 @@ docker attach 44fc0f0582d9
 docker exec -it 775c7c9ee1e1 /bin/bash
 ```
 
+
+
+
+
+# 常用官方镜像
+
+## 1 MySQL
+
+1. 下载镜像
+
+   ```shell
+   docker pull mysql:5.6.47
+   ```
+
+2. 启动镜像
+
+   > + 从宿主机挂载数据目录
+   >
+   >   ```shell
+   >   docker run --name mysql -e MYSQL_ROOT_PASSWORD=tars2015 -d -p 3306:3306 -v /home/wzc/mysql-data:/var/lib/mysql mysql:5.6.47
+   >   ```
+   >
+   > + 使用自定义配置文件
+   >
+   >   ```shell
+   >   docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+   >   ```
+   >
+   >   
