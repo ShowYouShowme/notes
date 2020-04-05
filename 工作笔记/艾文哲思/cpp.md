@@ -1252,7 +1252,7 @@ virtual tars::Int32 log2db(const DaqiGame::TLog2DBReq& tLog2DBReq, DaqiGame::TLo
      if(DoThing2() == ERROR){
           cout << "DoThing2 failed with error" << GetLastError() << endl;
           return false;
-  }
+    }
      ```
    
    + 缺点
@@ -1280,4 +1280,47 @@ virtual tars::Int32 log2db(const DaqiGame::TLog2DBReq& tLog2DBReq, DaqiGame::TLo
 
      > 错误处理代码和业务代码分开，提高代码可读性
 
-   
+
+
+
+# 接口调用规范
+
+1. 本进程接口
+
+   > + 返回值表示函数内部是否发生错误
+   >
+   > + 输入和输出都在参数表里面
+   >
+   >   ```cpp
+   >   int getNameByUid(int input, string& output){
+   >   	// your code
+   >       // 内部如果需要分配内存,但是分配失败,则返回错误
+   >   }
+   >   ```
+
+2. RPC接口
+
+   > + PRC出错[tars默认会抛出异常]
+   >   1. 网络超时
+   >   2. 服务端解码失败
+   >   3. 服务端没有该函数
+   > + RPC调用正常，此时处理流程和处理本进程接口一样
+   >   1. 判断返回值
+   >   2. 获取输出参数
+
+
+
+# 区分业务逻辑和系统内部错误
+
+## 系统内部错误
+
+1. 某个函数需要分配内存，但是内存分配失败
+2. 某个函数需要访问数据库，但是出错了(比如超时)
+3. 某个函数需要访问网络(http/https)，超时或者404之类
+
+
+
+## 业务错误
+
+1. 利用不存在的订单号校验订单
+2. 未签到直接领奖

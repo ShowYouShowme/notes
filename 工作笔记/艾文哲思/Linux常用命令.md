@@ -1143,6 +1143,20 @@ WantedBy=multi-user.target # 多用户模式下需要
    110.80.139.249    mirrors.aliyun.com
    ```
 
+4. `CentOS7`切换为阿里源
+
+   ```shell
+   # step1:备份
+   mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+   
+   # step2:下载阿里源的repo
+   wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+   
+   
+   # step3:更新缓存
+   yum makecache
+   ```
+
    
 
 
