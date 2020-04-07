@@ -143,17 +143,13 @@ SELINUX=permissive
 
 # SCP
 
-格式：
+## 1 命令格式
 
 ```shell
 scp [命令参数] [源路径] [目的路径]
 ```
 
-
-
-## 操作
-
-***
+## 2 常见操作
 
 1. 将本地文件复制到远程
 
@@ -169,34 +165,21 @@ scp [命令参数] [源路径] [目的路径]
    # 例子
    scp root@10.10.10.168:/usr/local/tars/cpp/makefile/makefile.tars ./
    ```
+   
+3. 免密码复制
 
-
-
-
-## 免密码复制
-
-***
-
-```shell
-# 生成公钥和私钥
-ssh-keygen -t rsa -P ""
-# 拷贝公钥到远程主机
-scp ~/.ssh/id_rsa.pub root@10.10.10.61:/root/.ssh
-# 登录远程主机，将公钥id_rsa.pub输入到authorized_keys文件中
-cd ~/.ssh
-cat id_rsa.pub >> authorized_keys 
-
-# 秘钥文件权限全部设置为600
-id_rsa、id_rsa.pub和authorized_keys
-```
-
-
-
-# ssh秘钥登录
-
-1. 生成密钥（公钥和私钥）
-2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
-3. 配置ssh客户端使用密钥登录
+   ```shell
+   # 生成公钥和私钥
+   ssh-keygen -t rsa -P ""
+   # 拷贝公钥到远程主机
+   scp ~/.ssh/id_rsa.pub root@10.10.10.61:/root/.ssh
+   # 登录远程主机，将公钥id_rsa.pub输入到authorized_keys文件中
+   cd ~/.ssh
+   cat id_rsa.pub >> authorized_keys 
+   
+   # 秘钥文件权限全部设置为600
+   id_rsa、id_rsa.pub和authorized_keys
+   ```
 
 
 
@@ -815,13 +798,13 @@ zip -r we.zip we
 
 # ssh 
 
- ### 1 使用代理
+ ## 1 使用代理
 
 ```shell
 # xshell 里面的'连接'有个代理的选项;可以设置http tunnel 或者 socket5 代理
 ```
 
-### 2 本地隧道
+## 2 本地隧道
 
 ```shell
 #1--隧道仅转发流量[端口映射],此方法可以通过跳板机连接测试机和线上的服务器,防止被攻击
@@ -843,7 +826,7 @@ ssh -N -f -L 0.0.0.0:1089:172.18.29.247:1082 47.112.251.164
 ssh -N -f -L ${局域网IP}:${局域网端口}:${线上服务器内网IP}:${线上服务器端口,不对外暴露} ${线上服务器公网IP}
 ```
 
-### 3 远程隧道
+## 3 远程隧道
 
 ```shell
 # 让家里的电脑能访问公司内网的电脑
@@ -871,6 +854,27 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
 ```
 
 
+
+## 5 密钥登陆
+
+1. 生成密钥
+
+   ```shell
+   # 指定加密类型和注释，rsa长度默认为2048位
+   ssh-keygen -t rsa -C "myname@163.com"
+   ```
+
+2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
+
+3. 登陆
+
+   ```shell
+   # 登陆命令
+   ssh -i ${密钥名} -p ${port} ${user}@${host}
+   
+   # 例子
+   ssh -i your_key -p 12008 root@dna2.viewdao.com
+   ```
 
 
 
