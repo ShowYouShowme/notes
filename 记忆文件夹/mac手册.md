@@ -16,10 +16,16 @@
 
 # 包管理器
 
-1. 安装
+1. 安装brew
 
    ```shell
    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+   ```
+   
+2. 安装telnet
+
+   ```shell
+   brew install telnet
    ```
 
 
@@ -36,14 +42,24 @@
    ```shell
    alt + c
    ```
+   
 3. 粘贴
    ```
    alt + v
    ```
+   
 4. 撤销
    ```
    win + z
    ```
+   
+5. 剪切
+
+   ```shell
+   win + x
+   ```
+
+   
 
 
 
