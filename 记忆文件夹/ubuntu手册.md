@@ -31,4 +31,43 @@
    ps -ef | grep sshd
    ```
 
+3. live安装系统时设置阿里源
+
+   ```shell
+   http://mirrors.aliyun.com/ubuntu/
+   ```
+
+4. 启用root账号
+
+   1. 开启root账号
+
+      ```shell
+      sudo passwd -u root
+      ```
+
+   2. 为root账号设置密码
+
+      ```shell
+      sudo passwd root
+      ```
+
+   3. 切换到root账号
+
+      ```shell
+      su -
+      ```
+
+   4. ssh允许root账户登陆
+
+      ```shell
+      vim /etc/ssh/sshd_config
+      
+      PermitRootLogin yes
+      
+      # 重启ssh服务
+      service sshd restart
+      ```
+
+      
+
    
