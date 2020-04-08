@@ -38,6 +38,31 @@
 		6. Pip 包管理器
 + 安装
 	1. 安装python
+	
+	   1. Ubuntu18.04编译安装python3.7
+	
+	      ```shell
+	      # 0 安装依赖
+	      apt-get install zlib1g-dev libffi-dev gcc make
+	      
+	      # 1 下载安装包
+	      wget https://www.python.org/ftp/python/3.7.1/Python-3.7.1.tgz
+	      
+	      # 2 解压
+	      tar -zxvf Python-3.7.1.tgz
+	      
+	      # 3 编译安装
+	      cd Python-3.7.1
+	      ./configure
+	      make
+	      make install
+	      
+	      ```
+	
+	      
+	
 	2. 安装pycharm 
+	
 	3. 在终端里启动>python
+	
 	4. 在终端里退出>>>exit()
