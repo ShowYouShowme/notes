@@ -56,12 +56,20 @@
 8. 部分参数介绍
 
    > + -n： Local Address这列的host和port均用数字表示
-   >
-   > + -p：显示PID/Programe name 这列
+   >+ -p：显示PID/Programe name 这列
    > + -a：列出全部端口
    > + -t：列出TCP端口
    > + -u：列出UDP端口
    > + -l：列出监听端口
+   
+9. mac上面的用法[与centOS有差异]
+
+   ```shell
+   # 查询全部监听的tcp端口
+   netstat -f inet -n | grep tcp4
+   ```
+
+   
 
 
 
