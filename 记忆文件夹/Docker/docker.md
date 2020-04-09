@@ -237,6 +237,16 @@ docker logs -f ${容器ID}
 
 
 
+## 5 查看容器占用资源
+
+```shell
+docker stats -a
+```
+
+
+
+
+
 
 
 
@@ -336,4 +346,30 @@ docker exec -it 775c7c9ee1e1 /bin/bash
    >   docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
    >   ```
    >
-   >   
+
+
+
+
+
+# docker 安装
+
+## 1 centos
+
+```shell
+yum install -y docker
+```
+
+
+
+## 2 ubuntu 18.04
+
+```shell
+sudo apt install curl
+curl -fsSL get.docker.com -o get-docker.sh
+sudo sh get-docker.sh --mirror Aliyun
+
+# 启动docker
+sudo systemctl enable docker
+sudo systemctl start docker
+```
+
