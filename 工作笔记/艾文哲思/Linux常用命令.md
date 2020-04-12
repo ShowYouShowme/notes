@@ -710,6 +710,83 @@ yum安装时会显示安装的Repository
 
 
 
+# nc
+
++ nc是netcat的简写
+
++ 功能
+
+  > 1. 监听TCP/UDP端口
+  > 2. 端口扫描
+  > 3. 文件传输
+  > 4. 网络测速
+
++ 安装
+
+  ```shell
+  yum install -y nc
+  ```
+
++ 用法
+
+  > 1. 监听TCP端口
+  >
+  >    ```shell
+  >    nc -l 9999
+  >    ```
+  >
+  > 2. 监听UDP端口
+  >
+  >    ```shell
+  >    nc -ul 9998
+  >    ```
+  >
+  > 3. 文件传输
+  >
+  >    1. 在目的机器文件监听端口
+  >
+  >       ```shell
+  >       nc -l ${port} > ${file}
+  >       
+  >       # 示例
+  >       nc -l 9900 > nc.txt
+  >       ```
+  >
+  >    2. 在源机器发送文件
+  >
+  >       ```shell
+  >       nc ${dst_host} ${port} < ${file}
+  >       
+  >       # 示例
+  >       nc 10.10.10.190 9900 < anaconda-ks.cfg
+  >       ```
+  >
+  > 4. 测试网速
+  >
+  >    1. 在目的机器监听，并将数据丢弃
+  >
+  >       ```shell
+  >       nc -l 9991 > /dev/null
+  >       ```
+  >
+  >    2. 在源机器上发起请求
+  >
+  >       ```shell
+  >       nc 10.10.10.190 9991 < /dev/zero
+  >       ```
+  >
+  >    3. 查看网速
+  >
+  >       ```shell
+  >       # 安装
+  >       yum install -y dstat
+  >       
+  >       # 注意recv 和 send 两列
+  >       dstat
+  >       ```
+  >
+  >       
+
 # chown
 
 + 作用：修改文件属主
@@ -1100,6 +1177,32 @@ du -sh ./protobuf/
   > 查看磁盘使用情况
 
 
+
+# **dstat**
+
++ 介绍：性能监控工具，可以用来替换iostat，netstat之类的工具
+
++ 安装
+
+  ```shell
+  yum install -y dstat
+  ```
+
++ 使用
+
+  ```shell
+  dstat
+  ```
+
+
+
+
+
+# 性能监控工具
+
++ nmon
++ zabbix
++ cacti
 
 
 
