@@ -551,6 +551,129 @@ yum安装时会显示安装的Repository
    ```shell
    wget -k -r -p -np http://www.cplusplus.com/reference/
    ```
+   
+2. 指定http代理
+
+   + 目的地址是https
+
+     ```shell
+     wget -e "https_proxy=http://10.10.10.23:8090" https://github.com/ShowYouShowme/SwitchyOmega/archive/v2.5.20.tar.gz
+     ```
+
+   + 目的地址是http
+
+     ```shell
+     wget -e "http_proxy=http://127.0.0.1:8087" http://www.subversion.org.cn/svnbook/1.4/
+     ```
+
+     
+
+
+
+# curl
+
+1. post请求
+
+   + json数据
+
+     ```shell
+     curl -X POST -H "Content-Type:application/json" \
+     http://127.0.0.1:2375/containers/create \
+     -d \
+     " \
+     { \
+     \"Image\":\"centos:7.6.1810\" \
+     }"
+     ```
+
+   + url编码的数据
+
+     ```shell
+     curl -d "name=Rafael%20Sagula&phone=3320780" http://www.where.com/guest.cgi
+     ```
+
+     
+
+2. 基本使用GET请求
+
+   ```shell
+   curl http://www.weirdserver.com:8000/
+   ```
+
+3. 下载文件
+
+   + 下载并用指定名称存储
+
+     ```shell
+     curl -o thatpage.html http://www.netscape.com/
+     ```
+
+   + 下载文件并用远程文件名存储
+
+     ```shell
+     curl -O http://www.netscape.com/index.html
+     ```
+
+4. 使用代理
+
+   + http代理
+
+     ```shell
+     # https的网站用connect 方法,必须增加-L选项自动跟踪重定向,否则容易出错
+     curl -x http://10.10.10.23:8090 -v -L -o a.tar.gz https://github.com/ShowYouShowme/SwitchyOmega/archive/v2.5.20.tar.gz
+     ```
+
+5. 打印调试信息
+
+   + 打印交互细节
+
+     ```shell
+     curl -v ftp://ftp.upload.com/
+     ```
+
+   + 打印二进制信息到文件
+
+     ```shell
+     curl --trace trace.txt www.baidu.com
+     ```
+
+6. <font color="red" style="font-weight:bold">跟踪重定向`-L`</font>
+
+   > 建议请求加上此选项，有些下载链接会重定向，无此选项会失败
+
+7. <font color="red">设置头部信息`-H`</font>
+
+8. Coockies
+
+   + 发请求时添加Cookies信息
+
+     ```shell
+     curl -b "name=Daniel" www.sillypage.com
+     ```
+
+   + 存放响应的Cookies
+
+     1. 方式一
+
+        ```shell
+        curl --dump-header headers www.example.com
+        ```
+
+     2. 方式二
+
+        ```shell
+        curl -c cookies.txt www.example.com
+        ```
+
+        
+
+   + 使用存放在文件里面的Cookies信息访问网站
+
+     ```shell
+     curl -b headers www.example.com
+     ```
+
+     
 
 
 
@@ -899,28 +1022,38 @@ du -sh ./protobuf/
 # rsync
 
 > 文件同步工具
+
+
+
+
 # iptable
 
-1. 只允许指定ip的数据进来
+1. 安装
 
-2. 端口映射
+   ```shell
+   yum install -y iptables
+   ```
 
-3. 只允许指定目的地的流量出去
+2. 只允许指定ip的数据进来
 
-4. 显示规则
+3. 端口映射
+
+4. 只允许指定目的地的流量出去
+
+5. 显示规则
 
    ```shell
    iptables -nL --line-number
    ```
 
-5. 删除规则
+6. 删除规则
 
    ```shell
    # 删除FORWARD链的第二条规则
    iptables -D FORWARD 2
    ```
 
-6. 只允许指定IP访问某个端口
+7. 只允许指定IP访问某个端口
 
    ```shell
    iptables -A INPUT -p tcp --dport 22 -s 47.106.120.244 -j ACCEPT
@@ -1090,7 +1223,20 @@ du -sh ./protobuf/
    shutdown -r now
    ```
 
-   
+
+
+
+# which
+
+作用：查找可执行文件的路径
+
+示例
+
+```shell
+which bash
+```
+
+
 
 
 
@@ -1169,7 +1315,8 @@ WantedBy=multi-user.target # 多用户模式下需要
    yum makecache
    ```
 
-   
+
+
 
 
 
