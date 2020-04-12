@@ -195,10 +195,10 @@
              --tlskey=/etc/docker/server-key.pem \
    ```
 
-3. 重启docker服务
+3. 重新加载并启动Docker守护进程
 
    ```shell
-   systemctl restart docker
+   systemctl --system daemon-reload
    ```
 
    
