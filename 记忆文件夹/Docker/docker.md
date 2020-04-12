@@ -373,3 +373,27 @@ sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
+
+
+
+
+# Docker启动失败
+
+查看docker日志
+
+```shell
+systemctl status docker.service
+```
+
+失败原因
+
+1. SELinux未关闭
+
+   ```shell
+   # 日志里面的错误信息
+   Error starting daemon: SELinux is not supported
+   ```
+
+   解决方案：
+
+   > 关闭SELinux,重启电脑
