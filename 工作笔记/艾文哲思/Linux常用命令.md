@@ -1103,7 +1103,7 @@ du -sh ./protobuf/
 
 
 
-# iptable
+# iptables
 
 1. 安装
 
