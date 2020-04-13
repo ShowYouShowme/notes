@@ -302,4 +302,17 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 > ```
 
 
-   ```
+
+
+
+# Length和decimals
+
++ 细节
+
+  1. 字段数据类型为CHAR,VARCHAR时Length指字符串的长度
+  2. 数据类型为TINYINT、SMALLINT、MEDIUMINT、INT和BIGINT时，Length指**显示宽度**
+  3. FLOAT、DOUBLE和DECIMAL的长度指的是全部数位（包括小数点后面的），例如DECIMAL(4,1)指的是全部位数为4，小数点后1位，如果插入1234，则查询的数据是999.9
+
++ 总结
+
+  > 数据库里使用小数的情况很少，只有字段为CHAR和VARCHAR时需要关注Length，decimals不用管！
