@@ -225,9 +225,9 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
    # 上个命令等价于
    mysql -P 4406 -u tars -p
    
-# 常见错误 : 文件/tmp/mysql.sock 在unix domain socket连接时使用,用TCP连接即可
+   # 常见错误 : 文件/tmp/mysql.sock 在unix domain socket连接时使用,用TCP连接即可
    # Can't connect to local MySQL server through socket '/tmp/mysql.sock'
-   
+
    # 查看账号权限时,同时存在localhost和127.0.0.1,次二者不一样
    ```
    
@@ -301,3 +301,5 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 > # /usr/local/mysql/data/localhost-slow.log
 > ```
 
+
+   ```
