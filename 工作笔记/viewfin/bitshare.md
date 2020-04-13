@@ -17,3 +17,17 @@
 # 入门手册
 
 [链接](https://dev.bitshares.works/en/master/bts_guide/index_faq.html)
+
+
+
+
+
+# 常用API
+
+
+
+
+
+# 业务知识
+
+1. block_num最小值是1
