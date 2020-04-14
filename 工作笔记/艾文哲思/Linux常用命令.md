@@ -93,14 +93,20 @@
    tar -zcvf Tars_1.6.tar.gz ./Tars/*
    ```
 
-4. 解压文件
+4. 忽略部分打包文件
+
+   ```shell
+   tar -zcvf dna-explorer-api.tar.gz --exclude=dna-explorer-api/.idea/ --exclude=dna-explorer-api/.git/ dna-explorer-api/
+   ```
+
+1. 解压文件
 
    ```shell
    # 解压tar.gz
    tar -zxvf mysql-5.6.26.tar.gz
    ```
 
-5. 参数
+2. 参数
 
    > -v：显示处理的文件
    >
@@ -155,6 +161,8 @@ SELINUX=permissive
 
 ```shell
 scp [命令参数] [源路径] [目的路径]
+
+# 文件夹的话先打包,再传输,速度快很多
 ```
 
 ## 2 常见操作
@@ -188,6 +196,21 @@ scp [命令参数] [源路径] [目的路径]
    # 秘钥文件权限全部设置为600
    id_rsa、id_rsa.pub和authorized_keys
    ```
+   
+4. 指定端口`-P`
+
+   ```shell
+   # P 是大写的
+   scp -P 12008 ./dna-explorer-api.tar.gz root@dna3.viewdao.com:/tmp
+   ```
+
+5. 指定私钥`-i`
+
+   ```shell
+   
+   ```
+
+   
 
 
 
@@ -1085,6 +1108,28 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
    ```
 
 
+
+## 6 长时间无操作，ssh自动断开
+
+1. 修改ssh服务配置[方式一]
+
+   ```shell
+   # /etc/ssh/sshd_config
+   ClientAliveInterval 60     # 每分钟发送一次心跳，然后客户端响应，从而保持链接                                                     
+   ClientAliveCountMax 3      # 客户端3次不响应心跳就断开链接 
+   ```
+
+2. 修改ssh客户端配置[方式二]
+
+   ```shell
+   # vim /etc/ssh/ssh_config  对所有用户有效
+   # vim  ~/.ssh/config 对当前用户有效
+   Host *
+       ServerAliveInterval 30
+       ServerAliveCountMax 3
+   ```
+
+   
 
 # 查看文件夹大小
 
