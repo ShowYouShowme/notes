@@ -310,8 +310,39 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 + 细节
 
   1. 字段数据类型为CHAR,VARCHAR时Length指字符串的长度
+
   2. 数据类型为TINYINT、SMALLINT、MEDIUMINT、INT和BIGINT时，Length指**显示宽度**，不用填写！
-  3. FLOAT、DOUBLE和DECIMAL的长度指的是全部数位（包括小数点后面的），例如DECIMAL(4,1)指的是全部位数为4，小数点后1位，如果插入1234，则查询的数据是999.9。Float和Double不用填写，**DECIMAL必须填这两个值**。
+
+  3. 小数
+
+     + 浮点数
+
+       ```shell
+       # FLOAT 4 字节
+       
+       # DOUBLE 8 字节
+       
+       # 定义浮点数时不用指定Length和decimals,否则无法迁移到其它数据库
+       ```
+
+     + 定点数
+
+       ```shell
+       
+       # DECIMAL 用于存放精确的小数,定义时必须填写Length和decimals
+       
+       # 定义
+       # P是表示有效数字数的精度(即Length)，P范围为1〜65
+       # D是表示小数点后的位数,范围是(0~30)
+       column_name  DECIMAL(P,D);
+       
+       # 例子
+       amount DECIMAL(6,2);
+       
+       # amount的范围是-9999.99到9999.99
+       ```
+
+       
 
 + 总结
 
