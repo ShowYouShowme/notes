@@ -1129,7 +1129,31 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
        ServerAliveCountMax 3
    ```
 
+
+
+## 7 远程服务器执行脚本
+
+1. 执行服务器上的shell脚本
+
+   ```shell
+   ssh  -p 12008 root@dna3.viewdao.com bash /root/remote.sh
+   ```
+
+2. 执行本地脚本
+
+   ```shell
+   # 执行本地脚本
+   ssh  -p 12008 root@dna3.viewdao.com < local.sh
    
+   # 执行本地脚本,并且传入参数
+   ssh  -p 12008 root@dna3.viewdao.com "bash -s " < local.sh 66778
+   ```
+
+   
+
+
+
+##8 
 
 # 查看文件夹大小
 
