@@ -617,11 +617,21 @@ yum安装时会显示安装的Repository
 
      
 
-2. 基本使用GET请求
+2. GET请求
 
-   ```shell
-   curl http://www.weirdserver.com:8000/
-   ```
+   1. 基本请求
+
+      ```shell
+      curl http://www.weirdserver.com:8000/
+      ```
+
+   2. 标准请求
+
+      ```shell
+      curl -X GET --header 'Accept: application/json' 'http://127.0.0.1:5000/api/v1/accounts/statistics'
+      ```
+
+      
 
 3. 下载文件
 

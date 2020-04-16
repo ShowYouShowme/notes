@@ -23,6 +23,14 @@
    
    mysqldump   hp_activity    -uroot  -proot@appinside  >   hp_activity_all.sql
    ```
+   
+4. 导出所有的库
+
+   ```shell
+   mysqldump -u${user} -p${passwd} --all-databases > all.sql
+   ```
+
+   
 
 
 
@@ -357,11 +365,11 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 1. 日期和时间类型
 
    ```shell
-   DATE                                  3 个字节 
-   DATETIME                              8 个字节 
-   TIMESTAMP                             4 个字节 
-   TIME                                  3 个字节 
-   YEAR                                  1 字节
+   DATE                                  3 个字节,日期"1949-10-01"
+   DATETIME                              8 个字节,日期和时间"1949-10-01 11:11:11" 
+   TIMESTAMP                             4 个字节,日期和时间"1949-10-01 11:11:11"
+   TIME                                  3 个字节,时间"23:59:25"
+   YEAR                                  1 字节,年份,比如"2019"
    ```
 
 2. 字符串类型
