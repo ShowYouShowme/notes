@@ -2,24 +2,35 @@
 
 1. 设置网卡
 
-   + 配置网卡信息
+   1. 编辑配置文件
 
-     ```shell
-     # sudo vim /etc/network/interfaces
-     
-     iface enp0s5 inet static # enp0s5是网卡名,用ifconfig获取
-     address 210.72.92.25
-     gateway 210.72.92.254
-     netmask 255.255.255.0
-     dns-nameservers 8.8.8.8
-     ```
+      ```shell
+      sudo vim /etc/netplan/50-cloud-init.yaml
+      ```
 
-   + 重启网卡
+   2. 配置文件内容
 
-     ```shell
-     sudo ifconfig enp0s5 down
-     sudo ifconfig enp0s5 up
-     ```
+      ```shell
+      network:
+          ethernets:
+              enp0s5:
+                  dhcp4: false
+                  addresses:
+                  - 192.168.0.79/24
+                  gateway4: 192.168.0.1
+                  nameservers:
+                      addresses:
+                      - 223.6.6.6
+                      - 223.5.5.5
+                      search: []
+          version: 2
+      ```
+
+   3. 重启网卡
+
+      ```shell
+      sudo netplan apply
+      ```
 
 2. 安装openssh
 
