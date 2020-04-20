@@ -3,7 +3,7 @@
 1. 列出全部索引
 
    ```shell
-   GET _cat/indices\?v
+   GET /_cat/indices\?v
    
    # 例子
    192.168.0.79:9200/_cat/indices\?v
@@ -29,18 +29,27 @@
 
    ```shell
    GET /_cat/
+   
+   # 例子
+   curl -i -XGET http://192.168.11.119:9200/_cat/
    ```
 
 5. 查看集群健康状况
 
    ```shell
    GET /_cat/health?v
+   
+   # 例子
+   curl -XGET http://192.168.11.119:9200/_cat/health\?v
    ```
 
 6. 创建索引
 
    ```shell
    PUT /test_index?pretty
+   
+   # 例子
+   curl -i -XPUT http://192.168.11.119:9200/test_index\?pretty
    ```
 
 7. 删除索引
@@ -56,6 +65,15 @@
    {
        "json数据"
    }
+   
+   # 例子
+   curl --location --request PUT '192.168.0.79:9200/test_index/_doc/1' \
+   --header 'Content-Type: application/json' \
+   --data-raw '{
+       "name": "小明",
+       "email": "[email protected]",
+       "tags": ["篮球","游泳"]
+   }'
    ```
 
 9. 根据id查询文档
@@ -84,6 +102,8 @@
     + 部分修改=> POST
 
       ```shell
+      # 1 => 调用_update方法
+      # 2 => 修改的fields放在doc属性里面
       curl -i -XPOST http://192.168.11.119:9200/test_index/user/1/_update -d '{
               "doc":{
                   "email": "[email protected]"
@@ -100,7 +120,30 @@
     curl -i -XDELETE http://192.168.11.119:9200/test_index/user/2
     ```
 
-12. 查询DSL
+12. 查询
+
+    + 查出type里面全部文档
+
+      ```shell
+      GET /test_index/user/_search
+      
+      # 例子
+      curl -i -XGET http://192.168.11.119:9200/test_index/user/_search\?pretty
+      ```
+
+      
+
+    + 查出符合指定条件的文档
+
+      ```shell
+      GET /test_index/user/_search\?pretty\&q=$field:'$value'
+      
+      curl -i -XGET http://192.168.11.119:9200/test_index/user/_search\?&q=name:'bruce'&sort=email:desc
+      ```
+
+      
+
+13. 查询DSL
 
     + 查询所有文档
 
