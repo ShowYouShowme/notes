@@ -365,42 +365,77 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 1. 日期和时间类型
 
    ```shell
-   DATE                                  3 个字节,日期"1949-10-01"
-   DATETIME                              8 个字节,日期和时间"1949-10-01 11:11:11" 
-   TIMESTAMP                             4 个字节,日期和时间"1949-10-01 11:11:11"
-   TIME                                  3 个字节,时间"23:59:25"
    YEAR                                  1 字节,年份,比如"2019"
+   TIME                                  3 个字节,时间"23:59:25"
+   DATE                                  3 个字节,日期"1949-10-01"
+   DATETIME                              8 个字节,日期和时间"1949-10-01 11:11:11" 用NOW()输入当前日期和时间
+   TIMESTAMP                             4 个字节,日期和时间"1949-10-01 11:11:11" 用CURRENT_TIMESTAMP 输入当前日期和时间
    ```
 
 2. 字符串类型
 
    ```shell
-   CHAR(M)                               M字节，1 <= M <= 255 
-   VARCHAR(M)                            L+1 字节, 在此L <= M和1 <= M <= 255 
-   TINYBLOB, TINYTEXT                    L+1 字节, 在此L< 2 ^ 8 
-   BLOB, TEXT                            L+2 字节, 在此L< 2 ^ 16 
-   MEDIUMBLOB, MEDIUMTEXT         				L+3 字节, 在此L< 2 ^ 24 
-   LONGBLOB, LONGTEXT                 		L+4 字节, 在此L< 2 ^ 32 
-   ENUM('value1','value2',...)           1 或 2 个字节, 取决于枚举值的数目(最大值65535） 
-   SET('value1','value2',...)            1，2，3，4或8个字节, 取决于集合成员的数量(最多64个成员）
+   # CHAR 和 VARCHAR
+   CHAR(M)						固定长度为M
+   VARCHAR(M)				可变长度，字符串长度最大为M
+   
+   # TEXT类型
+   TINYTEXT          L+1 字节, 在此L< 2^8 	-	1
+   TEXT              L+2 字节, 在此L< 2^16 - 1
+   MEDIUMTEXT        L+3 字节, 在此L< 2^24 - 1
+   LONGTEXT          L+4 字节, 在此L< 2^32 - 1
+   
+   # ENUM类型
+   枚举类型，值只能是几个字符串的一个
+   ${field} ENUM('v1', 'v2', ..., 'vn')
+   # SET类型
+   集合类型，值只能是几个字符串中的若干个
+   ${field} SET('v1', 'v2', ..., 'vn')
    ```
 
 3. 数字类型
 
+   + 整数类型
+
+     ```shell
+     TINYINT                               1 字节 
+     SMALLINT                              2 个字节 
+     MEDIUMINT                             3 个字节 
+     INT                                   4 个字节 
+     INTEGER                               4 个字节 
+     BIGINT                                8 个字节 
+     
+     # 定义时设置显示宽度(鸡肋的功能)
+     int(11)
+     
+     # 定义时设置为无符号整数
+     unsigned
+     ```
+
+   + 小数
+
+     ```shell
+     # 浮点类型
+     FLOAT                                 4 个字节 
+     DOUBLE                                8 个字节
+     
+     # 定点类型
+     # M:长度 D:小数位数
+     DECIMAL(M,D)                          M字节(D+2 , 如果M < D) 
+     ```
+
+4. 二进制类型
+
    ```shell
-   TINYINT                               1 字节 
-   SMALLINT                              2 个字节 
-   MEDIUMINT                             3 个字节 
-   INT                                   4 个字节 
-   INTEGER                               4 个字节 
-   BIGINT                                8 个字节 
-   FLOAT(X)                              4 如果 X < = 24 或 8 如果 25 < = X < = 53 
-   FLOAT                                 4 个字节 
-   DOUBLE                                8 个字节 
-   DOUBLE PRECISION                      8 个字节 
-   REAL                                  8 个字节 
-   DECIMAL(M,D)                          M字节(D+2 , 如果M < D) 
-   NUMERIC(M,D)                          M字节(D+2 , 如果M < D)
+   BINARY(M)														字节数为M，允许0～M的定长二进制数据
+   VARBINARY(M)												字节数为实际数据长度+1，允许0～M的定长二进制数据
+   BIT(M)															M位二进制数据，M最大值为64
+   TINYBLOB														可变长二进制，最多2^8-1个字节
+   BLOB 																可变长二进制，最多2^16-1个字节
+   MEDIUMBLOB													可变长二进制，最多2^24-1个字节
+   LONGBLOB 														可变长二进制，最多2^32-1个字节
    ```
+
+   
 
    
