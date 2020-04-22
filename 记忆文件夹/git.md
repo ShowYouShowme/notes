@@ -49,6 +49,9 @@ git diff HEAD
 ```shell
 git add ${file}
 git commit --message "增加data.txt文件"
+
+# 或者
+git commit -m "${comment}"
 ```
 
 
@@ -135,7 +138,7 @@ git commit --message "增加data.txt文件"
    
    
    # 问题 => 合并分支出错
-   # 原因 => 本地修改了文件A,其它分支真好对文件A有修改
+   # 原因 => 本地修改了文件A,其它分支正好对文件A有修改
    # 解决方案
    # step1 => 暂存本地修改
    git stash
@@ -197,4 +200,27 @@ git log origin/master
 
 
 ## 11 差异对比
+
+
+
+
+
+## 12 储藏
+
+```shell
+# 储藏修改
+git stash
+
+# 恢复修改
+
+## method1
+git stash pop
+
+## method2
+git stash pop stash@{1}
+
+
+# 查看储藏区内容
+git stash list
+```
 
