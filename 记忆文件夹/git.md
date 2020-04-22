@@ -71,7 +71,7 @@ git commit -m "${comment}"
   git pull
   
   # step2
-  解决冲突
+  解决冲突 使用git diff 查看冲突的地方
   
   # step3
   git add ${files}
@@ -120,7 +120,7 @@ git commit -m "${comment}"
    # step3 => 恢复本地修改
    git stash pop  # 查看 git stash list
    
-   # step4 => 处理冲突
+   # step4 => 处理冲突 使用git diff 查看冲突的内容
    
    ```
 
@@ -149,7 +149,7 @@ git commit -m "${comment}"
    # step3 => 恢复暂存区的数据
    git stash pop
    
-   # step4 => 处理冲突
+   # step4 => 处理冲突 用git diff 查看处理
    
    ```
 
