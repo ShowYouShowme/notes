@@ -178,7 +178,7 @@
       ```
 
       ```shell
-      # 增加分页操作
+      # 增加分页操作 from 从0开始 只获取email字段
       curl -i -XGET http://192.168.11.119:9200/test_index/user/_search?pretty -d '
       {
         "query": {

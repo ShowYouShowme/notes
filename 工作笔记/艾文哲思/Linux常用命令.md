@@ -1159,7 +1159,17 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
    ssh  -p 12008 root@dna3.viewdao.com "bash -s " < local.sh 66778
    ```
 
-   
+
+
+## 8 公钥拷贝到远程机器
+
+```shell
+ssh-copy-id -p ${port} ${user}@${host}
+
+ssh-copy-id -p 22 root@192.168.1.2
+```
+
+
 
 
 
