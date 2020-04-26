@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
 ***
 
-+ 前提 => 默认情况下路由响应GET方法
++ 前提 ==> 默认情况下路由响应GET方法
 
 + 注册POST方法的路由
 
@@ -140,4 +140,122 @@ if __name__ == '__main__':
       app.run(host = '127.0.0.1', port = '1234', debug=True)
   ```
 
+  login.html
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+     <body>
   
+        <form action = "http://localhost:1234/login" method = "get">
+           <p>Enter Name:</p>
+           <p><input type = "text" name = "nm" /></p>
+           <p><input type = "submit" value = "submit" /></p>
+        </form>
+  
+     </body>
+  </html>
+  ```
+
+  
+
+
+
+## 05 模板
+
+***
+
++ 前提 ==> 在python里生成html内容很麻烦，比如放置变量数据和python语言元素(条件或循环)
+
++ 解决方案 ==> 利用jinja2模板
+
++ 模板相关知识
+
+  1. 模板文件位于`templates`目录里
+
+  2. 模板分隔符
+
+     ```python
+     1.{% ... %} 用于语句
+     
+     2.{{ ... }} 用于变量
+     
+     3.{# ... #} 注释
+     
+     4.# ... ## 用于行语句
+     ```
+
++ 例子
+
+  1. 变量替换
+
+     ```python
+     @app.route('/hello/<user>')
+     def hello_name(user):
+         return render_template('hello.html', name = user)
+     ```
+
+     hello.html
+
+     ```html
+     <!doctype html>
+     <h1>Hello {{ name }}!</h1>
+     ```
+
+  2. 使用条件语句
+
+     ```python
+     @app.route('/hello/<float:score>')
+     def hello_name(score):
+         return render_template('hello.html', marks = score)
+     ```
+
+     hello.html
+
+     ```html
+     <!doctype html>
+     
+     {% if marks > 50 %}
+     <h1>Your result is pass!</h1>
+     {% else %}
+     <h1>Your result is fail!</h1>
+     {% endif %}
+     ```
+
+  3. 使用循环语句
+
+     ```python
+     @app.route('/result')
+     def result():
+         dict = {
+             'phy' : 50,
+             'che' : 60,
+             'maths' : 70
+         }
+         return render_template('result.html', result = dict)
+     ```
+
+     result.html
+
+     ```html
+     <!DOCTYPE html>
+     <html>
+     <body>
+      <table border="1">
+         {% for key in result %}
+         <tr>
+            <th> {{ key }} </th>>
+            <td> {{ result[key] }} </td>
+         </tr>
+        {% endfor %}
+       </table>
+     </body>
+     </html>
+     ```
+
+
+
+## 06 静态文件
+
+***
+
