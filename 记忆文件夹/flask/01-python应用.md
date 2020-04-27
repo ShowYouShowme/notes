@@ -413,7 +413,7 @@ if __name__ == '__main__':
 
   
 
-  ## 07 cookies
+  ## 09 cookies
 
   ***
 
@@ -492,7 +492,7 @@ if __name__ == '__main__':
 
   
 
-  ## 08 session
+  ## 10 session
 
   ***
 
@@ -553,6 +553,150 @@ if __name__ == '__main__':
     2. 在虚拟机里面用curl测试
     ```
 
-    
-
   
+
+  ## 11 重定向
+
+  ***
+
+  + 知识点
+
+    1. 函数原型
+
+       ```python
+       redirect(location, code=302, Response=None)
+       ```
+
+    2. 状态吗
+
+       ```shell
+       300:MULTIPLE_CHOICES
+       301:MOVED_PERMANENTLY
+       302:FOUND
+       303:SEE_OTHER
+       304:NOT_MODIFIED
+       305:USE_PROXY
+       306:RESERVED
+       307:TEMPORARY_REDIRECT
+       ```
+
+  + 示例代码
+
+    1. 例子一
+
+       ```python
+       @app.route('/')
+       def index():
+           return render_template('login.html')
+       
+       @app.route('/login', methods = ['POST', 'GET'])
+       def login():
+           if request.method == 'POST' and request.form['username'] == 'admin':
+               return redirect(url_for('success'))
+           else:
+               return redirect(url_for('index'))
+       
+       @app.route('/success')
+       def success():
+           return 'logged in successfully!' 
+       ```
+
+       login.html
+
+       ```html
+       <!DOCTYPE html>
+       <html>
+          <body>
+       
+             <form action = "http://localhost:1234/login" method = "post">
+                <p>Enter Name:</p>
+                <p><input type = "text" name = "username" /></p>
+                <p><input type = "submit" value = "submit" /></p>
+             </form>
+       
+          </body>
+       </html>
+       ```
+
+    2. 例子二 => abort返回错误信息
+
+       函数原型
+
+       ```python
+       flask.abort(code)
+       ```
+
+       错误码
+
+       ```she l
+       400:错误请求
+       401:身份未交验
+       403:Forbidden
+       404:Not Found
+       406:Not Acceptable
+       415:不支持的媒体类型
+       429:请求过多
+       ```
+
+       
+
+       ```python
+       # login.html 和上面一样
+       
+       @app.route('/')
+       def index():
+           return render_template('login.html')
+       
+       @app.route('/login', methods = ['POST', 'GET'])
+       def login():
+           if request.method == 'POST':
+               if request.form['username'] == 'admin':
+                   return redirect(url_for('success'))
+               else:
+                   abort(401) # 返回错误信息给客户端
+           else:
+               return redirect(url_for('index'))
+       
+       @app.route('/success')
+       def success():
+           return 'logged in successfully!'
+       ```
+
+
+
+## 12 消息闪现
+
+***
+
+
+
+
+
+## 13 文件上传
+
+***
+
+
+
+
+
+## 14 拓展
+
+***
+
++ 邮件
++ WTF
++ SQLite
++ SQLAIchemy
++ Sijax
+
+
+
+## 15 部署
+
+***
+
+
+
+
+
