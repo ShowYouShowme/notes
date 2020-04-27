@@ -349,3 +349,210 @@ if __name__ == '__main__':
      javascript的代码不变
 
   
+
+  ## 07 Flask Request对象
+
+  ***
+
+  + form => 字典对象，保持urlencode的表单参数
+  + args => GET请求查询字符串的内容
+  + cookies => cookies相关信息
+  + files => 上传文件相关的数据
+  + method => 当前请求方法
+
+  
+
+  
+
+  ## 08 表单数据发送到模板
+
+  ***
+
+  + 示例代码
+
+    ```python
+    @app.route('/')
+    def student():
+        return render_template('student.html')
+    
+    @app.route('/result', methods = ['POST'])
+    def result():
+        result = request.form
+        return render_template('result.html', result = result)
+    ```
+
+    student.html
+
+    ```html
+      <form action = "http://localhost:1234/result" method = "POST">
+         <p>Name <input type = "text" name = "Name" /></p>
+         <p>Physics <input type = "text" name = "Physics" /></p>
+         <p>Chemistry <input type = "text" name = "chemistry" /></p>
+         <p>Maths <input type ="text" name = "Mathematics" /></p>
+         <p><input type = "submit" value = "submit" /></p>
+      </form>
+    ```
+
+    result.html
+
+    ```html
+    <!DOCTYPE html>
+    <html>
+    <body>
+     <table border="1">
+        {% for key in result %}
+        <tr>
+           <th> {{ key }} </th>>
+           <td> {{ result[key] }} </td>
+        </tr>
+       {% endfor %}
+      </table>
+    </body>
+    </html>
+    ```
+
+  
+
+  ## 07 cookies
+
+  ***
+
+  + 设置cookies
+
+    ```python
+    1. 使用make_response()函数从视图函数的返回值获取响应对象
+    2. 使用响应对象的set_cookie()函数来存储cookie
+    ```
+
+  + 读取cookies
+
+    ```python
+    request.cookies属性的get()方法用于读取cookie
+    ```
+
+  + 示例代码
+
+    ```python
+    @app.route('/')
+    def student():
+        return render_template('index.html')
+      
+    @app.route('/setcookie', methods = ["POST"])
+    def set_cookie():
+        user : str = request.form["nm"]
+        resp = make_response(render_template('read_cookie.html'))
+        resp.set_cookie("userID", user)
+        return resp
+    
+    @app.route('/getcookie')
+    def get_cookie():
+        name = request.cookies.get("userID")
+        return 'welcome {0}'.format(name)
+    ```
+
+    index.html
+
+    ```html
+    <html>
+    
+    <body>
+    
+        <form action = "/setcookie" method="post">
+            <p>
+                <h3>Enter userID</h3>
+            </p>
+            <p>
+                <input type="text" name="nm" />
+            </p>
+            <p>
+                <input type="submit" value="Login" />
+            </p>
+        </form>
+    </body>
+    
+    </html>
+    ```
+
+    read_cookie.html
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>read cookies</title>
+    </head>
+    <body>
+        <a href="/getcookie" target="_blank">
+            click here to get cookies!
+        </a>
+    </body>
+    </html>
+    ```
+
+  
+
+  ## 08 session
+
+  ***
+
+  + 知识点
+
+    ```python
+    1.session 可以认为是socket连接的一个封装，每个client对应一个session，可以往session里面存储数据
+    2.服务器会对session数据签名，因此要指定SECRET_KEY
+    ```
+
+  + 示例代码
+
+    ```python
+    from flask import  Flask, url_for, redirect, request, render_template, make_response, session
+    app = Flask(__name__)
+    app.secret_key = " this is random string"
+    @app.route('/')
+    def index():
+        if 'username' in session:
+            username = session['username']
+            return 'Login as {0} <br> <a href = "/logout"> click here to log out</a>'.format(username)
+        else:
+            return '''
+            you are not logged in <br>
+            <a href = "/login"> click here to login</a>
+            '''
+    
+    @app.route('/login', methods = ['POST', 'GET'])
+    def login():
+        if request.method == "POST":
+            session["username"] = request.form["username"]
+            return redirect(url_for("index"))
+        else:
+            return '''
+            <form action = '/login' method = 'post'>
+                <p>
+                    <input type = 'text' name = 'username' />
+                </p>
+                <p>
+                    <input type = 'submit' value = 'Login' />
+                </p>
+            </form>
+            '''
+    
+    @app.route("/logout")
+    def logout():
+        session.pop("username", None)
+        return redirect(url_for("index"))
+    if __name__ == '__main__':
+        # 启动debug模式时，代码修改了会自动重新加载无需重启服务
+        app.run(host = '0.0.0.0', port = '1234', debug=True)
+    ```
+
+    测试
+
+    ```shell
+    1. 在本机用浏览器测试
+    2. 在虚拟机里面用curl测试
+    ```
+
+    
+
+  
