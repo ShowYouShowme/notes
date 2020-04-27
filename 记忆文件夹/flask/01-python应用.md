@@ -259,3 +259,93 @@ if __name__ == '__main__':
 
 ***
 
++ 前提 => 静态文件放在路径`/static`
+
++ 示例
+
+  1. 例子一
+
+     ```python
+     @app.route('/')
+     def index():
+         return render_template('index.html')
+     ```
+
+     index.html
+
+     ```html
+     <html>
+     
+         <head>
+             <script type="text/javascript" src = "{{ url_for('static', filename = 'hello.js') }}">
+     
+             </script>
+         </head>
+     
+         <body>
+             <input type = "button" onclick="sayHello()" value="Say Hello" />
+         </body>
+     
+     </html>
+     ```
+
+     hello.js
+
+     ```javascript
+     function sayHello(){
+         alert("Hello world!")
+     }
+     ```
+
+  2. 例子二
+
+     + python和javascript的代码不变
+
+     + index.html
+
+       ```html
+       <html>
+       
+           <head>
+               <script type="text/javascript" src = "/static/hello.js">
+       
+               </script>
+           </head>
+       
+           <body>
+               <input type = "button" onclick="sayHello()" value="Say Hello" />
+           </body>
+       
+       </html>
+       ```
+
+  3. 例子三
+
+     ```python
+     @app.route('/')
+     def index():
+         url = url_for('static', filename = 'hello.js')
+         return render_template('index.html', path_to_hello = url)
+     ```
+
+     index.html
+
+     ```html
+     <html>
+     
+         <head>
+             <script type="text/javascript" src = "{{ path_to_hello }}">
+     
+             </script>
+         </head>
+     
+         <body>
+             <input type = "button" onclick="sayHello()" value="Say Hello" />
+         </body>
+     
+     </html>
+     ```
+
+     javascript的代码不变
+
+  
