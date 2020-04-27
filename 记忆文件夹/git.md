@@ -222,5 +222,8 @@ git stash pop stash@{1}
 
 # 查看储藏区内容
 git stash list
+
+# 储藏部分文件
+git stash -p # 根据提示输入，"y"表示储藏，"n"表示不储藏
 ```
 
