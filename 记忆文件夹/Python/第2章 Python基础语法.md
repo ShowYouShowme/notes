@@ -34,3 +34,30 @@ if 10 - 9 > 0:
 	1. bandWidth
 	2. BandWidth
 	3. band_width 
+
+
+
+### 数据类型归纳
+
+***
+
+1. 不可变数据类型（值类型）
+
+   ```shell
+   1. Number
+   2. String
+   3. Tuple
+   ```
+
+   
+
+2. 可变数据类型（引用类型）
+
+   ```shell
+   1. List
+   2. Dictionary
+   3. Set
+   4. 自定义的class
+   ```
+
+   
