@@ -668,7 +668,83 @@ if __name__ == '__main__':
 
 ***
 
++ 作用 => 向用户提供有关交互的反馈，类似javascript的警报
 
++ 代码
+
+  ```python
+  from flask import  Flask, url_for, redirect, request, render_template, flash
+  app = Flask(__name__)
+  app.secret_key = " this is random string"
+  
+  @app.route('/')
+  def index():
+      return render_template('index.html')
+  
+  @app.route('/login', methods = ['GET', 'POST'])
+  def login():
+      error : str = None
+      if request.method == 'POST':
+          if request.form['username'] != 'admin' or \
+              request.form['password'] != 'admin':
+              error = 'Invalid username or password. Please try again!'
+              return render_template('login.html', error=error)
+          else:
+              flash('You were successfully logged in')
+              return redirect(url_for('index'))
+      else:
+          return render_template('login.html', error = error)
+  
+  if __name__ == '__main__':
+      # 启动debug模式时，代码修改了会自动重新加载无需重启服务
+      app.run(host = '0.0.0.0', port = '1234', debug=True)
+  ```
+
+  index.html
+
+  ```html
+  <html>
+  
+  <body>
+  
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+          <ul>
+              {% for message in messages %}
+              <li>{{ message }}</li>
+              {% endfor %}
+          </ul>>
+          {% endif %}
+      {% endwith %}
+      <h1>Flask Message Flashing Example</h1>
+      Do you want to <a href="/login">log in ?</a>
+  </body>
+  
+  </html>
+  ```
+
+  login.html
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+     <body>
+  
+        {% if error %}
+        <p><strong>Error:</strong>{{ error }}</p>
+        {% endif %}
+        <form action = "http://localhost:1234/login" method = "post">
+           <p>Login</p>
+           <p>Username:<input type = "text" name = "username" /></p>
+           <p>Password:<input type = "password" name = "password" /></p>
+           <p><input type = "submit" value = "submit" /></p>
+        </form>
+  
+     </body>
+  </html>
+  ```
+
+  
 
 
 
@@ -676,7 +752,50 @@ if __name__ == '__main__':
 
 ***
 
++ 代码
 
+  ```python
+  from flask import  Flask,request, render_template
+  from werkzeug.utils import secure_filename
+  app = Flask(__name__)
+  app.secret_key = " this is random string"
+  
+  @app.route('/')
+  def index():
+      return render_template('upload.html')
+  
+  @app.route('/uploader', methods = ['POST'])
+  def upload_file():
+      f1 = request.files['f']
+      f1.save(secure_filename(f1.filename))
+      return 'file upload successfully!'
+  
+  
+  if __name__ == '__main__':
+      # 启动debug模式时，代码修改了会自动重新加载无需重启服务
+      app.run(host = '0.0.0.0', port = '1234', debug=True)
+  ```
+
+  upload.html
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>upload</title>
+  </head>
+  <body>
+  
+      <form action="/uploader" method="post" enctype="multipart/form-data">
+          <input type="file" name="f"/>
+          <input type="submit" />
+      </form>
+  </body>
+  </html>
+  ```
+
+  
 
 
 
