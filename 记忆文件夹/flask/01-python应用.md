@@ -803,11 +803,232 @@ if __name__ == '__main__':
 
 ***
 
-+ 邮件
-+ WTF
-+ SQLite
-+ SQLAIchemy
-+ Sijax
+
+
+### 14-1 邮件
+
+***
+
++ 知识点 => 发送邮件的流程
+
++ 流程
+
+  1. 安装扩展
+
+     ```shell
+     pip install Flask-Mail
+     ```
+
+  2. 配置应用程序参数
+
+     ```shell
+     MAIL_SERVER:电子邮件服务器的域名/IP地址
+     MAIL_PORT:  服务器端口号
+     MAIL_USE_TLS: 是否启用TLS
+     MAIL_USE_SSL: 是否启用SSL
+     MAIL_USERNAME:发件人用户名
+     MAIL_PASSWORD:发件人授权码
+     ```
+
+     
+
+  3. 构造对象`Mail`和`Message`发送邮件
+
++ 示例代码
+
+  ```python
+  # 发送邮件的demo
+  from flask import Flask
+  from flask_mail import Mail, Message
+  
+  app =Flask(__name__)
+  mail=Mail(app)
+  
+  # imap和pop3的选择 ==> 优先imap
+  app.config['MAIL_SERVER']='smtp.126.com'
+  app.config['MAIL_PORT'] = 465
+  app.config['MAIL_USERNAME'] = 'wzc_0618@126.com'
+  app.config['MAIL_PASSWORD'] = 'SAGJEOZIYUNKVLLH' # 授权码不是密码
+  app.config['MAIL_USE_TLS'] = False
+  app.config['MAIL_USE_SSL'] = True
+  mail = Mail(app)
+  
+  @app.route("/")
+  def index():
+     msg = Message('new day', sender = 'wzc_0618@126.com', recipients = ['861949775@qq.com'])
+     msg.body = "Hello Flask message sent from Flask-Mail"
+     mail.send(msg)
+     return "Sent"
+  
+  if __name__ == '__main__':
+     app.run(debug = True, port=7890)
+  ```
+
+  
+
+### 14-2 WTF
+
+***
+
+
+
+### 14-3 SQLite
+
+***
+
++ 示例代码
+
+  ```python
+  from flask import Flask, render_template, request
+  import sqlite3
+  app = Flask(__name__)
+  
+  # 创建表 第一次请求到来前触发
+  @app.before_first_request
+  def create_table():
+      conn = sqlite3.connect('database.db')
+      print("open database successfully")
+      conn.execute('CREATE TABLE students (name TEXT, addr TEXT, city TEXT, pin TEXT)')
+      print("Table created successfully!")
+      conn.close()
+  
+  @app.route('/')
+  def home():
+      return render_template('home.html')
+  
+  @app.route('/enter_new')
+  def new_student():
+      return render_template('student.html')
+  
+  @app.route('/add_record', methods = ["POST"])
+  def add_record():
+      try:
+          name = request.form['name']
+          address = request.form['address']
+          city = request.form['city']
+          pin = request.form['pin_code']
+  
+          conn = sqlite3.connect("database.db")
+          cursor = conn.cursor()
+          cursor.execute("INSERT INTO students (name, addr, city, pin) VALUES (?, ?, ?, ?)", (name, address, city, pin))
+          conn.commit()
+          msg = "Record successfully added"
+      except Exception as e:
+          conn.rollback()
+          msg = "error in insert operation"
+          print(e)
+      finally:
+          return render_template('result.html', msg = msg)
+          conn.close()
+  
+  @app.route('/list')
+  def list():
+      conn = sqlite3.connect("database.db")
+      conn.row_factory = sqlite3.Row
+      cursor = conn.cursor()
+      cursor.execute("select * from students")
+      rows = cursor.fetchall()
+      return render_template("list.html", rows = rows)
+  
+  if __name__ == '__main__':
+      app.run(debug=True, host="127.0.0.1", port=2345)
+  ```
+
+  home.html
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>Title</title>
+  </head>
+  <body>
+      <h1>
+          <a href="/enter_new">
+              Add New Record
+          </a>
+      </h1>
+  
+      <h1>
+          <a href="/list">
+              Show List
+          </a>
+      </h1>
+  </body>
+  </html>
+  ```
+
+  student.html
+
+  ```html
+    <form action = "http://localhost:2345/add_record" method = "POST">
+       <p>Name <input type = "text" name = "name" /></p>
+       <p>Address <input type = "text" name = "address" /></p>
+       <p>city <input type = "text" name = "city" /></p>
+       <p>Pincode <input type ="text" name = "pin_code" /></p>
+       <p><input type = "submit" value = "submit" /></p>
+    </form>
+  ```
+
+  result.html
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+  <body>
+      result of addition : {{ msg }}
+      <h2>
+          <a href="/">
+              go back to home page!
+          </a>
+      </h2>
+  </body>
+  </html>
+  ```
+
+  list.html
+
+  ```html
+  <!doctype html>
+  <html>
+     <body>
+  
+        <table border = 1>
+           <thead>
+              <td>Name</td>
+              <td>Address>/td<
+              <td>city</td>
+              <td>Pincode</td>
+           </thead>
+  
+           {% for row in rows %}
+              <tr>
+                 <td>{{row["name"]}}</td>
+                 <td>{{row["addr"]}}</td>
+                 <td> {{ row["city"]}}</td>
+                 <td>{{row['pin']}}</td>
+              </tr>
+           {% endfor %}
+        </table>
+  
+        <a href = "/">Go back to home page</a>
+  
+     </body>
+  </html>
+  ```
+
+  
+
+### 14-4 SQLAIchemy
+
+***
+
+
+
+### 14-5 Sijax
+
+***
 
 
 
