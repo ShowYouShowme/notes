@@ -1024,7 +1024,134 @@ if __name__ == '__main__':
 
 ***
 
++ 简介：**SQLAlchemy**是python的`Object Relation Mapping`包。
 
++ 安装
+
+  ```shell
+  pip3 install flask-sqlalchemy
+  ```
+
++ 示例代码
+
+  ```python
+  from flask import Flask,render_template,request,flash,redirect,url_for
+  from flask_sqlalchemy import SQLAlchemy
+  app = Flask(__name__)
+  app.secret_key = "i am your doom!"
+  
+  app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+  db = SQLAlchemy(app)
+  # 将表映射为class
+  class Student(db.Model):
+      global db
+      id      = db.Column(db.Integer, primary_key = True)
+      name    = db.Column(db.String(100))
+      city    = db.Column(db.String(50))
+      address = db.Column(db.String(200))
+      pin     = db.Column(db.String(10))
+      def __init__(self, name : str, city : str, address : str, pin : str):
+          self.name       = name
+          self.city       = city
+          self.address    = address
+          self.pin        = pin
+  # 创建表
+  @app.before_first_request
+  def create_table():
+      global db
+      db.create_all()
+  
+  @app.route('/')
+  def show_all():
+      return render_template('show_all.html', students = Student.query.all())
+  
+  @app.route('/new', methods = ['GET', 'POST'])
+  def new():
+      if request.method == 'POST':
+          if not request.form['name'] or \
+              not request.form['city'] or \
+              not request.form['address'] or \
+              not request.form['pincode']:
+              flash('please enter all the fields', 'error')
+              return render_template('new.html')
+          else:
+              student = Student(request.form['name'], request.form['city'],
+                                request.form['address'], request.form['pincode'])
+              db.session.add(student) # 插入记录
+              db.session.commit()
+              flash('Record was successfully addedd')
+              return redirect(url_for('show_all'))
+      else:
+          return render_template('new.html')
+  
+  if __name__ == '__main__':
+      app.run(debug=True, host="127.0.0.1", port=2345)
+  ```
+
+  show_all.html
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>show_all</title>
+  </head>
+  <body>
+  
+  
+      <h3>
+          <a href="/new">Add student</a>
+      </h3>
+      <table border="1">
+          <tr>
+              <th>Name</th>
+              <th>City</th>
+              <th>Address</th>
+              <th>Pin</th>
+          </tr>
+  
+          {% for student in students %}
+          <tr>
+              <td>{{ student.name }}</td>
+              <td>{{ student.city }}</td>
+              <td>{{ student.address }}</td>
+              <td>{{ student.pin }}</td>
+          </tr>
+          {% endfor %}
+      </table>
+  </body>
+  </html>
+  ```
+
+  new.html
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>new</title>
+  </head>
+  <body>
+  
+          {% for category, message in get_flashed_messages(with_categories = true) %}
+           <div class = "alert alert-danger">
+              {{ message }}
+           </div>
+        {% endfor %}
+      <form action="{{ request.path }}" method="post">
+          <input type="text" name="name" placeholder="Name"/> Name<br/>
+          <input type="text" name="city" placeholder="city"/> City<br/>
+          <input type="text" name="address" placeholder="Address"> Address<br/>
+          <input type="text" name="pincode" placeholder="PinCode"> PinCode<br/>
+          <input type="submit" name="submit" />
+      </form>
+  </body>
+  </html>
+  ```
+
+  
 
 ### 14-5 Sijax
 
