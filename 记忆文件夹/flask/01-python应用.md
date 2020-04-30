@@ -870,6 +870,167 @@ if __name__ == '__main__':
 
 ***
 
++ 简介：html表单很难动态呈现表单元素，**WTForms**库出现解决了该问题
+
++ 安装
+
+  ```shell
+  pip3 install flask-WTF
+  pip3 install email_validator
+  ```
+
++ 表单库描述
+
+  |         StringField | type类型为text的input标签            |
+  | ------------------: | ------------------------------------ |
+  |       TextAreaField | 多行文本字段                         |
+  |       PasswordField | 密码文本字段                         |
+  |         HiddenField | 隐藏文本字段                         |
+  |           DateField | 文本字段， 值为datetime.date格式     |
+  |       DateTimeField | 文本字段， 值为datetime.datetime格式 |
+  |        IntegerField | 文本字段， 值为整数                  |
+  |        DecimalField | 文本字段， 值为decimal.Decimal       |
+  |          FloatField | 文本字段， 值为浮点数                |
+  |        BooleanField | 复选框， 值为True 和 False           |
+  |          RadioField | 一组单选框                           |
+  |         SelectField | 下拉列表                             |
+  | SelectMultipleField | 下拉列表， 可选择多个值              |
+  |           FileField | 文件上传字段                         |
+  |         SubmitField | 表单提交按钮                         |
+  |           FormFiled | 把表单作为字段嵌入另一个表单         |
+  |           FieldList | 子组指定类型的字段                   |
+  |                     |                                      |
+
++ ##### Validators验证器
+
+  | 验证函数        | 描述                                                    |
+  | --------------- | ------------------------------------------------------- |
+  | Email           | 验证是电子邮件地址                                      |
+  | EqualTo         | 比较两个字段的值； 常用于要求输入两次密钥进行确认的情况 |
+  | **IPAddress**   | 验证IPv4网络地址                                        |
+  | **Length**      | 验证输入字符串的长度                                    |
+  | **NumberRange** | 验证输入的值在数字范围内                                |
+  | Optional        | 无输入值时跳过其它验证函数                              |
+  | DataRequired    | 确保字段中有数据                                        |
+  | Regexp          | 使用正则表达式验证输入值                                |
+  | URL             | 验证url                                                 |
+  | AnyOf           | 确保输入值在可选值列表中                                |
+  | NoneOf          | 确保输入值不在可选值列表中                              |
+
++ 示例代码
+
+  ```python
+  import os, sys
+  path = os.path.join('.', os.path.dirname(__file__), '../')
+  sys.path.append(path)
+  
+  from flask import Flask,render_template,request
+  from flask_wtf import FlaskForm
+  from wtforms import StringField,validators,IntegerField, TextAreaField, SubmitField, RadioField,SelectField
+  
+  
+  class ContactForm(FlaskForm):
+      name = StringField("Name Of Student", [validators.DataRequired(message="要输入用户名哦!")])
+      Gender = RadioField('Gender', choices=[('M', 'Male'), ('F', 'Female')])
+      Address = TextAreaField("Address")
+  
+      email = StringField("Email", [validators.DataRequired("Please enter your email address."),
+                                  validators.Email("Please enter your email address.")])
+  
+      Age = IntegerField("age")
+      language = SelectField('Languages', choices=[('cpp', 'C++'),
+                                                   ('py', 'Python')])
+      submit = SubmitField("Send")
+  
+  app = Flask(__name__)
+  app.secret_key = 'development key'
+  
+  @app.route('/contact', methods = ['GET', 'POST'])
+  def contact():
+      if request.method == 'POST':
+          form = ContactForm(formdata=request.form)
+          if form.validate() == False:
+              return render_template('contact.html', form=form)
+          else:
+              return render_template('success.html')
+      elif request.method == 'GET':
+          form = ContactForm()
+          return render_template('contact.html', form=form)
+  
+  if __name__ == '__main__':
+      app.run(debug=True, port=2345)
+  ```
+
+  contact.html
+
+  ```html
+  <!doctype html>
+  <html>
+     <body>
+  
+        <h2 style = "text-align: center;">Contact Form</h2>
+  
+        {% for (k,v) in form.errors.items() %}
+              <div>{{ k }} : {{ v[0] }}</div>
+        {% endfor %}
+  
+  
+        <form action = "http://localhost:2345/contact" method = post>
+           <fieldset>
+              <legend>Contact Form</legend>
+              {{ form.hidden_tag() }}
+  
+              <div style = font-size:20px; font-weight:bold; margin-left:150px;>
+                 {{ form.name.label }}<br>
+                 {{ form.name }}
+                 <br>
+  
+                 {{ form.Gender.label }} {{ form.Gender }}
+                 {{ form.Address.label }}<br>
+                 {{ form.Address }}
+                 <br>
+  
+                 {{ form.email.label }}
+                 {{ form.email }}<br>
+  
+  
+                 <br>
+  
+                 {{ form.Age.label }}<br>
+                 {{ form.Age }}
+                 <br>
+  
+                 {{ form.language.label }}<br>
+                 {{ form.language }}
+                 <br>
+                 {{ form.submit }}
+              </div>
+  
+           </fieldset>
+        </form>
+  
+     </body>
+  </html>
+  ```
+
+  success.html
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <title>successfully_page</title>
+  </head>
+  <body>
+      <h1>
+          Form posted successfully!
+      </h1>
+  </body>
+  </html>
+  ```
+
+  
 
 
 ### 14-3 SQLite
