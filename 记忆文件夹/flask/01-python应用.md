@@ -1157,7 +1157,84 @@ if __name__ == '__main__':
 
 ***
 
++ 简介：python的**jquery**库，浏览器可以直接调用服务器的代码
 
++ 安装
+
+  ```shell
+  pip3 install flask-sijax
+  ```
+
++ 示例代码
+
+  ```python
+  import os, sys
+  path = os.path.join('.', os.path.dirname(__file__), '../')
+  sys.path.append(path)
+  
+  from flask import Flask, g, render_template
+  import flask_sijax
+  
+  app = Flask(__name__)
+  app.config["SIJAX_STATIC_PATH"] = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
+  app.config["SIJAX_JSON_URI"] = '/static/js/sijax/json2.js'
+  flask_sijax.Sijax(app)
+  
+  @app.route("/")
+  def hello():
+      return "Hello World!<br /><a href='/sijax'>Go to Sijax test</a>"
+  
+  @app.route("/sijax", methods = ['GET', 'POST'])
+  def hello_sijax():
+    	# 函数有两个参数
+      def hello_handler(obj_response, hello_from, hello_to):
+          obj_response.alert('Hello from %s to %s' % (hello_from, hello_to))
+          obj_response.css('a', 'color', 'green')
+  
+      # 函数没有参数
+      def goodbye_handler(obj_response):
+          obj_response.alert('Goodbye, whoever you are.')
+          obj_response.css('a', 'color', 'red')
+  
+      if g.sijax.is_sijax_request:
+          g.sijax.register_callback('say_hello', hello_handler)
+          g.sijax.register_callback('say_goodbye', goodbye_handler)
+          return g.sijax.process_request()
+  
+      return render_template('hello.html')
+  
+  if __name__ == '__main__':
+      app.run(debug=True, port=2345)
+  ```
+
+  hello.html
+
+  ```html
+  <html>
+  <head>
+      <script type="text/javascript"
+          src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+      <script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
+      <script type="text/javascript">
+          {{ g.sijax.get_js()|safe }}
+      </script>
+  </head>
+  
+  <body>
+      <a href="javascript://" onclick="Sijax.request('say_hello', ['John', 'Greg']);">
+          Say hello from John to Greg!
+      </a>
+      <br />
+      <a href="javascript://" onclick="Sijax.request('say_goodbye');">
+          Say goodbye!
+      </a>
+  </body>
+  </html>
+  ```
+
+  
+
+  
 
 ## 15 部署
 
