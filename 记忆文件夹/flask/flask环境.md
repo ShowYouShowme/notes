@@ -19,7 +19,7 @@
    # 使用默认的python解释器创建虚拟环境
    virtualenv venv
    
-   # 使用指定的python解释器创建虚拟环境，推荐的方式
+   # 使用指定的python解释器创建虚拟环境[推荐的方式]
    virtualenv -p /usr/bin/python3.7 venv
    ```
 
