@@ -433,7 +433,6 @@ yum install tree -y
 
 
 
-
 # unlink
 
 删除软连接
@@ -832,6 +831,28 @@ yum安装时会显示安装的Repository
 
 
 
+# nmap
+
++ 作用 => 网络发现和安全审核工具
+
++ 示例
+
+  > 1. 端口扫描
+  >
+  >    ```shell
+  >    nmap -p 1-65535 47.112.251.164
+  >    ```
+  >
+  > 2. 扫描一个网段的主机存活数
+  >
+  >    ```shell
+  >    nmap -sP 10.10.10.1/24
+  >    ```
+  >
+  >    
+
+  
+
 
 # find
 
@@ -1103,6 +1124,9 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
    ```shell
    # 指定加密类型和注释，rsa长度默认为2048位
    ssh-keygen -t rsa -C "myname@163.com"
+   
+   # 更简单的方案
+   ssh-keygen
    ```
 
 2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
@@ -1192,7 +1216,7 @@ du -sh ./protobuf/
 
 
 
-# iptables
+# iptable
 
 1. 安装
 
