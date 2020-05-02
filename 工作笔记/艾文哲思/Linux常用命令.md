@@ -1520,6 +1520,7 @@ WantedBy=multi-user.target # 多用户模式下需要
 4. `CentOS7`切换为阿里源
 
    ```shell
+   # 深圳阿里云速度慢,可以换成网易云
    # step1:备份
    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
    
