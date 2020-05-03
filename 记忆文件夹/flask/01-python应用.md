@@ -1401,6 +1401,12 @@ if __name__ == '__main__':
 
 ***
 
+
+
+### 15-1 apache + wsgi
+
+***
+
 1. 编译安装python[参考python源码编译安装]
 
 2. 安装apache
@@ -1450,7 +1456,7 @@ if __name__ == '__main__':
      if __name__ == '__main__':
        app.run()
      ```
-   
+
 5. 安装**flask**
 
    ```shell
@@ -1524,7 +1530,97 @@ if __name__ == '__main__':
     curl 127.0.0.1
     ```
 
-    
+
+
+### 15-2 nginx + uwsgi
+
+***
+
+1. 安装uwsgi
+
+   ```shell
+   pip3 install uwsgi
+   ```
+
+2. 在项目下创建配置文件uwsgi.ini
+
+   ```ini
+   [uwsgi]
+   #监听的ip和端口
+   socket = 127.0.0.1:5000   
+   
+   
+   base = /var/www/flask_test
+   app = app
+   module = %(app)
+   home = %(base)/py3env
+   pythonpath = %(base)
+   
+   
+   #项目目录           
+   chdir = /var/www/flask_test
+   
+   #flask程序的启动文件，通常在本地是通过运行  
+   wsgi-file = app.py      
+   
+   #程序内启用的application变量名                          
+   callable = app      
+   
+   #处理器个数
+   processes = 2  
+   
+    #获取uwsgi统计信息的服务地址
+   stats = 127.0.0.1:9191
+   ```
+
+3. 启动uwsgi服务
+
+   ```shell
+   # 1- 创建日志目录
+   mkdir -p /var/log/uwsgi
+   
+   # 2- 创建日志文件
+   touch /var/log/uwsgi/uwsgi.log
+   
+   # 3- 启动服务
+   uwsgi uwsgi.ini -d /var/log/uwsgi/uwsgi.log
+   ```
+
+4. 安装和配置nginx
+
+   ```shell
+   # 1- 安装epel包
+   yum install epel-release -y
+   
+   # 2- 安装nginx
+   yum install nginx -y
+   
+   # 3- 增加flask项目配置文件
+   vim /etc/nginx/conf.d/flask.conf
+   
+   ## flask.conf文件内容
+   server {
+       listen 8080;
+       server_name 127.0.0.1; #访问ip
+       
+       location / {
+         include uwsgi_params;
+         uwsgi_pass 127.0.0.1:5000;  #代理到uwsgi.ini里兼容的ip和端口
+       }
+   }
+   ```
+
+5. 启动nginx并测试服务
+
+   ```shell
+   # 1- 启动nginx
+   nginx
+   
+   # 2- 测试服务
+   curl http://127.0.0.1:8080/
+   ```
+
+   
 
 
 
