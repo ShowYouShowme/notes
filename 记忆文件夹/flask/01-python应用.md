@@ -1401,7 +1401,130 @@ if __name__ == '__main__':
 
 ***
 
+1. 编译安装python[参考python源码编译安装]
 
+2. 安装apache
+
+   ```shell
+   # 1 安装
+   yum install -y httpd httpd-devel
+   
+   # 2 启动 
+   systemctl start httpd.service
+   
+   # 3 测试apache服务是否已经启动
+   http://10.10.10.89/
+   ```
+
+3. 安装`virtualenv`
+
+   ```shell
+   pip3 install virtualenv --proxy http://10.10.10.23:8090
+   ```
+
+4. 创建项目
+
+   + 命令
+
+     ```shell
+     mkdir /var/www/flask_test
+     vi /var/www/flask_test/app.py
+     ```
+
+   + 代码
+
+     ```python
+     from flask import Flask, request
+       
+     app = Flask(__name__)
+       
+     @app.route('/')
+     def hello_world():
+       return 'Hello World'
+       
+     @app.route('/hello')
+     def hello():
+       name = request.args.get('name','')
+       return 'Hello ' + name + '!'
+       
+     if __name__ == '__main__':
+       app.run()
+     ```
+   
+5. 安装**flask**
+
+   ```shell
+   cd /var/www/flask_test
+   virtualenv py3env
+   source py3env/bin/activate
+   
+   # 以下命令在python虚拟环境运行
+   (py3env) [root@localhost flask_test]# pip install flask
+   (py3env) [root@localhost flask_test]# deactivate
+   ```
+
+6. 安装mod_wsgi
+
+   ```shell
+   source py3env/bin/activate # 进入虚拟环境
+   
+   # 以下命令在python虚拟环境运行
+   pip install mod_wsgi
+   mod_wsgi-express install-module # copy 命令的输出
+   
+   # 上面命令输出为
+   LoadModule wsgi_module "/usr/lib64/httpd/modules/mod_wsgi-py37.cpython-37m-x86_64-linux-gnu.so"
+   
+   # 退出虚拟环境
+   deactivate
+   ```
+
+7. 配置mod_wsgi
+
+   ```shell
+   vim /var/www/flask_test/app.wsgi
+   
+   # 文件内容
+   activate_this = '/var/www/flask_test/py3env/bin/activate_this.py'
+   with open(activate_this) as file_:
+     exec(file_.read(), dict(__file__=activate_this))
+     
+   import sys
+   sys.path.insert(0, '/var/www/flask_test')
+   from app import app as application
+   ```
+
+8. 配置apache
+
+   ```shell
+   vi /etc/httpd/conf/httpd.conf
+   
+   # 内容-1[之前copy的]
+   LoadModule wsgi_module "/usr/lib64/httpd/modules/mod_wsgi-py37.cpython-37m-x86_64-linux-gnu.so"
+   
+   # 内容-2
+   <VirtualHost *:80>
+     ServerName example.com
+     WSGIScriptAlias / /var/www/flask_test/app.wsgi
+     <Directory /var/www/flask_test>
+       Require all granted
+     </Directory>
+   </VirtualHost>
+   ```
+
+9. 重启apache
+
+   ```shell
+   systemctl restart httpd.service
+   ```
+
+10. 测试
+
+    ```shell
+    curl 127.0.0.1
+    ```
+
+    
 
 
 

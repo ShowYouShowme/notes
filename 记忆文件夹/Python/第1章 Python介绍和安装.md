@@ -66,3 +66,52 @@
 	3. 在终端里启动>python
 	
 	4. 在终端里退出>>>exit()
+	
++ 源码编译安装
+
+  1. 下载源码
+
+     ```shell
+     wget https://www.python.org/ftp/python/3.7.2/Python-3.7.2.tgz
+     ```
+
+  2. 安装依赖
+
+     ```shell
+     yum install -y gcc zlib* readline readline-devel libffi-devel openssl-devel
+     ```
+
+  3. 编译
+
+     ```shell
+     # 1 解压
+     tar -zxvf Python-3.7.2.tgz
+     
+     # 2 进入目录
+     cd ./Python-3.7.2
+     
+     # 3 配置 安装mod_wsgi会用到python的动态链接库
+     ./configure --prefix=/usr/local/python3 --enable-shared
+     
+     # 4 编译
+     make -j4
+     
+     # 5 安装
+     make
+     
+     # 6 配置环境变量并注册动态链接库
+     
+     ## 6-1 配置环境变量
+     vi /etc/profile
+     export PATH=$PATH:/usr/local/python3/bin # 添加到文件末尾
+     
+     source /etc/profile
+     
+     ## 6-2 注册动态链接库
+     vi /etc/ld.so.conf
+     /usr/local/python3/lib # 添加到文件末尾
+     ldconfig
+     
+     ```
+
+     
