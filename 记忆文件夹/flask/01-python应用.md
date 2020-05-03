@@ -1530,6 +1530,15 @@ if __name__ == '__main__':
     curl 127.0.0.1
     ```
 
+11. **注意**
+
+    ```shell
+    # 如果python3通过yum安装，那么必须安装python3的开发库，编译uwsgi用到
+    yum install -y python3-devel.x86_64
+    ```
+
+    
+
 
 
 ### 15-2 nginx + uwsgi
@@ -1618,6 +1627,13 @@ if __name__ == '__main__':
    
    # 2- 测试服务
    curl http://127.0.0.1:8080/
+   ```
+
+6. **注意**
+
+   ```shell
+   # 如果python3通过yum安装，那么必须安装python3的开发库，编译uwsgi用到
+   yum install -y python3-devel.x86_64
    ```
 
    
