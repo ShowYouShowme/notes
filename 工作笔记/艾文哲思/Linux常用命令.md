@@ -429,6 +429,12 @@ yum install tree -y
    grep 192.168.2.131 -r ./*
    ```
 
+7. 只显示文件名
+
+   ```shell
+   grep ${CONTENT} -l ./*
+   ```
+
    
 
 
