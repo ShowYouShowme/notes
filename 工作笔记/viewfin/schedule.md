@@ -25,7 +25,7 @@ https://www.showdoc.cc/baidang201?page_id=4170153253544588
 
 ## 自己的任务
 
-1. 复习w3c的flask文章
+1. ~~复习w3c的flask文章~~
 
 2. 跟着视频学完es
 
@@ -56,7 +56,15 @@ https://www.showdoc.cc/baidang201?page_id=4170153253544588
 
 12. 用c++嵌入lua的方式，重写邮件之类的服务看看效果；再用nodejs实现对比一下
 
-13. 用apache 和nginx 分别部署flask服务
+13. ~~用apache 和nginx 分别部署flask服务~~
+
+14. 看区块链的业务知识 3-4章[这是重点]
+
+15. 学习第4章，mysql数据库的管理
+
+16. 学习使用solidity来进行区块链的开发，先熟悉整个开发的流程
+
+17. 把网关 + 登录服务的思路记录下来
 
 
 
