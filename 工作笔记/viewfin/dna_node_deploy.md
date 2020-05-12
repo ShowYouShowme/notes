@@ -29,16 +29,16 @@
    ./cli_wallet --suggest-brain-key
    ```
 
-4. 修改配置文件
+4. 修改配置文件`./libraries/egenesis/genesis.json`
 
-   1. 配置文件`./libraries/egenesis/genesis.json`
+   1. 复制配置文件
 
       ```shell
       cd ./libraries/egenesis/
       cp ./genesis-dev.json genesis.json
       ```
 
-   2. 编辑配置文件
+   2. 修改配置文件
 
       + initial_accounts
 
@@ -48,6 +48,8 @@
         # 2- 修改nathan的owner_key和active_key
         
         # 3- 增加mvs账号
+        
+        # 钱包的公钥和地址用'BTS'开头，线上的用'DNA'开头
         ```
 
       + initial_balances
@@ -68,8 +70,6 @@
         cd ../..
         make -j1
         ```
-
-        
 
 5. 预启动witness_node,生成配置文件
 
@@ -112,6 +112,8 @@
    + 删除文件夹blockchain,重启winess_node节点
 
      ```shell
+     # 区块链的数据存在文件夹blockchain里面,把它删除就没有数据了
+     
      rm -rf ./blockchain
      
      cd ../
@@ -121,9 +123,12 @@
 
 7. 启动钱包客户端
 
-   + 启动,如果存在wallet.json先删除
+   + 启动,如果存在`wallet.json`先删除
 
      ```shell
+      # 8190 是witness_node提供的websocket端口
+      # 8199 和 8192 是cli_wallet作为服务器监听的端口
+      # id 是区块链的id,错了会在remote_chain_id里提示
       ./cli_wallet --chain-id="20dbcef42a367d6577976b6bcb4cdbad5e64b544397f2a3ca96279dede32c929" -s ws://127.0.0.1:8190 -w wallet.json -r 127.0.0.1:8199   -H 127.0.0.1:8192 
      ```
 
@@ -133,12 +138,16 @@
 
         ```shell
         set_password ${passwd}
+        
+        # 返回值为null
         ```
 
      2. 解锁钱包
 
         ```shell
         unlock ${passwd}
+        
+        # 返回值为null
         ```
 
      3. 导入私钥
@@ -146,7 +155,16 @@
         ```shell
         import_key ${account} ${private_key}
         
-        import_key mvs 5Kkn3Scxy9uGHTmg8MWXns9nMKBzGgDnsdsegip5cbovQkcHb1Q
+        import_key mvs 5JMWPyYd5QqGyenXx6BURZdnrCoCmVRAwMQzc79ewr8qp78rn1P
+        
+        # 返回值
+        2260132ms th_a       wallet.cpp:984                save_wallet_file     ] saving wallet to file wallet.json
+        2260133ms th_a       wallet.cpp:1003               save_wallet_file     ] saved successfully wallet to tmp file wallet.json.tmp
+        2260133ms th_a       wallet.cpp:1009               save_wallet_file     ] validated successfully tmp wallet file wallet.json.tmp
+        2260133ms th_a       wallet.cpp:1013               save_wallet_file     ] renamed successfully tmp wallet file wallet.json.tmp
+        2260133ms th_a       wallet.cpp:1020               save_wallet_file     ] successfully saved wallet to file wallet.json
+        2260133ms th_a       wallet.cpp:565                copy_wallet_file     ] backing up wallet wallet.json to after-import-key-6a038e4e.wallet
+        true
         ```
 
      4. 导入创世区块的余额
@@ -154,7 +172,35 @@
         ```shell
         import_balance ${account} ["${private_key}"] true
         
-        import_balance mvs ["5Kkn3Scxy9uGHTmg8MWXns9nMKBzGgDnsdsegip5cbovQkcHb1Q"]  true
+        import_balance mvs ["5JMWPyYd5QqGyenXx6BURZdnrCoCmVRAwMQzc79ewr8qp78rn1P"]  true
+        
+        # 返回值
+        [{
+            "ref_block_num": 15,
+            "ref_block_prefix": 3259107138,
+            "expiration": "2020-05-12T08:44:20",
+            "operations": [[
+                37,{
+                  "fee": {
+                    "amount": 0,
+                    "asset_id": "1.3.0"
+                  },
+                  "deposit_to_account": "1.2.18",
+                  "balance_to_claim": "1.15.0",
+                  "balance_owner_key": "BTS584N5T65aVbXgZjDPWCtK8evXcg1LbBuVf9ynXRvHWVhN8YJTd",
+                  "total_claimed": {
+                    "amount": "1230000000000000",
+                    "asset_id": "1.3.0"
+                  }
+                }
+              ]
+            ],
+            "extensions": [],
+            "signatures": [
+              "1f481150c2298b0cd21f9f0d46aba5d3a17bc363d381959db475d0a0e4efe3715c38380600f7c2724d9be622bf928d8bc4416e644ae079cc905754cf2f9936f1cc"
+            ]
+          }
+        ]
         ```
 
      5. 查询余额
@@ -171,6 +217,29 @@
         upgrade_account ${account} true
         
         upgrade_account mvs true
+        
+        # 返回值
+        {
+          "ref_block_num": 48,
+          "ref_block_prefix": 4091519137,
+          "expiration": "2020-05-12T08:47:05",
+          "operations": [[
+              8,{
+                "fee": {
+                  "amount": 1000000000,
+                  "asset_id": "1.3.0"
+                },
+                "account_to_upgrade": "1.2.18",
+                "upgrade_to_lifetime_member": true,
+                "extensions": []
+              }
+            ]
+          ],
+          "extensions": [],
+          "signatures": [
+            "207cc84af87d80dc30ed1f6027e08b86c789dc5468342eba701a7f21c1ba89abf375f2b432a4956d9620190fc4db2998614205d1ef8e1e98803589f32ae7a9aecb"
+          ]
+        }
         ```
 
      7. 注册超级节点
@@ -197,6 +266,12 @@
 
          ```shell
          dump_private_keys
+         ```
+
+     11. 退出钱包客户端
+
+         ```shell
+         ctrl + c
          ```
 
          
