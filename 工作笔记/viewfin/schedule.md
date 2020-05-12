@@ -67,6 +67,18 @@ https://www.showdoc.cc/baidang201?page_id=4170153253544588
 
 17. 把网关 + 登录服务的思路记录下来
 
+18. 熟悉dna-user-register-tapin的代码
+
+19. redis和mysql的数据一致性如何保证
+
+20. 配置centos的路由表，学习用traceroute 命令跟踪路由（-n 参数）；如何让局域网的数据包必须通过网关，而不是直接转发
+
+21. 设置swap的大小，增加编译速度
+
+22. 阅读一章的区块链的文章
+
+23. 制作bitshare的docker镜像，学习多节点的部署方案
+
 
 
 
