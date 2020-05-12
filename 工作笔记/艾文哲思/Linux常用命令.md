@@ -1546,3 +1546,34 @@ WantedBy=multi-user.target # 多用户模式下需要
 # 堡垒机的web后台搭建
 
 [jumpserver](https://www.jumpserver.org/)
+
+
+
+
+
+
+
+# 增加swap的大小
+
+***
+
+```shell
+# 操作系统为ubuntu
+mkdir swapfile
+cd ./swapfile/
+sudo dd if=/dev/zero of=swap bs=1G count=5 # 大小为5G
+
+# 文件类型转换为swap
+sudo mkswap -f swap
+
+# 挂载
+sudo swapon swap
+
+# 卸载
+sudo swapoff swap
+
+# 开机挂载
+vim /etc/fstab
+/root/swapfile/swap none swap defaults 0 0
+```
+
