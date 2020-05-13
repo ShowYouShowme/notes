@@ -43,11 +43,9 @@
       + initial_accounts
 
         ```shell
-        # 1- 修改init0到init10的owner_key和active_key,为方便起见,两个值设置为一样
+        # 1- 假设init0的owner_key的值为${owner_key},把所有的${owner_key}替换为生成的初始账号的公钥
         
-        # 2- 修改nathan的owner_key和active_key
-        
-        # 3- 增加mvs账号
+        # 2- 增加mvs账号
         
         # 钱包的公钥和地址用'BTS'开头，线上的用'DNA'开头
         ```
@@ -58,7 +56,7 @@
         设置mvs账号的余额，将owner改为mvs的钱包地址
         ```
 
-      + initial_witness_candidates
+      + initial_witness_candidates<font color="blue">[多余,第一步已经替换]</font>
 
         ```shell
         设置init0到init10的block_signing_key为公钥
