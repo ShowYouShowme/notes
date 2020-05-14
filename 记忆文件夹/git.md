@@ -227,3 +227,34 @@ git stash list
 git stash -p # 根据提示输入，"y"表示储藏，"n"表示不储藏
 ```
 
+
+
+
+
+
+# git配置代理
+
+1. 使用命令
+
+   ```shell
+   #http代理：
+   git config --global http.proxy http://127.0.0.1:10800
+   git config --global https.proxy https://127.0.0.1:10800
+   ```
+   
+2. 编辑文件
+
+   ```shell
+   #在文件 ~/.gitconfig 添加：
+   [http]
+   proxy = http://127.0.0.1:10800
+   [https]
+   proxy = https://127.0.0.1:10800
+   ```
+
+3. 取消代理
+
+   ```shell
+   git config --global --unset http.proxy
+   git config --global --unset https.proxy
+   ```

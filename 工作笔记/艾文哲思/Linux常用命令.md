@@ -73,6 +73,36 @@
 
 
 
+# alias
+
+***
+
++ 作用：设置指令的别名
+
++ 配置
+
+  1. 给所有用户使用
+
+     ```shell
+     # /etc/bashrc
+     
+     alias ll='ls -lh'  # 等号两边不要有空格,某些平台不支持比如mac
+     ```
+
+     
+
+  2. 给指定用户使用
+
+     ```shell
+     # ~/.bashrc
+     
+     alias ll='ls -lh'
+     ```
+
+     
+
+  
+
 # tar
 
 1. 打包制定文件
@@ -344,6 +374,13 @@ yum install tree -y
      ```shell
      screen -X -S ${SessionID} quit
      screen -X -S 11584 quit
+     ```
+   
+   + 删除状态为dead的会话
+   
+     ```shell
+     screen -wipe ${SessionID}
+     screen -wipe 17005
      ```
    
      
@@ -1577,3 +1614,130 @@ vim /etc/fstab
 /root/swapfile/swap none swap defaults 0 0
 ```
 
+
+
+
+
+# 时间
+
+***
+
+
+
+## 更改时区
+
+***
+
+1. 查看系统当前时间
+
+   ```shell
+   date -R
+   ```
+
+2. 修改配置文件`/etc/profile`
+
+   ```shell
+   # 增加一行 ubuntu 18.04 的做法
+   TZ='Asia/Shanghai'; export TZ
+   ```
+
+3. 再次查看时间
+
+   ```shell
+   data -R
+   ```
+
+
+
+
+## 同步时间
+
+***
+
+1. 安装**ntpdate**工具
+
+   ```shell
+   sudo apt-get install ntpdate
+   ```
+
+2. 将系统时间和网络时间同步
+
+   ```shell
+   ntpdate cn.pool.ntp.org
+   ```
+
+3. 将时间写入硬件<font color="blue">[可选]</font>
+
+   ```shell
+   hwclock --systohc
+   
+   # 时钟分为两种
+   ## 1 硬件时钟
+   ## 2 系统时钟，由Linux内核的时钟保持的时间
+   ```
+
+   
+
+4. 查看时间
+
+   ```shell
+   date
+   ```
+
+
+
+
+
+# chmod
+
+***
+
++ 作用：修改文件，目录的权限
+
++ 操作对象
+
+  1. u：用户user，文件或目录所有者
+  2. g：用户组group，文件或者目录所属的用户组
+  3. o：其它用户other
+  4. a：所有用户all
+
++ 操作符
+
+  1. +：添加权限
+  2. -：减少权限
+  3. =：直接给定权限
+
++ 权限
+
+  1. r：读取
+  2. w：写入
+  3. x：执行
+
++ 例子
+
+  1. 给其它用户增加写入权限
+
+     ```shell
+     chmod o+w 1.txt
+     ```
+
+  2. 给文件属主增加执行权限
+
+     ```shell
+     chmod u+x 1.txt
+     ```
+
+  3. 递归设置权限
+
+     ```shell
+     chmod o+w -R ./share
+     ```
+
+  4. 用数字设置权限
+
+     ```shell
+     # rwx r-x r-x
+     chmod 755 1.txt
+     ```
+
+     
