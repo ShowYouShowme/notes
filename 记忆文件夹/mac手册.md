@@ -115,4 +115,20 @@
    ctrl + 向下箭头
    ```
 
-   
+5. 远程登录mac
+
+   1. 开启远程登录ssh
+
+      ```shell
+      系统偏好设置 ==> 共享 ==> 远程登录
+      ```
+
+   2. 设置编码格式,防止中文乱码
+
+      ```shell
+      sudo vim /etc/profile
+      
+      export LANG=zh_CN.UTF-8
+      ```
+
+   3. 用SecureCRT登录
