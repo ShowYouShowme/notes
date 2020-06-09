@@ -149,33 +149,52 @@ npm install @types/node
    npm install ${包名}@${version}
    # 例子
    npm install  gulp@3.9.1
+   
+   # 安装package.json里面的全部依赖
+   npm install
    ```
 
-5. 卸载
+5. 执行`package.json`里面的指令
+
+   ```shell
+   npm run ${cmd}
+   
+   # 例子
+   "scripts": {
+       "start": "cross-env NODE_ENV=development webpack-dev-server --config webpack.dev.config.js",
+       "build": "cross-env NODE_ENV=production webpack --config webpack.prod.config.js"
+     },
+   npm run start
+   npm run build
+   ```
+
+   
+
+6. 卸载
 
    ```shell
    npm uninstall ${包名}
    ```
 
-6. 更新
+7. 更新
 
    ```shell
    npm update ${包名}
    ```
 
-7. 检查包是否过时
+8. 检查包是否过时
 
    ```shell
    npm outdated
    ```
 
-8. 列出安装的全部包
+9. 列出安装的全部包
 
    ```shell
    npm ls
    ```
 
-9. 参数说明
+10. 参数说明
 
    > 1. --save 或者-S
    >
