@@ -552,44 +552,94 @@ if __name__ == '__main__':
     1. 在本机用浏览器测试
     2. 在虚拟机里面用curl测试
     ```
+  
+    ```python
+  # 未登录则跳转到登录界面
+    from flask import Flask
+  from flask import request
+    from flask import redirect
+  from flask import session
+    
+  app = Flask(__name__)  # type:Flask
+    app.secret_key = "DragonFire"
+  
+    
+    # 前处理
+    @app.before_request
+  def is_login():
+        if request.path == "/login":
+          return None  # 放行
+    
+        if not session.get("user"):
+            return redirect("/login")
+    
+    # 后处理
+    @app.after_request
+    def foot_log(environ):
+        if request.path != "/login":
+            print("有客人访问了",request.path)
+        return environ
+    
+    
+        
+    @app.route("/login")
+  def login():
+        return "Login"
+    
+    
+    @app.route("/index")
+    def index():
+        return "Index"
+    
+    
+    @app.route("/home")
+    def home():
+        return "Login"
+    
+    
+    app.run("0.0.0.0", 5000)
+    
+    ```
+  
+    
 
   
-
+  
   ## 11 重定向
-
+  
   ***
-
+  
   + 知识点
-
+  
     1. 函数原型
-
+  
        ```python
        redirect(location, code=302, Response=None)
        ```
-
-    2. 状态吗
-
-       ```shell
+  
+  2. 状态吗
+  
+     ```shell
        300:MULTIPLE_CHOICES
-       301:MOVED_PERMANENTLY
+     301:MOVED_PERMANENTLY
        302:FOUND
        303:SEE_OTHER
        304:NOT_MODIFIED
-       305:USE_PROXY
+     305:USE_PROXY
        306:RESERVED
-       307:TEMPORARY_REDIRECT
+     307:TEMPORARY_REDIRECT
        ```
-
+  
   + 示例代码
-
+  
     1. 例子一
-
+  
        ```python
        @app.route('/')
        def index():
-           return render_template('login.html')
+         return render_template('login.html')
        
-       @app.route('/login', methods = ['POST', 'GET'])
+     @app.route('/login', methods = ['POST', 'GET'])
        def login():
            if request.method == 'POST' and request.form['username'] == 'admin':
                return redirect(url_for('success'))
@@ -600,9 +650,9 @@ if __name__ == '__main__':
        def success():
            return 'logged in successfully!' 
        ```
-
+  
        login.html
-
+  
        ```html
        <!DOCTYPE html>
        <html>
@@ -617,17 +667,17 @@ if __name__ == '__main__':
           </body>
        </html>
        ```
-
+  
     2. 例子二 => abort返回错误信息
-
+  
        函数原型
-
+  
        ```python
        flask.abort(code)
        ```
-
+  
        错误码
-
+  
        ```she l
        400:错误请求
        401:身份未交验
@@ -637,9 +687,9 @@ if __name__ == '__main__':
        415:不支持的媒体类型
        429:请求过多
        ```
-
+  
        
-
+  
        ```python
        # login.html 和上面一样
        
