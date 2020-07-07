@@ -39,7 +39,11 @@ git add ${file}
 ## 4 差异比较
 
 ```shell
+# 对比所有文件
 git diff HEAD
+
+# 对比单个文件
+git diff app.py
 ```
 
 

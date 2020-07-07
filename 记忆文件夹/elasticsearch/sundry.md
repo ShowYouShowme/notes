@@ -148,19 +148,22 @@
     + 查询所有文档
 
       ```shell
+      # 语法 7.0以后没有type了
+      curl -i -XGET url/${index}/_search\?pretty -d ${json}
+      
       curl -i -XGET http://192.168.11.119:9200/test_index/user/_search\?pretty -d '
       {
         "query": {
                       "match_all": {
                       }
-        }
+    }
       }
-      ```
-
-      
-
+  ```
+    
+  
+    
     + 查询包含输入字符串的文档
-
+    
       ```shell
       curl -i -XGET http://192.168.11.119:9200/test_index/user/_search\?pretty -d '
       {
@@ -173,10 +176,10 @@
                  {
                    "email" : "desc"
                  }
-        ]
+    ]
       }
       ```
-
+    
       ```shell
       # 增加分页操作 from 从0开始 只获取email字段
       curl -i -XGET http://192.168.11.119:9200/test_index/user/_search?pretty -d '
@@ -193,14 +196,14 @@
         			"email" : "asc"
         		}
         ]
-      }
+  }
       '
-      ```
-
-      
-
+  ```
+    
+  
+    
     + 查询过滤器
-
+    
       ```shell
       # 搜索商品名包含Rhinestone，售卖价格小于3大于等于1的商品，结果按售卖价升序
       curl -i -XGET http://192.168.11.119:9200/en_es_category_products/product/_search?pretty -d '
@@ -239,9 +242,9 @@
       # range 操作符
       * gt :: 大于
       * gte:: 大于等于
-      * lt :: 小于
+  * lt :: 小于
       * lte:: 小于等于
       ```
-
+    
       
 
