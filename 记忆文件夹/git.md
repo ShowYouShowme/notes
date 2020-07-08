@@ -10,7 +10,7 @@
 
 # 常用操作
 
-
+***
 
 ## 1 检查状态
 
@@ -31,6 +31,8 @@ git clone https://github.com/ShowYouShowme/notes.git
 ## 3 注册修改
 
 ```shell
+
+# 用小乌龟commit时,要先在文件前打勾,这就是打勾对应的命令行
 git add ${file}
 ```
 
@@ -235,6 +237,37 @@ git stash -p # 根据提示输入，"y"表示储藏，"n"表示不储藏
 
 
 
+## 13 丢弃文件修改
+
+***
+
+```shell
+# 类似svn的revert
+git checkout -- main.cpp
+```
+
+
+
+## 14 创建版本库
+
+***
+
++ 创建裸版本库
+
+  ```shell
+  git init --bare
+  ```
+
++ 创建普通版本库
+
+  ```shell
+  git init
+  ```
+
+  
+
+
+
 
 # git配置代理
 
@@ -262,3 +295,16 @@ git stash -p # 根据提示输入，"y"表示储藏，"n"表示不储藏
    git config --global --unset http.proxy
    git config --global --unset https.proxy
    ```
+
+
+
+# 保存账号密码
+
+***
+
+```shell
+#在文件 ~/.gitconfig 添加：
+[credential]                                                                    
+    helper = store
+```
+

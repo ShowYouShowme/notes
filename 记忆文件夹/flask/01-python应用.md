@@ -11,8 +11,10 @@ def hello_world():
     return 'hello_world!'
 
 if __name__ == '__main__':
-    # 启动debug模式时，代码修改了会自动重新加载无需重启服务
-    app.run(host = '127.0.0.1', port = '1234', debug=True)
+    # 启动debug模式时，代码修改了会自动重新加载无需重启服务 
+    # threaded 是否开启多线程,建议不开启
+    # processes 进程数量,用pycharm调试时设置为1方便调试
+    app.run(host = '127.0.0.1', port = '1234', debug=True,threaded = False, processes=1)
 ```
 
 
@@ -554,55 +556,57 @@ if __name__ == '__main__':
     ```
   
     ```python
+    
+    ```
   # 未登录则跳转到登录界面
     from flask import Flask
   from flask import request
     from flask import redirect
   from flask import session
-    
+  
   app = Flask(__name__)  # type:Flask
     app.secret_key = "DragonFire"
   
-    
+  
     # 前处理
     @app.before_request
   def is_login():
         if request.path == "/login":
           return None  # 放行
-    
+  
         if not session.get("user"):
             return redirect("/login")
-    
+  
     # 后处理
     @app.after_request
     def foot_log(environ):
         if request.path != "/login":
             print("有客人访问了",request.path)
         return environ
-    
-    
-        
+  
+  
+  ​      
     @app.route("/login")
   def login():
-        return "Login"
-    
-    
+  ​      return "Login"
+  
+  
     @app.route("/index")
     def index():
         return "Index"
-    
-    
+  
+  
     @app.route("/home")
     def home():
         return "Login"
-    
-    
-    app.run("0.0.0.0", 5000)
-    
-    ```
   
-    
+  
+    app.run("0.0.0.0", 5000)
+  
+    ```
 
+    
+  
   
   
   ## 11 重定向
@@ -615,7 +619,7 @@ if __name__ == '__main__':
   
        ```python
        redirect(location, code=302, Response=None)
-       ```
+    ```
   
   2. 状态吗
   
@@ -628,7 +632,7 @@ if __name__ == '__main__':
      305:USE_PROXY
        306:RESERVED
      307:TEMPORARY_REDIRECT
-       ```
+     ```
   
   + 示例代码
   
@@ -639,20 +643,22 @@ if __name__ == '__main__':
        def index():
          return render_template('login.html')
        
+       ```
+    
      @app.route('/login', methods = ['POST', 'GET'])
        def login():
            if request.method == 'POST' and request.form['username'] == 'admin':
                return redirect(url_for('success'))
            else:
                return redirect(url_for('index'))
-       
+    
        @app.route('/success')
        def success():
-           return 'logged in successfully!' 
+         return 'logged in successfully!' 
        ```
   
        login.html
-  
+    
        ```html
        <!DOCTYPE html>
        <html>
@@ -665,19 +671,19 @@ if __name__ == '__main__':
              </form>
        
           </body>
-       </html>
+     </html>
        ```
   
     2. 例子二 => abort返回错误信息
   
        函数原型
-  
+    
        ```python
-       flask.abort(code)
+     flask.abort(code)
        ```
   
        错误码
-  
+    
        ```she l
        400:错误请求
        401:身份未交验
@@ -685,11 +691,11 @@ if __name__ == '__main__':
        404:Not Found
        406:Not Acceptable
        415:不支持的媒体类型
-       429:请求过多
+     429:请求过多
        ```
   
        
-  
+    
        ```python
        # login.html 和上面一样
        
