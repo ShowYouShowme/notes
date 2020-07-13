@@ -438,4 +438,60 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 
    
 
-   
+
+
+
+# mysql 客户端
+
+***
+
+
+
+## phpmysqladmin
+
+***
+
+```shell
+# 使用docker安装 登录界面使用mysql的账号和密码登录
+docker run --name myadmin -d -e PMA_HOST=178.128.61.189 -e PMA_PORT=8306 -p 8080:80 phpmyadmin/phpmyadmin
+
+
+docker run --name myadmin -d -e PMA_HOST=${mysqlHost} -e PMA_PORT=${mysqlPort} -p 8080:80 phpmyadmin/phpmyadmin
+```
+
+
+
+
+
+## navicat
+
+***
+
+```shell
+mac 上面使用有bug
+```
+
+
+
+
+
+## mysql-clinet
+
+***
+
+```shell
+mysql 自带的客户端
+```
+
+
+
+
+
+## Mycli
+
+***
+
+```shell
+自带补全功能
+```
+

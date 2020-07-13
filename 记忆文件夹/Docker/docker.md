@@ -322,6 +322,19 @@ docker exec -it 775c7c9ee1e1 /bin/bash
 
 
 
+# 查看docker内进程
+
+***
+
+```shell
+# 可以查看docker 内正在运行的进程
+top
+```
+
+
+
+
+
 # 常用官方镜像
 
 ## 1 MySQL
