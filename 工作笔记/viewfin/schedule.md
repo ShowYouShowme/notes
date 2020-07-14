@@ -211,20 +211,58 @@ https://www.showdoc.cc/baidang201?page_id=4170153253544588
 ***
 
 + 处理sql注入的问题 --> 未发现问题
+
 + ~~实现收集选举信息的定时任务~~
+
 + ~~处理未解决的bug。  -----> 这个是重点~~
+
 + 整理python可能出异常的地方，以后写代码尽量不让其抛出异常
+
 + 收集交易的sql卡顿，优化提升其性能
+
 + sql用execute 来拼接，不要自己拼接sql语句，可能造成sql注入。----> 这个是重点
+
 + 注意部署是需要修改的配置参数
+
 + Swag 可选参数的使用
+
 + ~~写crontab计时任务收集选举情况~~
+
 + 学习dstat的使用
+
 + 自己测试区块浏览器的使用，看看是否有致命bug【区块浏览器的url 是多少了呢】
+
 + 学习域名的申请，ssl的部署，nginx部署网站。整套流程都需要理解
+
 + 部署正式环境时，隐藏测试接口
+
 + 处理代码中的todo --->重点
+
 + 将各种统计数据进行缓存
+
++ 用docker镜像部署服务
+
++ mysql 的配置放到config.py里面去，整理制作docker镜像的自动化步骤
+
++ 利用docker网络部署吗？？？？
+
++ 服务后端运行，信息写入到log文件里面
+
++ 接口/api/gather/txs/statistics 报错
+
+  ```python
+  {
+    "result": {},
+    "status": {
+      "error_msg": "tuple index out of range",
+      "success": -1
+    }
+  }
+  ```
+
++ cal_cur_round 函数服务器版本和master不一致，记得同步过去
+
++ 发布版本，需要更新，先stash，再checkout 到master，再pull，然后checkout回来，再merge master分支，再stash pop
 
 
 
