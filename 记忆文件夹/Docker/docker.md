@@ -322,6 +322,27 @@ docker exec -it 775c7c9ee1e1 /bin/bash
 
 
 
+# 退出docker容器
+
+***
+
+1. 退出并关闭容器
+
+   ```shell
+   exit
+   ```
+
+   
+
+2. 退出不关闭容器
+
+   ```shell
+   # 按住ctrl,然后按下P,然后再按下Q
+   Ctrl+P+Q
+   ```
+
+   
+
 # 查看docker内进程
 
 ***

@@ -77,3 +77,25 @@
 ***
 
 [链接](https://shimo.im/folder/6QwKYVDhRyvqkGtX)
+
+
+
+
+
+# 服务器地址
+
+***
+
+1. aws
+
+   ```shell
+   ssh root@178.128.61.189
+   ```
+
+2. 跳板机
+
+   ```shell
+   ssh root@45.77.173.55
+   ```
+
+   
