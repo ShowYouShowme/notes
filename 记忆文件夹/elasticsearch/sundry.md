@@ -149,7 +149,7 @@
 
       ```shell
       # 语法 7.0以后没有type了
-      curl -i -XGET url/${index}/_search\?pretty -d ${json}
+      curl -i -XGET url/${index}/_search\?pretty -d ${json} 
       
       curl -i -XGET http://192.168.11.119:9200/test_index/user/_search\?pretty -d '
       {
