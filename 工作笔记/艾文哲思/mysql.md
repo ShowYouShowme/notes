@@ -453,10 +453,10 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 
 ```shell
 # 使用docker安装 登录界面使用mysql的账号和密码登录
-docker run --name myadmin -d -e PMA_HOST=178.128.61.189 -e PMA_PORT=8306 -p 8080:80 phpmyadmin/phpmyadmin
+docker run --name myadmin -d -e PMA_HOST=178.128.61.189 -e PMA_PORT=8306 -p 8080:80 phpmyadmin/phpmyadmin:5.0.2
 
 
-docker run --name myadmin -d -e PMA_HOST=${mysqlHost} -e PMA_PORT=${mysqlPort} -p 8080:80 phpmyadmin/phpmyadmin
+docker run --name myadmin -d -e PMA_HOST=${mysqlHost} -e PMA_PORT=${mysqlPort} -p 8080:80 phpmyadmin/phpmyadmin:5.0.2
 ```
 
 
@@ -495,3 +495,79 @@ mysql 自带的客户端
 自带补全功能
 ```
 
+
+
+# 常见命令
+
+***
+
+1. 显示正在运行的线程[会话session]
+
+   ```shell
+   show processlist;
+   ```
+
+2. 杀死某个线程
+
+   ```shell
+   kill ${线程id}
+   ```
+
+
+
+
+
+# 常见问题
+
+***
+
+1. Waiting for table metadata lock：后续对该表任何操作都会阻塞
+
+   + 原因一：存在未提交的事务
+
+     ```python
+     # 查找未提交的事务的线程id
+     select * from information_schema.innodb_trx\G;
+     
+                         trx_id: 303835
+                      trx_state: RUNNING
+                    trx_started: 2020-08-05 13:18:24
+          trx_requested_lock_id: NULL
+               trx_wait_started: NULL
+                     trx_weight: 2
+            trx_mysql_thread_id: 24   # 这个就是未提交事务的线程ID
+                      trx_query: NULL
+            trx_operation_state: NULL
+              trx_tables_in_use: 0
+              trx_tables_locked: 0
+               trx_lock_structs: 1
+          trx_lock_memory_bytes: 360
+                trx_rows_locked: 0
+              trx_rows_modified: 1
+        trx_concurrency_tickets: 0
+            trx_isolation_level: REPEATABLE READ
+              trx_unique_checks: 1
+         trx_foreign_key_checks: 1
+     trx_last_foreign_key_error: NULL
+      trx_adaptive_hash_latched: 0
+      trx_adaptive_hash_timeout: 10000
+               trx_is_read_only: 0
+     trx_autocommit_non_locking: 0
+         
+     # 杀死线程
+     kill 24
+     ```
+
+2. 长事物运行，阻塞DDL，继而阻塞所有同表的后续操作
+
+   ```shell
+   kill 掉 DDL所在的session
+   ```
+
+3. 在一个显式的事务中，对TableA进行了一个失败的操作（比如查询了一个不存在的字段），这时事务没有开始，但是失败语句获取到的锁依然有效，没有释放performance_schema.events_statements_current表中可以查到失败的语句
+
+   ```shell
+   performance_schema.events_statements_current找到其sid, kill 掉该session. 也可以 kill 掉DDL所在的session
+   ```
+
+   

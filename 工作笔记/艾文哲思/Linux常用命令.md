@@ -1300,7 +1300,9 @@ du -sh ./protobuf/
    iptables -A INPUT -p tcp --dport 22 -j DROP
    ```
 
-   
+8. 常见使用案例
+
+   + 模拟网线突然被掐断的情况[TCP连接,网络被掐断,而双方都不知道]
 
 
 

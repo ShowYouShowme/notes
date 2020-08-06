@@ -189,6 +189,9 @@ vim /etc/docker/daemon.json
 docker logs -f ${容器名}
 
 docker logs -f ${容器ID}
+
+# 只显示最后100行
+docker logs -f --tail=100 e9badb669c52
 ```
 
 ## 2 镜像导入导出
