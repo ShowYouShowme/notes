@@ -164,6 +164,38 @@ git commit -m "${comment}"
    ```shell
    git checkout target-branch
    ```
+   
+3. 创建分支
+
+   + 在当前提交上创建分支
+
+     ```shell
+     git branch a-branch
+     ```
+
+   + 在现有分支上创建
+
+     ```shell
+     git branch b-branch older-branch
+     ```
+
+4. 删除分支
+
+   + 删除其它分支
+   
+     ```shell
+     git branch -d b-branch
+     ```
+   
+   + 删除当前所在分支
+   
+     ```shell
+     git branch -D b-branch
+     ```
+   
+     
+   
+   
 
 
 
@@ -264,7 +296,14 @@ git checkout -- main.cpp
   git init
   ```
 
-  
+
+
+
+## 15 变基
+
+***
+
+
 
 
 
@@ -308,3 +347,17 @@ git checkout -- main.cpp
     helper = store
 ```
 
+
+
+
+
+# 多分支开发模式
+
+***
+
+1. 主分支用来分布生产版本，偶尔用来修复bug
+2. develop分支用来开发
+   + 如果有多个开发者，每个功能点，基于develop分支上再创建分支来开发，开发完成合并至develop
+   + 如果单个开发者，直接在develop上面开发
+   + 如果主分支有修复bug的提交，develop分支要rebase主分支
+   + 发布版本时，把develop合并至master再发布
