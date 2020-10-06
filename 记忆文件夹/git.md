@@ -130,7 +130,27 @@ git commit -m "${comment}"
    
    ```
 
-   
+3. pull 的问题
+
+   + 详情：There is no tracking information for the current branch
+
+   + 解决方案
+
+     1. 指定远程分支
+
+        ```shell
+        # 指定把远程master 分支抓下来
+        git pull origin master
+        ```
+
+     2. 和远程分支关联
+
+        ```shell
+        git branch --set-upstream-to=origin/master master
+        git pull
+        ```
+
+        
 
 
 
@@ -193,7 +213,38 @@ git commit -m "${comment}"
      git branch -D b-branch
      ```
    
+5. 查看分支
+   
+   + 查看本地分支
+   
+     ```shell
+     git branch
+     ```
+   
      
+   
+   + 查看远程分支
+   
+     ```shell
+     git branch -r
+     ```
+   
+     
+   
+   + 查看全部分支
+   
+     ```shell
+     git branch -a
+     ```
+   
+6. 切换远程分支[非master，比如develop]
+   
+   ```shell
+   # checkout远程remotes/origin/develop,在本地重命名为develop,并切换到develop
+   git checkout -b develop remotes/origin/develop
+   ```
+   
+   
    
    
 
