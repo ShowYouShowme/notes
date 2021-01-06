@@ -174,5 +174,45 @@ def index():
   ```
   
   
+## 2.6 命令行选项
+
+```shell
+flask --help
+
+flask run --help
+```
+
+
+
+## 2.7 应用和请求上下文
+
++ 应用上下文
+
+  + current_app：当前应用实例
+  + g：处理请求时作临时对象，每次请求都会重置
+
++ 请求上下文
+
+  + request：封装客户端http请求的内容
+  + session：用户会话
+
   
-  
+
+## 2.8 请求分派
+
++ 分派：收到客户端请求时，找到对应url的处理函数并执行
+
++ 映射查看
+
+  ```shell
+  (venv) $ python
+  >>> from hello import app
+  >>> app.url_map
+  ```
+
+
+
+## 2.9 请求对象
+
++ 对象：request
++ 常见方法和属性
