@@ -319,6 +319,144 @@ teardown_request
 
 ## 3.1 Jinja2模板引擎
 
+1. index.html
+
+   ```html
+   <h1>Hello World!</h1>
+   ```
+
+2. user.html
+
+   ```html
+   <h1>Hello, {{name}}!</h1>
+   ```
+
+   
+
+
+
+### 3.1.1 渲染模板
+
+***
+
+```python
+from flask import Flask,render_template
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/user/<name>')
+def user(name):
+    return render_template('user.html', name=name)
+```
+
+
+
+
+
+### 3.1.2 变量
+
+***
+
+
+
+
+
+### 3.1.3 控制结构
+
+***
+
+1. 条件判断
+
+   ```html
+   {% if user %}
+       Hello, {{user}}
+   {% else %}
+       Hello,stranger!
+   {% endif %}
+   ```
+
+2. 循环
+
+   ```shell
+   <ul>
+       {% for comment in comments %}
+           <li>{{ comment }}</li>
+       {% endfor %}
+   </ul>
+   ```
+
+   ```python
+   from flask import Flask,render_template
+   
+   app = Flask(__name__)
+   
+   @app.route('/')
+   def index():
+       return render_template('index.html')
+   
+   @app.route('/user')
+   def user():
+       comments = ['11','22','33','44']
+       return render_template('user.html', comments=comments)
+   ```
+
+3. 宏（类似Python的函数）：可以把宏保存在单独的文件中，需要时导入
+
+   ```html
+   {% macro render_comment(comment) %}
+       <li>{{ comment }}</li>
+   {% endmacro %}
+   <ul>
+       {% for comment in comments %}
+           {{ render_comment(comment) }}
+       {% endfor %}
+   </ul>
+   ```
+
+4. 模板继承
+
+   base.html
+
+   ```html
+   <html>
+       <head>
+           {% block head %}
+               <title>{% block title %} {% endblock %} - My Application</title>
+           {% endblock %}
+       </head>
+   
+       <body>
+           {% block body %}
+           {% endblock %}
+       </body>
+   </html>
+   ```
+
+   ext.html：super()引用基模板同名区块中的内容
+
+   ```html
+   {% extends "base.html" %}
+   {% block title %}Index {% endblock %}
+   
+   {% block head %}
+           {{ super() }}
+   <style>
+   </style>
+   {% endblock %}
+   
+   {% block body %}
+   <h1>Hello,World!</h1>
+   {% endblock %}
+   ```
+
+   
+
+
+
 
 
 ## 3.2 使用Flask-Bootstrap集成Bootstrap
