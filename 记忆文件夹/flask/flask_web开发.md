@@ -216,3 +216,170 @@ flask run --help
 
 + 对象：request
 + 常见方法和属性
+
+
+
+
+
+## 2.10 请求钩子
+
+```python
+# 处理第一个请求之前执行
+before_first_request
+
+# 每次请求之前运行
+before_request
+
+# 如果没有未处理的异常，每次请求之后运行
+after_request
+
+# 即使有未处理的异常抛出，也在每次请求后执行
+teardown_request
+```
+
+
+
+
+
+## 2.11 响应
+
+1. 响应方式
+
+   + 元祖：第一个值html字符串，第二个值是响应码（默认200），第三个值是HTTP响应首部组成的字典
+
+   + 响应对象
+
+     ```python
+     from flask import Flask
+     from flask import make_response
+     
+     app = Flask(__name__)
+     
+     @app.route('/')
+     def index():
+         response = make_response('<h1>This document carries a cookie!</h1>')
+         response.set_cookie('answer', '42')
+         return response
+     ```
+
+     响应对象属性和方法
+
+     ```shell
+     status_code     # HTTP 数字状态码
+     headers		    # 类似字典的对象，包含响应发送的全部头部
+     set_cookie()    # COOKIE
+     delete_cookie() # 删除cookie
+     content_length  # 响应主体长度
+     content_type    # 响应主体的媒体类型
+     set_data()      # 使用字符串或字节值设定响应
+     get_data()      # 获取响应主体
+     ```
+
+2. 重定向
+
+   ```python
+   from flask import Flask
+   from flask import redirect
+   
+   app = Flask(__name__)
+   
+   @app.route('/')
+   def index():
+       return redirect('http://www.baidu.com')
+   ```
+
+   
+
+3. 错误处理
+
+   ```python
+   from flask import Flask
+   from flask import redirect,abort
+   
+   app = Flask(__name__)
+   
+   @app.route('/')
+   def index():
+       return redirect('http://www.baidu.com')
+   
+   @app.route('/user/<id>')
+   def get_user(id):
+       if id == '123':
+           abort(404)
+       return '<h1>Hello,{}</h1>'.format(id)
+   ```
+
+
+
+
+
+# 第三章 模板
+
+
+
+## 3.1 Jinja2模板引擎
+
+
+
+## 3.2 使用Flask-Bootstrap集成Bootstrap
+
+
+
+## 3.3 自定义错误页面
+
+
+
+## 3.4 链接
+
+
+
+## 3.5 静态文件
+
+
+
+## 3.6 使用Flask-Moment本地化日期和时间
+
+
+
+
+
+
+
+
+
+# 第四章 Web表单
+
+
+
+## 4.1 配置
+
+
+
+
+
+## 4.2 表单类
+
+
+
+
+
+## 4.3 把表单渲染成HTML
+
+
+
+
+
+## 4.4 在视图函数中处理表单
+
+
+
+
+
+## 4.5 重定向和用户会话
+
+
+
+
+
+## 4.6 闪现消息
+
