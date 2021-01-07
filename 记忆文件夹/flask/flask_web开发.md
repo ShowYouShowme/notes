@@ -417,7 +417,7 @@ def user(name):
    </ul>
    ```
 
-4. 模板继承
+4. <font color=blue>模板继承</font>
 
    base.html
 
@@ -461,19 +461,209 @@ def user(name):
 
 ## 3.2 使用Flask-Bootstrap集成Bootstrap
 
+1.  集成Bootstrap
 
+   ```shell
+   # 安装依赖
+   pip install flask-bootstrap
+   
+   # 初始化
+   from flask import Flask,render_template
+   from flask_bootstrap import Bootstrap
+   
+   app = Flask(__name__)
+   bootstrap = Bootstrap(app) # 初始化扩展
+   
+   ```
+
+   继承模板
+
+   ```html
+   {% extends "bootstrap/base.html" %}
+   
+   {% block title %}
+   Flask
+   {% endblock %}
+   
+   {% block content %}
+       <div class="container">
+           <div class="page-header">
+               <h1>Hello, {{name}}!</h1>
+           </div>
+       </div>
+   {% endblock %}
+   ```
+
+   ```python
+   from flask import Flask,render_template
+   from flask_bootstrap import Bootstrap
+   
+   app = Flask(__name__)
+   bootstrap = Bootstrap(app) # 初始化扩展
+   
+   @app.route('/')
+   def index():
+       return render_template('ext.html')
+   
+   @app.route('/user')
+   def user():
+       return render_template('user.html', name='nash') 
+   ```
+
+   
 
 ## 3.3 自定义错误页面
 
+1. 常见错误类型
 
+   + 404：请求未知页面
+   + 500：应用有未处理的异常
+
+   
+
+2.示例代码：代码必须用非debug模式运行，否则无法看到500的页面
+
++ hello.py
+
+  ```python
+  from flask import Flask,render_template
+  from flask_bootstrap import Bootstrap
+  
+  app = Flask(__name__)
+  bootstrap = Bootstrap(app) # 初始化扩展
+  
+  @app.route('/')
+  def index():
+      a = '1' + 2
+      return render_template('ext.html')
+  
+  @app.route('/user')
+  def user():
+      return render_template('user.html', name='nash')
+  
+  @app.errorhandler(404)
+  def page_not_found(e):
+      return render_template('404.html'),404
+  
+  @app.errorhandler(500)
+  def internal_server_error(e):
+      return render_template('500.html'),500
+  ```
+
++ base.html
+
+  ```html
+  {% extends "bootstrap/base.html" %}
+  
+  {% block title %}Flasky{% endblock %}
+  
+  {% block navbar %}
+  <div class="navbar navbar-inverse" role="navigation">
+      <div class="container">
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="/">Flasky</a>
+          </div>
+          <div class="navbar-collapse collapse">
+              <ul class="nav navbar-nav">
+                  <li><a href="/">Home</a></li>
+              </ul>
+          </div>
+      </div>
+  </div>
+  {% endblock %}
+  
+  {% block content %}
+  <div class="container">
+      {% block page_content %}{% endblock %}
+  </div>
+  {% endblock %}
+  
+  ```
+
++ 404.html
+
+  ```html
+  {% extends "base.html" %}
+  
+  {% block title %} Flask - Page Not Found{% endblock %}
+  
+  {% block page_content %}
+  <div class="page-header">
+      <h1>Not Found</h1>
+  </div>
+  {% endblock %}
+  ```
+
++ 500.html
+
+  ```html
+  {% extends "base.html" %}
+  
+  {% block title %}Flasky{% endblock %}
+  
+  {% block page_content %}
+  <div class="page-header">
+      <h1>Hllo, {{name}}!</h1>
+  </div>
+  {% endblock %}
+  ```
+
+  
 
 ## 3.4 链接
 
+1. 生成动态链接：url_for
 
+   ```shell
+   url_for('index') # 返回'/'
+   
+   url_for('index', _external=True) # 返回 http://localhost:5000/
+   
+   url_for('user', name='jonh', page=2, version=1) # 传入参数
+   ```
+
+   
 
 ## 3.5 静态文件
 
+1. 文件放在static的子目录下
 
+2. 示例代码
+
+   ```python
+   from flask import Flask,render_template,redirect,url_for
+   from flask_bootstrap import Bootstrap
+   
+   app = Flask(__name__)
+   bootstrap = Bootstrap(app) # 初始化扩展
+   
+   @app.route('/')
+   def index():
+       return redirect(url_for('static',filename='html/index.html'))
+   ```
+
+   index.html
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <title>Hi</title>
+   </head>
+   <body>
+       <h1>Say hi to you!</h1>
+   </body>
+   </html>
+   ```
+
+   
 
 ## 3.6 使用Flask-Moment本地化日期和时间
 
