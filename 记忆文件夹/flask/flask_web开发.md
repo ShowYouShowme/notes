@@ -667,7 +667,62 @@ def user(name):
 
 ## 3.6 使用Flask-Moment本地化日期和时间
 
+1. 安装flask-monent
 
+   ```shell
+   pip install flask-moment
+   ```
+
+2. 引入Moment.js
+
+   ```shell
+   # templates/base.html
+   
+   {% block scripts %}
+   {{ super() }}
+   {{ moment.include_moment() }}
+   {% endblock %}
+   ```
+
+3. 修改模板index.html
+
+   ```html
+   {% extends "base.html" %}
+   
+   {% block title %} Flask - Page Not Found{% endblock %}
+   
+   
+   {% block page_content %}
+   <div class="page-header">
+   
+   </div>
+       <p>local time is {{ moment(current_time).format('LLL') }}</p>
+       <p>That is {{ moment(current_time).fromNow(refresh=True) }}</p>
+   {% endblock %}
+   ```
+
+   
+
+4. 在hello.py中初始化Flask-Moment
+
+   ```python
+   from flask_moment import  Moment
+   
+   app = Flask(__name__)
+   moment = Moment(app)
+   ```
+
+5. 在hello.py中添加datetime变量
+
+   ```python
+   from datetime import datetime
+   
+   @app.route('/')
+   def index():
+       return render_template('index.html', current_time=datetime.utcnow())
+   ```
+
+   
 
 
 
@@ -681,7 +736,19 @@ def user(name):
 
 ## 4.1 配置
 
+1. 安装WTF包
 
+   ```shell
+   pip install flask-wtf
+   ```
+
+2. 配置密钥
+
+   ```shell
+   app.config['SECRET_KEY'] = 'hard to guess string'
+   ```
+
+   
 
 
 
@@ -693,21 +760,165 @@ def user(name):
 
 ## 4.3 把表单渲染成HTML
 
++ 调用表单字段渲染
 
+  ```python
+  from flask import Flask,render_template
+  from flask_bootstrap import Bootstrap
+  from flask_wtf import FlaskForm
+  from wtforms import StringField, SubmitField
+  from wtforms.validators import DataRequired
+  app = Flask(__name__)
+  bootstrap = Bootstrap(app) # 初始化扩展
+  app.config['SECRET_KEY'] = 'hard to guess string'
+  
+  
+  class NameFrom(FlaskForm):
+      name = StringField('What is your name', validators=[DataRequired()])
+      submit = SubmitField('Submit')
+  
+  
+  @app.route('/')
+  def index():
+      return render_template('index.html', form=NameFrom())
+  ```
+
+  ```html
+  {% extends "base.html" %}
+  
+  {% block title %} Flask - Page Not Found{% endblock %}
+  
+  
+  {% block page_content %}
+  <div class="page-header">
+  
+  </div>
+  
+  <form method="post">
+      {{ form.hidden_tag() }}
+      {{ form.name.label }} {{ form.name(id = 'my-text-field') }} <!--指定属性-->
+      {{ form.submit() }}
+  </form>
+  {% endblock %}
+  ```
+
++ 用Bootstrap表单样式渲染
+
+  ```html
+  {% extends "base.html" %}
+  {% import "bootstrap/wtf.html" as wtf %}   <!--导入依赖-->
+  {% block title %} Flask - Page Not Found{% endblock %}
+  
+  
+  {% block page_content %}
+  <div class="page-header">
+      <h1>Hello, {% if name %} {{ name }}  {% else %} Stranger {% endif %}!</h1>
+  </div>
+  
+  {{ wtf.quick_form(form) }} <!--用辅助函数渲染-->
+  {% endblock %}
+  ```
+
+  
 
 
 
 ## 4.4 在视图函数中处理表单
 
-
+1. 问题：在一个视图函数里面同时处理GET和POST请求
+2. 
 
 
 
 ## 4.5 重定向和用户会话
 
+1. 问题：提交表单后刷新，浏览器会弹出确认警告
 
+2. 利用重定向和会话解决问题
+
+   ```python
+   from flask import Flask,render_template,session,redirect,url_for
+   from flask_bootstrap import Bootstrap
+   from flask_wtf import FlaskForm
+   from wtforms import StringField, SubmitField
+   from wtforms.validators import DataRequired
+   app = Flask(__name__)
+   bootstrap = Bootstrap(app) # 初始化扩展
+   app.config['SECRET_KEY'] = 'hard to guess string'
+   
+   
+   class NameFrom(FlaskForm):
+       name = StringField('What is your name', validators=[DataRequired()])
+       submit = SubmitField('Submit')
+   
+   
+   @app.route('/', methods=['GET','POST'])
+   def index():
+       form = NameFrom()
+       if form.validate_on_submit():
+           session['name'] = form.name.data  # 用户信息存储到session中
+           return redirect(url_for('index')) # 重定向url
+       return render_template('index.html', form=NameFrom(), name=session.get('name'))
+   ```
+
+   
 
 
 
 ## 4.6 闪现消息
 
+1. 用于在web上显示提示信息
+
+2. 代码
+
+   ```python
+   from flask import Flask,render_template,session,redirect,url_for,flash
+   from flask_bootstrap import Bootstrap
+   from flask_wtf import FlaskForm
+   from wtforms import StringField, SubmitField
+   from wtforms.validators import DataRequired
+   app = Flask(__name__)
+   bootstrap = Bootstrap(app) # 初始化扩展
+   app.config['SECRET_KEY'] = 'hard to guess string'
+   
+   
+   class NameFrom(FlaskForm):
+       name = StringField('What is your name', validators=[DataRequired()])
+       submit = SubmitField('Submit')
+   
+   
+   @app.route('/', methods=['GET','POST'])
+   def index():
+       form = NameFrom()
+       if form.validate_on_submit():
+           old_name = session.get('name')
+           if old_name is not None and old_name != form.name.data:
+               flash('Looks like you have changed your name!')  # FLASH
+           session['name'] = form.name.data
+           return redirect(url_for('index'))
+       return render_template('index.html', form=NameFrom(), name=session.get('name'))
+   
+   
+   
+   ```
+
+   ```html
+   {% extends "base.html" %}
+   {% import "bootstrap/wtf.html" as wtf %}
+   {% block title %} Flask - Page Not Found{% endblock %}
+   
+   
+   {% block page_content %}
+   <div class="page-header">
+       {% for message in get_flashed_messages() %}
+       {{ message }}
+       {% endfor %}
+       <h1>Hello, {% if name %} {{ name }}  {% else %} Stranger {% endif %}!</h1>
+   </div>
+   
+   {{ wtf.quick_form(form) }}
+   {% endblock %}
+   
+   ```
+
+   
