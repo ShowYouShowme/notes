@@ -1113,6 +1113,84 @@ class User(db.Model):
 
 ## 5.9 在视图函数中操作数据库
 
+```python
+from flask import Flask,render_template,session,redirect,url_for,flash
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+import os
+from flask_sqlalchemy import SQLAlchemy
+app = Flask(__name__)
+bootstrap = Bootstrap(app) # 初始化扩展
+app.config['SECRET_KEY'] = 'hard to guess string'
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+
+class NameFrom(FlaskForm):
+    name = StringField('What is your name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key = True, autoincrement=True)
+    name = db.Column(db.String(64), unique = True)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(64), unique = True, index = True)
+
+
+@app.route('/', methods=['GET','POST'])
+def index():
+    form = NameFrom()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username = form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session['known'] = False
+        else:
+            session['known'] = True
+        session['name'] = form.name.data
+        form.name.data = ''
+        return redirect(url_for('index'))
+    name = session.get('name')
+    known = session.get('known', False)
+    return render_template('index.html', form=NameFrom(), name= name, known = known)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+HTML
+```html
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %} Flask - Page Not Found{% endblock %}
+
+
+{% block page_content %}
+<div class="page-header">
+    {% for message in get_flashed_messages() %}
+    {{ message }}
+    {% endfor %}
+    <h1>Hello, {% if name %} {{ name }}  {% else %} Stranger {% endif %}!</h1>
+    <h1> {% if not known %} please to meet you! {% else %} happy to see you again! {% endif %} </h1>
+</div>
+
+{{ wtf.quick_form(form) }}
+{% endblock %}
+
+```
+
 
 
 ## 5.10 集成Python shell
