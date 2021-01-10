@@ -754,7 +754,17 @@ def user(name):
 
 ## 4.2 表单类
 
+1. 继承自FlaskForm类
 
+2. 示例
+
+   ```python
+   class NameFrom(FlaskForm):
+       name = StringField('What is your name', validators=[DataRequired()])
+       submit = SubmitField('Submit')
+   ```
+
+   
 
 
 
