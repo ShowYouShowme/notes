@@ -939,23 +939,44 @@ def user(name):
 
 ## 5.1 SQL数据库
 
-
+介绍型内容，跳过
 
 
 
 ## 5.2 NoSQL数据库
 
-
+介绍型内容，跳过
 
 
 
 ## 5.3 使用SQL还是NoSQL
 
-
+介绍型内容，跳过
 
 ## 5.4 Python数据库框架
 
+1. 常见数据库
 
+   ```shell
+   MySQL
+   Postgres
+   SQLite
+   Redis
+   MongoDB
+   CouchDB
+   DynamoDB
+   ```
+
+   
+
+2. 选用数据库框架考虑因素
+
+   + 易用性
+   + 性能
+   + 可移植性
+   + Flask集成度
+
+3. 推荐的框架：Flask-SQLALchemy
 
 ## 5.5 使用Flask-SQLALchemy管理数据库
 
