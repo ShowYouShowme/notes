@@ -931,4 +931,193 @@ def user(name):
    
    ```
 
+
+
+# 第五章 数据库
+
+
+
+## 5.1 SQL数据库
+
+
+
+
+
+## 5.2 NoSQL数据库
+
+
+
+
+
+## 5.3 使用SQL还是NoSQL
+
+
+
+## 5.4 Python数据库框架
+
+
+
+## 5.5 使用Flask-SQLALchemy管理数据库
+
+1. 安装
+
+   ```shell
+   pip install flask-sqlalchemy
+   ```
+
+2. 指定URL
+
+   ```shell
+   # MySQL
+   mysql://${username}:${password}@${hostname}/${database}
    
+   # Postgres
+   postgresql://${username}:${password}@${hostname}/${database}
+   
+   # SQLite(Linux,macOS)
+   sqlite:////absolute/path/to/database
+   
+   # SQLite(Windows)
+   sqlite:///c:/absolute/path/to/database
+   ```
+
+3. 配置URL
+
+   + 配置app.config['SQLALCHEMY_DATABASE_URI'] 
+   + 配置app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] 
+
+   ```python
+   from flask import Flask
+   import os
+   from flask_sqlalchemy import SQLAlchemy
+   app = Flask(__name__)
+   
+   basedir = os.path.abspath(os.path.dirname(__file__))
+   app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+   db = SQLAlchemy(app) # 初始化插件
+   ```
+
+   
+
+## 5.6 定义模型
+
+```python
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.String(64), unique = True)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(64), unique = True, index = True)
+```
+
+<font color=blue>SQLAlchemy的列类型和字段限制条件可以参考page49</font>
+
+## 5.7 关系
+
+
+
+## 5.8 数据库操作
+
+1. 可以参考网站https://docs.sqlalchemy.org或者https://www.osgeo.cn/sqlalchemy/
+
+2. 创建表
+
+   ```shell
+   # 创建db定义的全部模型对应的表
+   db.create_all()
+   
+   # 删除
+   db.drop_all()
+   ```
+
+   
+
+3. 插入行
+
+   ```python
+   admin_role = Role(name = 'Admin')
+   mod_role = Role(name = 'Moderator')
+   db.session.add(admin_role)
+   db.session.add(mod_role)
+   db.session.commit()
+   ```
+
+   ```python
+   admin_role = Role(name = '11')
+   mod_role = Role(name = '22')
+   db.session.add_all([admin_role, mod_role]) # 可用add_all一次性添加多个
+   db.session.commit()
+   ```
+
+   
+
+4. 修改行
+
+   ```python
+   # Role是定义的模型
+   # 先查询到指定记录,然后再修改
+   record = Role.query.filter_by(id = 2).first()
+   record.name = 'justin bieber'
+   db.session.add(record)
+   db.session.commit()
+   ```
+
+   
+
+5. 删除行
+
+   ```python
+   # 先查询到记录，然后删除
+   @app.route('/delete')
+   def delete():
+       record = Role.query.filter_by(id = 3).first()
+       db.session.delete(record)
+       db.session.commit()
+       return '222'
+   ```
+
+   
+
+6. 查询行
+
+   + 查询过滤器
+
+     | 过滤器      | 返回结果                                         |
+     | ----------- | ------------------------------------------------ |
+     | filter()    | 把过滤器添加到原查询上，返回一个新查询           |
+     | filter_by() | 把等值过滤器添加到原查询上，返回一个新查询       |
+     | limit()     | 使用指定的值限定原查询返回的结果                 |
+     | offset()    | 偏移原查询返回的结果，返回一个新查询             |
+     | order_by()  | 根据指定条件对原查询结果进行排序，返回一个新查询 |
+     | group_by()  | 根据指定条件对原查询结果进行分组，返回一个新查询 |
+
+     
+
+   + 查询执行方法
+
+     | 执行函数       | 返回结果                                     |
+     | -------------- | -------------------------------------------- |
+     | all()          | 以列表形式返回查询的所有结果                 |
+     | first()        | 返回查询的第一个结果，如果未查到，返回None   |
+     | first_or_404() | 返回查询的第一个结果，如果未查到，返回404    |
+     | get()          | 返回指定主键对应的行，如不存在，返回None     |
+     | get_or_404()   | 返回指定主键对应的行，如不存在，返回404      |
+     | count()        | 返回查询结果的数量                           |
+     | paginate()     | 返回一个Paginate对象，它包含指定范围内的结果 |
+
+     
+
+## 5.9 在视图函数中操作数据库
+
+
+
+## 5.10 集成Python shell
+
+
+
+## 5.11 使用Flask-Migrate实现数据库迁移
+
