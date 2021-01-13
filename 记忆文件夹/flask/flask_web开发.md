@@ -1291,3 +1291,141 @@ HTML
    2. 执行`flask db migrate`，生成迁移脚本
    3. 检查自动生成的脚本，改正不正确的地方
    4. 执行`flask db upgrade`，把改动应用到数据库中
+
+
+
+
+
+# 第六章 电子邮件
+
+ 
+
+## 6.1 提供电子邮件支持
+
+1. 安装依赖
+
+   ```shell
+   pip install Flask-Mail
+   ```
+
+   
+
+2. SMTP服务器配置
+
+   | 配置          | 默认值    | 说明                        |
+   | ------------- | --------- | --------------------------- |
+   | MAIL_SERVER   | localhost | 电子邮件服务器的域名/IP地址 |
+   | MAIL_PORT     | 25        | 服务器端口号                |
+   | MAIL_USE_TLS  | False     | 是否启用TLS                 |
+   | MAIL_USE_SSL  | False     | 是否启用SSL                 |
+   | MAIL_USERNAME | None      | 发件人用户名                |
+   | MAIL_PASSWORD | None      | 发件人授权码                |
+
+3. 初始化
+
+   ```python
+   from flask import Flask
+   from flask_mail import Mail, Message
+   
+   app =Flask(__name__)
+   mail=Mail(app)
+   
+   # imap和pop3的选择 ==> 优先imap
+   app.config['MAIL_SERVER']='smtp.126.com'
+   app.config['MAIL_PORT'] = 465
+   app.config['MAIL_USERNAME'] = 'wzc_0618@126.com'
+   app.config['MAIL_PASSWORD'] = 'SAGJEOZIYUNKVLLH' # 授权码不是密码
+   app.config['MAIL_USE_TLS'] = False
+   app.config['MAIL_USE_SSL'] = True
+   mail = Mail(app)
+   ```
+
+   
+
+## 6.2 集成电子邮件发送功能
+
+```python
+from flask import Flask,render_template,session,redirect,url_for
+from flask_bootstrap import Bootstrap
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+import os
+from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Message, Mail
+app = Flask(__name__)
+bootstrap = Bootstrap(app) # 初始化扩展
+app.config['SECRET_KEY'] = 'hard to guess string'
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+app.config['MAIL_SERVER']='smtp.126.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'wzc_0618@126.com'
+app.config['MAIL_PASSWORD'] = 'SAGJEOZIYUNKVLLH' # 授权码不是密码
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+
+
+class NameFrom(FlaskForm):
+    name = StringField('What is your name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(64), unique = True, index = True)
+
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(subject, sender = 'wzc_0618@126.com', recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    mail.send(msg)
+
+@app.route('/', methods=['GET','POST'])
+def index():
+    form = NameFrom()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session['known'] = False
+            #
+            send_email('861949775@qq.com', 'flask learn code', 'mail/new_user', user=user)
+        else:
+            session['known'] = True
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form,name=session.get('name'),
+                           known = session.get('known', False))
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+
+
+## 6.3 异步发送电子邮件
+
+```python
+# 创建线程来发送电子邮件
+from threading import Thread
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(subject, sender = 'wzc_0618@126.com', recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    thr = Thread(target=send_async_email, args=[app,msg])
+    thr.start()
+    return thr
+```
+
