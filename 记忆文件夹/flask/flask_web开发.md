@@ -1441,11 +1441,65 @@ def send_email(to, subject, template, **kwargs):
 
 ## 7.1 项目结构
 
+```shell
+|----app/
+|
+|----migrations/[db迁移脚本][mongoDB不需要]
+|
+|----tests/[单元测试]
+|
+|----config.py
+|----flask.py
+|----requirements.txt
+```
+
+```shell
+---app
+	|-templates/
+	|-static/
+	|-main/
+	  |--__init__.py
+	  |--errors.py
+	  |--forms.py
+	  |--views.py
+	|
+	|
+	|--__init__.py
+	|--email.py   [邮件]
+	|--models.py  [数据库模型]
+```
+
 
 
 
 
 ## 7.2 配置选项
+
+1. 基类：Config，主要包含通用配置
+
+2. 子类
+
+   | 名称              | 作用     |
+   | ----------------- | -------- |
+   | DevelopmentConfig | 开发配置 |
+   | TestingConfig     | 测试配置 |
+   | ProductionConfig  | 生产配置 |
+
+3. 实例：config
+
+   ```python
+   config = {
+       'development': DevelopmentConfig,
+       'testing': TestingConfig,
+       'production': ProductionConfig,
+   
+       'default': DevelopmentConfig
+   }
+   ```
+
+   
+
+## 7.3 应用包
 
 
 
@@ -1453,25 +1507,131 @@ def send_email(to, subject, template, **kwargs):
 
 ***
 
+1. 目的：动态修改应用的配置
 
+2. 解决方案：使用函数创建应用，然后配置通过函数参数传入
+
+3. 代码
+
+   ```python
+   from flask import Flask
+   from flask_bootstrap import Bootstrap
+   from flask_mail import Mail
+   from flask_moment import Moment
+   from flask_sqlalchemy import SQLAlchemy
+   from config import config
+   
+   bootstrap = Bootstrap()
+   mail = Mail()
+   moment = Moment()
+   db = SQLAlchemy()
+   
+   # 通过函数参数指定配置
+   def create_app(config_name):
+       app = Flask(__name__)
+       app.config.from_object(config[config_name])
+       config[config_name].init_app(app)
+   
+       # 初始化扩展
+       bootstrap.init_app(app)
+       mail.init_app(app)
+       moment.init_app(app)
+       db.init_app(app)
+   
+       from .main import main as main_blueprint
+       app.register_blueprint(main_blueprint)
+   
+       return app
+   ```
+
+   
 
 ### 7.3.2 在蓝本中实现应用功能
 
 ***
 
+1. 问题：使用工厂函数创建应用，使得没办法用`app.route`装饰器定义路由，也无法用`app.errorhandler`自定义错误页面
+
+2. 解决方案：使用蓝本
+
+   + 创建蓝本
+
+     ```python
+     from flask import Blueprint
+     
+     main = Blueprint('main', __name__)
+     
+     from . import views, errors
+     ```
+
+   + 注册蓝本
+
+     ```python
+     def create_app(config_name):
+     	# ...
+         
+         from .main import main as main_blueprint
+         app.register_blueprint(main_blueprint)
+     
+         return app
+     ```
+
+   + 利用蓝本定义错误处理程序
+
+     ```python
+     @main.app_errorhandler(404)
+     def page_not_found(e):
+         return render_template('404.html'), 404
+     ```
+
+   + 利用蓝本定义路由
+
+     ```python
+     @main.route('/', methods=['GET', 'POST'])
+     def index():
+     	# ...
+     ```
+
+   + 注意：蓝本中url_for使用方法与之前不一样
+
+     ```python
+     redirect(url_for('main.index'))  # ${蓝本名}.${函数名}
+     ```
+
+     
 
 
-## 7.3 应用包
-
- 
 
 ## 7.4 应用脚本
+
+```python
+import os
+import click
+from flask_migrate import Migrate
+from app import create_app, db
+from app.models import User, Role
+
+app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+migrate = Migrate(app, db)
+```
 
 
 
 ## 7.5 需求文件
 
+1. 生成需求文件
 
+   ```shell
+   pip freeze > requirements.txt
+   ```
+
+2. 从需求文件安装包
+
+   ```shell
+   pip install -r requirements.txt
+   ```
+
+   
 
 ## 7.6 单元测试
 
@@ -1479,7 +1639,29 @@ def send_email(to, subject, template, **kwargs):
 
 ## 7.7 创建数据库
 
+1. 设置环境变量
 
+   ```shell
+   # WIN
+   (venv)$ SET FLASK_APP=flasky.py
+   
+   # Linux
+   (venv)$ export SET FLASK_APP=flasky.py
+   ```
+
+2. 执行命令创建
+
+   ```shell
+   (venv)$ flask db upgrade
+   ```
+
+   
 
 ## 7.8 运行应用
+
+```shell
+# STEP1 
+(venv)$ SET FLASK_APP=flasky.py
+(venv)$ flask run
+```
 
