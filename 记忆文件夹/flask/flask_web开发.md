@@ -1665,3 +1665,226 @@ migrate = Migrate(app, db)
 (venv)$ flask run
 ```
 
+
+
+
+
+
+
+# 第八章 用户身份验证
+
+
+
+## 8.1 Flask的身份验证扩展
+
++ Flask-Login：管理已登录用户的用户会话
+
+  ```shell
+  pip install Flask-Login
+  ```
+
++ Werkzeug：计算密码散列值并核对
+
+  ```shell
+  pip install Werkzeug
+  ```
+
++ itsdangerous：生成并核对加密安全令牌
+
+  ```shell
+  pip install itsdangerous
+  ```
+
+## 8.2 密码安全性
+
+
+
+## 8.3 创建身份验证蓝本
+
+1. 创建蓝本
+
+   ```python
+   from flask import Blueprint
+   
+   auth = Blueprint('auth', __name__)
+   
+   from . import views
+   ```
+
+2. 注册路由
+
+   ```python
+   from flask import  render_template
+   from . import auth
+   
+   
+   @auth.route('/login')
+   def login():
+       return render_template('auth/login.html')
+   ```
+
+3. 注册蓝本
+
+   ```python
+   def create_app(config_name):
+   	#... 
+       
+       from .main import main as main_blueprint
+       app.register_blueprint(main_blueprint)
+   
+       return app
+   ```
+
+   
+
+## 8.4 使用Flask-Login验证用户身份
+
+
+
+### 8.4.1 准备登录的用户模型
+
+***
+
+
+
+### 8.4.2 保护路由
+
+***
+
+
+
+### 8.4.3 添加登录表单
+
+***
+
+1. app/auth/forms.py
+
+   ```python
+   from flask_wtf import  FlaskForm
+   from wtforms import StringField, PasswordField, BooleanField, SubmitField
+   from wtforms.validators import  DataRequired, Length, Email
+   
+   class LoginForm(FlaskForm):
+       email = StringField('Email', validators=[DataRequired(), Length(1, 64),Email()])
+       password = PasswordField('Password', validators=[DataRequired()])
+       remember_me = BooleanField('keep me logged in')
+       submit = SubmitField('Log In')
+   ```
+
+2. app/templates/auth/login.html
+
+   ```html
+   {% extends "base.html" %}
+   {% import "bootstrap/wtf.html" as wtf %}
+   {% block title %} Flasky - Login {% endblock %}
+   
+   {% block page_content %}
+   <div class="page-header">
+       <h1>Login</h1>
+   </div>
+   
+   <div class=""col-md-4>
+       {{ wtf.quick_form(form) }}
+   </div>
+   {% endblock %}
+   ```
+
+3. app/auth/views.py
+
+   ```python
+   from flask import  render_template
+   from . import auth
+   from .forms import LoginForm
+   
+   @auth.route('/login')
+   def login():
+       form = LoginForm()
+       return render_template('auth/login.html', form = form)
+   ```
+
+   
+
+### 8.4.4 登入用户
+
+***
+
+
+
+### 8.4.5 登出用户
+
+***
+
+
+
+### 8.4.6 理解Flask-Login的运作方式
+
+***
+
+
+
+### 8.4.7 登录测试
+
+***
+
+
+
+## 8.5 注册新用户
+
+
+
+
+
+### 8.5.1 添加用户注册表单
+
+***
+
+
+
+### 8.5.2 注册新用户
+
+***
+
+
+
+
+
+## 8.6 确认账户
+
+
+
+### 8.6.1 使用itsdangerous生成确认令牌
+
+***
+
+
+
+
+
+### 8.6.2 发送确认邮件
+
+***
+
+
+
+
+
+## 8.7 管理账户
+
+
+
+### 8.7.1 修改密码
+
+***
+
+
+
+### 8.7.2 重设密码
+
+***
+
+
+
+### 8.7.3 修改电子邮件地址
+
+***
+
