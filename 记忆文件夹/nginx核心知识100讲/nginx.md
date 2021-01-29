@@ -1,6 +1,8 @@
 ## 跨域配置
 
 ```nginx
+# 这种一般是网页直接在客户浏览器启动(不是从网站下载)，然后请求网站数据
+# 如果用python 的flask框架时,直接在响应头加Access-Control-Allow-Origin:*即可解决问题
 # 浏览器跨域POST请求时,先发起OPTIONS请求再发起POST请求
 location / { 
     #root   html;
@@ -14,6 +16,22 @@ location / {
         return 204;
     }   
 }
+```
+
+```python
+# flask 示例代码
+def post_greeting(term: str) -> str:
+    # person = {"name" : "wzc","age": 30}
+    person = [
+  {
+    "id": "Falco eleonorae",
+    "label": "Eleonora's Falcon",
+    "value": "Eleonora's Falcon"
+  }
+]
+    response = make_response(json.dumps(person))
+    response.headers["Access-Control-Allow-Origin"] = "*" 
+    return response
 ```
 
 
