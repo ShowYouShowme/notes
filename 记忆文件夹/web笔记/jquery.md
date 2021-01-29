@@ -475,13 +475,14 @@ $("新元素html代码").replaceAll("现有元素")
 
 ***
 
-1. 显示隐藏：$(...).show|hide|toggle()
+1. 显示隐藏：$(...).show|hide|toggle() --> 要掌握
 2. 上滑下滑：slideUp|slideDown|slideToggle(ms,cb)
 3. 淡入淡出fadeIn|fadeOut|fadeToggle
 4. 特点：所有函数可以选择加2个参数（动画持续时间ms和结束后的回调）
 5. 缺点
    + 效果写死，不便于维护和定制
    + 用js定时器实现的动画，效率低
+6. 建议：使用transition来实现
 
 
 
@@ -491,21 +492,110 @@ $("新元素html代码").replaceAll("现有元素")
 
 ***
 
+1. $(...).animate({},ms,cb)  只支持单个数值的css属性，不支持颜色动画
 
+2. 没有transition好用
+
+3. 必须要掌握，比上面的3组API好用
+
+4. 对比transition
+
+   ```shell
+   效率: transition高
+   
+   支持属性种类: transition高支持颜色过渡,animate不支持
+   
+   灵活性: animate可随意停止  transition 不可中断
+   ```
+
+5. 停止动画：$(...).stop()
+
+   ```javascript
+   $tar.is(":animated") // 判断动画是否执行中
+   
+   $(...).stop()
+   
+   $(...).stop(true) //清空后序队列
+   ```
+
+6. 排队
+
+   ```javascript
+   // 两个动画先后执行,也可以用cb来实现
+   $tar.animate({opacity:0},1000)
+   .animate({opacity:1},1000,function () {
+   $(this).hide();
+   })
+   ```
+
+7. 延迟执行 setTimeout()
 
 
 
 # 类数组对象操作
 
-
+1. get(index) 等效于[index]，返回dom元；get()：返回标准的数组对象
+2. length 长度
+3. each(callback)等效于数组中的forEach
+4. index() 等效于数组中的indexOf
+   + var i = $("selector").index(jq对象|DOM对象) ：查找右边的元素在左边的结果集合中的下标位置
+   + var i = $(...).index()：查找当前元素在其父元素下的下标位置
+5. $.each(obj, cb)：可以用来遍历数组和对象
 
 # 插件
+
+1. 定义：拥有独立功能的函数或程序
+2. 作用：重用
 
 
 
 ## 官方插件
 
+1. jQuery官方插件：jQuery UI
 
+   + 交互行为：了解
+
+   + 效果：重写jQuery中的函数，了解
+
+     ```shell
+     # 1
+     让 addClass可添加动画持续事件和回调函数，但是依旧使用定时器模拟过渡效果
+     
+     # 2
+     让animate 支持颜色动画
+     
+     # 3
+     为show/hide/toggle添加了更多的动画效果
+     ```
+
+   + **[重点]小部件，拥有完整样式和功能的小功能，包含**
+
+     1. 部件的样式：.CSS文件
+
+     2. 部件的行为：.js文件
+
+     3. 部件的内容和格式：自定义
+
+     4. 使用
+
+        + 下载并引入css和js文件，必须先引入jqeury.js，再引入jquery-ui.js.  jquery-ui.css和jquery-ui的images的文件夹放在同一个目录下
+
+        + 按照部件的要求定义HTML内容和格式
+
+        + 在自定义脚本中：找到要应用部件的HTML元素，调用部件的函数
+
+        + 示例
+
+          ```html
+          jquery-ui.js 放到js文件夹
+          images 文件夹和jquery-ui.css 放到images文件夹
+          
+          <link rel="stylesheet" href="css/jquery-ui.css">
+          <script src="js/jquery-3.5.1.js"></script>
+          <script src="js/jquery-ui.js"></script>
+          ```
+
+          
 
 ## 第三方插件
 
