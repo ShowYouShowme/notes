@@ -94,4 +94,109 @@
 
 1. [参考这里](https://editor.swagger.io/#/)
 
-   
+2. 示例
+
+   + get请求
+
+     ```yaml
+     # get请求,参数放在URL里面
+       /query:
+         get:
+           summary: 查询身份证信息
+           description: 通过身份证号码查出生日
+           operationId: hello.query
+           produces:
+             - application/json
+           responses:
+             200:
+               description: 出生年月日
+               schema:
+                 type: string
+               examples:
+                 "text/plain": "1990/08/08"
+           parameters:
+             - name: id
+               in: query
+               description: 身份证号码
+               required: true
+               type: string
+     ```
+
+   + post提交表单
+
+     ```yaml
+       /login:
+         post:
+           summary: 登录
+           description: 客户端调用此接口来登录
+           operationId: hello.login
+           consumes:
+             - application/x-www-form-urlencoded
+           produces:
+             - application/json
+           responses:
+             200:
+               description: 出生年月日
+               schema:
+                 type: string
+               examples:
+                 "text/plain": "1990/08/08"
+           parameters:
+             - name: uname
+               in: formData
+               description: 帐号名
+               "type": "string"
+               required: true
+             - name: upwd
+               in: formData
+               description: 密码
+               "type": "string"
+               required: true
+     ```
+
+   + POST请求，数据用json序列化
+
+     ```yaml
+       /sign_up:
+         post:
+           summary: 注册
+           description: 注册帐号
+           operationId: hello.sign_up
+           consumes:
+             - application/json
+           produces:
+             - application/json
+           responses:
+             200:
+               description: 出生年月日
+               schema:
+                 type: string
+               examples:
+                 "text/plain": "1990/08/08"
+           parameters:
+             - name: data
+               in: body
+               required: true
+               schema:
+                 $ref: '#/definitions/User'
+     
+     definitions:
+       User:
+         type: object
+         required:
+           - uname
+           - upwd
+         properties:
+           uname:
+             type: string
+             description: Unique identifier
+             example: "123"
+           upwd:
+             type: string
+             description: Pet's name
+             example: "Susie"
+             minLength: 1
+             maxLength: 100
+     ```
+
+     
