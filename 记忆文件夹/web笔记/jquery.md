@@ -595,7 +595,11 @@ $("新元素html代码").replaceAll("现有元素")
           <script src="js/jquery-ui.js"></script>
           ```
 
-          
+2. 小部件
+
+   1. button：让所有按钮保持一致的样式
+   2. 日历
+   3. 对话框
 
 ## 第三方插件
 
@@ -603,5 +607,304 @@ $("新元素html代码").replaceAll("现有元素")
 
 ## 自定义插件
 
+1. jQuery validation
 
+2. 文件上传
+
+   + 普通上传
+   + ajax上传
+   + 插件上传
+
+3. 富文本编辑器：wysiwyg
+
+   必须的文件：jquery.wysiwyg.css
+
+   ​						jquery.wysiwyg.bg.png
+
+   ​						jquery.wysiwyg.gif
+
+   ​						必须和css同目录
+
+   
+
+   ​						js ： jquery.wysiwyg.js
+
+   ​								wysiwyg.image.js
+
+   ​								wysiwyg.link.js
+
+   ​								wysiwyg.table.js
+
+   问题：只支持旧版的jquery 比如1.6.1
+
+4. masonry 彩砖墙
+
+5. ajax封装
+
+   ```javascript
+   $.ajax({
+      url: "xxx.php",
+      type:"get|post|delete...",
+       data:"变量=值&变量=值$..." 或 {变量:值,变量:值} 或 ${form}.serialize()
+   
+   	dataType: "服务器响应回消息的类型" text|json|xml|script|jsonp  jsonp必须写,其它的可以不写,服务器指定
+   
+   	// 旧版的写法,成功返回响应后,新版用then
+   	// 成功收到响应且状态码为200
+   	success(data){
+           
+       },
+       error(){
+           
+       },
+       // 请求完成后触发,无论成功失败
+       complete(){
+           
+       }
+   // 发送前处理
+   	beforeSend(){
+           
+       }
+   })
+   // ajax 的流程
+   xhr.onreadystatechange=function(){
+       if(xhr.readState == 4){
+           if(xhr.status == 200){
+               success()
+           }else{
+               //404 500 ...
+               error()
+           }
+       }
+   }
+   
+   xhr.open()
+   beforeSend()
+   xhr.send()
+   ```
+
+   简写
+
+   ```javascript
+   $.get("url",[data],fn)
+   或者 $.get("url",[data]).then()
+   
+   分支：了解
+   $.getJSON("url",[data],fn)
+   $.getScript("url",[data],fn)
+   
+   $.post("url",[data],fn)
+   
+   总结：只要响应头定义了content-type jquery可以自己识别
+   
+   // 加载html代码,并加载到父元素中
+   $("parent").load("header.html", function(){
+       
+   })
+   ```
+
+6. 跨域
+
+   + 定义：一个域名下的网页，想访问另一个域名下的资源；ajax请求会遇到跨域问题。xhr禁止发送跨域的ajax请求
+
+   + 哪些情况算跨域
+
+     1. 协议不一样：https443端口，http80端口
+     2. 端口不一样
+     3. 域名/IP不同
+     4. 二级域名不同
+
+   + 解决方案
+
+     1. 使用特殊标签跨域
+
+        ```shell
+        <link href>  	# 样式
+        <script src> 	# jsonp --> jQuery 封装了该方式
+        <img src> 		# 图片
+        <iframe> 		# 基本不用
+        ```
+
+     2. 服务器的响应头增加字段
+
+        ```python
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        ```
+
+     3. nginx反向代理：把跨域请求代理到本服务器其它路由
+
+     4. websocket
+
+   + jsonp跨域
+
+     1. 在客户端定义js函数
+
+        ```javascript
+        function callback(data){
+            // 使用data
+        }
+        
+        ```
+     
+    请求头里携带callback名
+        ```
+     
+     2. 服务器：返回js代码，包含数据
+     
+        ```javascript
+      1--从header里获取callback名
+        2--设置content-type :application/javascript
+        2-返回callback(msg)
+        ```
+     
+     3. 动态创建script元素，设置src为restful路径
+     
+     4. 删除创建的script元素
+     
+   + jquery中跨域
+
+     ```shell
+     # 底层不是用ajax实现的,只是为了api统一
+     $.ajax({
+     type:"GET",
+     url:"remote.php",
+     data:xxx,
+     success:fn,
+     dataType:"jsonp"
+     })
+     ```
+
+     
+
+7. 添加jQuery全局函数
+
+   + jQuery全局函数：直接定义在jQuery构造函数上，所有对象都可以使用
+   + jQuery实例函数：定义在jQuery.fn原型对象上，只有jQuery的查询结果对象才能使用
+
+
+
+
+
+# 第一章 选择器
+
+
+
+
+
+# 第二章 事件
+
+
+
+# 第三章 动画
+
+
+
+# 第四章 插件
+
+
+
+## 4.1 jQuery ui
+
+
+
+### 4.1.1 简介
+
+***
+
+1. 简介：jQuery 官方出的，现成的UI效果和功能的库
+2. UI：user interface
+3. UI库：用html/css/js实现的现成的页面效果的集合
+4. [网址](https://jqueryui.com/)
+5. 下载：下载前选择主题风格，然后将image文件夹，css和js文件复制到项目目录
+6. 引入`jquery-ui.js`前必须先引入`jquery.js`
+7. 学习建议
+   + 看官网demo
+   + 开发时不懂查手册
+
+### 4.1.2 组件
+
+***
+
+1. Interactions 交互效果
+
+   + Draggable：让选中的元素可拖拽
+   + Selectable：可以多选，该api具有侵入性，会为元素自动添加需要的class。问题：部分侵入的class未定义，需要用户自己定义
+   + Sortable：让多个li可拖拽，重新排列
+   + Resizable：可以用鼠标改变元素大小
+   + Droppable：可将一个元素拖入另外一个元素内
+
+2. Widgets 小部件
+
+   + accordion：手风琴
+
+   + autocomplete：自动补全
+
+   + Datepick：日历插件
+
+   + Button：让所有的按钮统一样式
+
+   + Dialog：对话框
+
+      模态对话框：对话框不关闭，无法操作网页内容
+
+   + Tabs：标签页
+
+   + Tooltip：工具提示，鼠标放上去会提示信息
+
+   + Progressbar：进度条
+
+3. Effects 效果
+
+   + 为add/remove/toggleClass添加了动画("class", ms, callback)
+
+   + show/hide/toggle添加了更多动画效果("效果名",ms,callback)
+
+   + **让animate支持颜色动画**
+
+     ```shell
+     # 下面这三种颜色均可缓动
+     ## 1--backgroundColor
+     ## 2--borderColor
+     ## 3--color
+     
+     $(...).animate({}, ms,callback)
+     ```
+
+     
+
+
+
+## 4.2 layui
+
+
+
+### 4.2.1 简介
+
+***
+
+1. 官网：https://www.layui.com/
+
+
+
+
+
+## 4.3 ydui
+
+
+
+### 4.3.1 简介
+
+***
+
+1. 官网：http://www.ydui.org/
+
+
+
+
+
+## 4.4 bootstrap
+
+
+
+# 第五章 ajax
 
