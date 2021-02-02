@@ -746,13 +746,14 @@ $("新元素html代码").replaceAll("现有元素")
         
         ```
      
+
     请求头里携带callback名
         ```
-     
+
      2. 服务器：返回js代码，包含数据
      
         ```javascript
-      1--从header里获取callback名
+         1--从header里获取callback名
         2--设置content-type :application/javascript
         2-返回callback(msg)
         ```
@@ -760,7 +761,7 @@ $("新元素html代码").replaceAll("现有元素")
      3. 动态创建script元素，设置src为restful路径
      
      4. 删除创建的script元素
-     
+
    + jquery中跨域
 
      ```shell
@@ -786,6 +787,8 @@ $("新元素html代码").replaceAll("现有元素")
 
 
 # 第一章 选择器
+
+api手册：https://jquery.cuishifeng.cn/
 
 
 
@@ -850,9 +853,26 @@ $("新元素html代码").replaceAll("现有元素")
    prev ~ siblings
    ```
 
+
+
+
+## 1.3 属性
+
+1. 种类
+
+   ```
+   [attribute]
+   [attribute=value]
+   [attribute!=value]
+   [attribute^=value]
+   [attribute$=value]
+   [attribute*=value]
+   [attrSel1][attrSel2][attrSelN]
+   ```
+
    
 
-## 1.2 内容选择器
+## 1.4 内容选择器
 
 1. 包含指定内容
 
@@ -874,7 +894,7 @@ $("新元素html代码").replaceAll("现有元素")
 
 
 
-## 1.3 表单选择器
+## 1.5 表单选择器
 
 1. 种类
 
@@ -960,11 +980,368 @@ $("新元素html代码").replaceAll("现有元素")
 
    
 
+# 第二章 属性
 
 
-# 第二章 事件
+
+## 2.1 属性
+
+1. 标准属性
+
+   ```shell
+   # 获取属性
+   $("img").attr("src");
+   
+   # 设置属性
+   $("img").attr({ src: "test.jpg", alt: "Test Image" });
+   ```
+
+   代码
+
+   ```html
+   <img src="img/1.jpg" alt="1">
+   <script>
+       $("img").click(function () {
+           let $tar= $(arguments[0].target);
+           let alt = parseInt($tar.attr("alt"));
+           alt += 1;
+           if(alt >4) alt = 1;
+           $tar.attr({
+               src: "img/" + alt + ".jpg",
+               alt : alt
+           });
+       })
+   </script>
+   ```
+
+   
+
+2. 状态属性
+
+   ```shell
+   # 获取属性
+   $("input[type='checkbox']").prop("checked");
+   
+   # 设置属性
+   $("input[type='checkbox']").prop({
+     disabled: true
+   });
+   ```
+
+   
+
+3. 自定义属性
+
+   ```shell
+   .data("属性名", 值)
+   ```
+
+   代码
+
+   ```html
+   <div>
+       <img src="img/1.jpg" data-target="img/1.jpg"
+            class="my-small">
+       <img src="img/2.jpg" data-target="img/2.jpg"
+            class="my-small">
+       <img src="img/3.jpg" data-target="img/3.jpg"
+            class="my-small">
+       <img src="img/4.jpg" data-target="img/4.jpg"
+            class="my-small">
+       <hr/>
+       <img src="img/1.jpg" class="my-big">
+   </div>
+   <script>
+       $("div>img:not(:last-child)").click(function (e) {
+           let $tar=$(e.target);
+           let img_path = $tar.data("target");
+           $("div>img:last-child").attr({
+               src:img_path
+           })
+       })
+   </script>
+   ```
+
+   
+
+## 2.2 CSS类
+
+1. api
+
+   ```shell
+   # 添加class
+   addClass
+   
+   # 移除class
+   removeClass
+   
+   # 开关class
+   toggleClass
+   
+   #存在class
+   hasClass
+   ```
+
+   
+
+2. 代码
+
+   ```html
+   <button>双态按钮</button>
+   <script>
+       $("button").click(function () {
+           let $tar = $(this);
+           if($tar.hasClass("down"))
+               $tar.removeClass("down");
+           else
+               $tar.addClass("down");
+       })
+   </script>
+   ```
+
+   ```html
+   <button>双态按钮</button>
+   <script>
+       $("button").click(function () {
+           let $tar = $(this);
+           $tar.toggleClass("down");
+       })
+   </script>
+   ```
+
+   ```html
+   <h1>标签页切换</h1>
+   <ul class="tabs">
+           <li class="active">
+               <a data-toggle="tab" href="#">十元套餐</a>
+           </li>
+           <li>
+               <a data-toggle="tab" href="#">二元套餐</a>
+           </li>
+           <li>
+               <a data-toggle="tab" href="#">三元套餐</a>
+           </li>
+       </ul>
+       <script>
+           $("[data-toggle=tab]").click(function () {
+               var $this=$(this);
+               var $parent=$this.parent();
+               if($parent.hasClass("active") == false){
+                   $parent.addClass("active");
+                   $parent.siblings(".active").removeClass("active");
+               }
+           })
+       </script>
+   ```
+
+   
+
+## 2.3 HTML代码/文本/值
+
+1. html
+
+   ```shell
+   # 获取html内容
+   $('p').html();
+   
+   # 设置html内容
+   $("p").html("Hello <b>world</b>!");
+   ```
+
+2. text
+
+   ```shell
+   # 获取元素内容
+   $('p').text();
+   
+   # 设置元素内容
+   $("p").text("Hello world!");
+   ```
+
+3. val
+
+   ```shell
+   # 获取元素值
+   $("input").val();
+   
+   # 设置元素值
+   $("input").val("hello world!");
+   ```
+
+   
+
+# 第三章 文档处理
 
 
+
+## 3.1 插入
+
+
+
+### 3.1.1 内部插入
+
+***
+
+```
+append(content|fn)
+appendTo(content)
+prepend(content|fn)
+prependTo(content)
+```
+
+### 3.1.2 外部插入
+
+***
+
+```
+after(content|fn)
+before(content|fn)
+insertAfter(content)
+insertBefore(content)
+```
+
+
+
+## 3.2 替换
+
+```
+replaceWith(content|fn)
+```
+
+代码
+
+```html
+<div id="chosen" >
+    <img src="img/1.jpg">
+</div>
+<hr/>
+<div id="list" >
+    <img src="img/2.jpg">
+    <img src="img/3.jpg">
+    <img src="img/4.jpg">
+</div>
+<script>
+    $("#list").click(function (e) {
+        var $target=$(e.target);
+        if($target.is("img")){
+            $("#chosen>img").replaceWith($target.clone());
+        }
+    })
+</script>
+```
+
+
+
+## 3.3 删除
+
+```
+remove([expr])
+```
+
+
+
+## 3.4 复制
+
+```shell
+clone()
+
+clone(true) # 连事件也复制
+```
+
+
+
+
+
+# 第四章 事件
+
+
+
+## 4.1 页面载入
+
+1. : 仅DOM内容加载完，就可提前执行。DOM内容包括：html和js。比windown.onload 提前触发，不依赖于css和图片的全部操作都可以在DOM内容加载后，提前触发，比如事件绑定
+
+   ```shell
+   # <script>标签放在 <body>标签结尾也是DOM加载完成后执行
+   
+   # jQuery 解决了浏览器兼容性问题
+   $(document).ready(function(){
+   
+   })
+   
+   ## 简化
+   $().ready(function(){
+   
+   })
+   
+   ## 终极简化
+   $(function(){
+   
+   })
+   
+   或者
+   $(()=>{
+   
+   })
+   ```
+
+   
+
+2. windown.onload() 在所有页面内容加载完成触发，包括html，css，js，图片等。如果js必须依赖css或者图片才能执行，用这个
+
+## 4.2 事件处理
+
+1. api
+
+   ```shell
+   on(eve,[sel],[data],fn)		# 绑定,推荐使用
+   off(eve,[sel],[fn])	   		# 解除绑定
+   bind(type,[data],fn)
+   one(type,[data],fn)			# 仅仅触发一次
+   trigger(type,[data]) # 触发事件
+   
+   ```
+
+
+
+## 4.3 事件切换
+
+```shell
+hover([over,]out) # 同时注册 mouseenter 和 mouseleave事件
+toggle([spe],[eas],[fn])1.9*
+```
+
+
+
+## 4.4 简化事件注册
+
+1. api[推荐]
+
+   ```
+   blur([[data],fn])
+   change([[data],fn])
+   click([[data],fn])
+   dblclick([[data],fn])
+   error([[data],fn])1.8-
+   focus([[data],fn])
+   focusin([data],fn)
+   focusout([data],fn)
+   keydown([[data],fn])
+   keypress([[data],fn])
+   keyup([[data],fn])
+   mousedown([[data],fn])
+   mouseenter([[data],fn])
+   mouseleave([[data],fn])
+   mousemove([[data],fn])
+   mouseout([[data],fn])
+   mouseover([[data],fn])
+   mouseup([[data],fn])
+   resize([[data],fn])
+   scroll([[data],fn])
+   select([[data],fn])
+   submit([[data],fn])
+   ```
+
+   
 
 # 第三章 动画
 
