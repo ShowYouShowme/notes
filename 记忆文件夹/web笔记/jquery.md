@@ -789,6 +789,177 @@ $("新元素html代码").replaceAll("现有元素")
 
 
 
+## 1.1 基本选择器
+
+1. 根据id选择
+
+   ```html
+   <body>
+       <button id="btn1">click me!</button>
+       <script>
+           $("#btn1").click(function () {
+               console.log("jQuery 选择器")
+           })
+       </script>
+   </body>
+   ```
+
+2. 根据标签选择
+
+   ```html
+   <body>
+       <button id="btn1">0</button>
+       <button id="btn2">0</button>
+       <button id="btn3">0</button>
+       <script>
+           let btns = $("button");
+           btns.click(function () {
+               let $tar = $(arguments[0].target);
+               let count = parseInt($tar.html()) + 1;
+               $tar.html(count);
+           })
+       </script>
+   </body>
+   ```
+
+   
+
+3. 根据class选择
+
+   ```html
+   <body>
+       <div class="notMe">div class="notMe"</div>
+       <div class="myClass">div class="myClass"</div>
+       <span class="myClass">span class="myClass"</span>
+       <script>
+           $(".notMe").css("background", "red");
+       </script>
+   </body>
+   ```
+
+
+
+## 1.2 层级
+
+1. 种类
+
+   ```
+   ancestor descendant
+   parent > child
+   prev + next
+   prev ~ siblings
+   ```
+
+   
+
+## 1.2 内容选择器
+
+1. 包含指定内容
+
+   ```html
+   <button>鱼香肉丝</button>
+   <button>酸菜鱼</button>
+   <button>水煮鱼</button>
+   <button>麻辣烫</button>
+   <script>
+       $("button:contains(鱼)").css("color", "red");
+   </script>
+   ```
+
+   
+
+2. 内容为空
+
+3. 包含匹配选择器的元素
+
+
+
+## 1.3 表单选择器
+
+1. 种类
+
+   ```
+   :input
+   :text
+   :password
+   :radio
+   :checkbox
+   :submit
+   :image
+   :reset
+   :button
+   :file
+   ```
+
+2. 代码
+
+   ```html
+   用户名:<input disabled>
+   <br/>
+   密码:<input type="password" disabled>
+   <br/>
+   <input type="checkbox"> 我同意本站的使用条款
+   <br/>
+   <input type="submit" value="提交注册信息" disabled />
+   <script>
+       var $cnb=$(":checkbox");
+       var $others=$(":input:not(:checkbox)");
+       $cnb.click(function(){
+           $others.prop("disabled", !$(arguments[0].target).prop("checked"));
+       })
+   </script>
+   ```
+
+   
+
+
+
+## 1.3 同时匹配多个条件
+
+```html
+<div >
+    <div class="alert" id="alert1">
+        第一个警告框
+    </div>
+
+    <div class="alert" id="alert2">
+        <span class="close">x</span>
+        第二个警告框
+    </div>
+</div>
+<script src="js/jquery-3.5.1.js"></script>
+<script>
+    // div标签 && 有alert Class && 子元素有close 类
+    $("div.alert:has(.close)").css("color", "blue");
+
+    // div标签 && 有alert Class && 子元素没有close 类
+    $("div.alert:not(:has(.close))").css("color", "blue");
+</script>
+```
+
+
+
+## 1.2 操作Dom元素
+
+1. 将dom元素封装为jQuery对象
+
+   ```html
+   <body>
+       <button id="btn1">0</button>
+       <script>
+           $("#btn1").click(function () {
+               let event = arguments[0];
+               let elem = event.target; // 触发点击事件的Dom元素
+               let count = parseInt($(elem).html()); // $(dom元素) --> 返回jQuery对象
+               count += 1;
+               $(elem).html(count);
+           })
+       </script>
+   </body>
+   ```
+
+   
+
 
 
 # 第二章 事件
@@ -906,5 +1077,54 @@ $("新元素html代码").replaceAll("现有元素")
 
 
 
+## 4.5 第三方插件
+
+
+
+### 4.5.1 laydate
+
+***
+
+1. 简介：日期与时间组件，不依赖于jQuery
+2. 官网：https://www.layui.com/laydate/
+
+
+
+### 4.5.2 jQuery.validator
+
+***
+
+1. 简介：表单验证的插件，基于jQuery
+2. 只需要引入`jquery.validate.js`
+3. 官网：https://jqueryvalidation.org/
+
+
+
+### 4.5.3 masonry 彩砖墙
+
+***
+
+1. 官网：https://masonry.desandro.com/
+
+
+
 # 第五章 ajax
+
+
+
+
+
+# 第六章 添加jQuery全局函数
+
+
+
+## 6.1 jQuery全局函数
+
+1. 定义：直接定义在jQuery构造函数上，所有对象都可以使用。可以认为是jQuery类的静态成员函数
+
+
+
+## 6.2 jQuery实例函数
+
+1. 定义：定义在jQuery.fn原型对象上，只有jQuery的查询结果对象才能使用。可以认为是jQuery类的成员函数
 
