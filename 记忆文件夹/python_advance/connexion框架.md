@@ -94,7 +94,12 @@
 
 1. [参考这里](https://editor.swagger.io/#/)
 
-2. 示例
+2. 说明
+
+   + yaml里basePath 配置路由前缀
+   + 默认ui的路由是：http://127.0.0.1:9090/v1.0/ui
+
+3. 示例
 
    + get请求
 
