@@ -141,7 +141,7 @@ def index():
 + 编程的方式启动（不推荐）
 
   ```shell
-  if __name__= '__main__':
+  if __name__== '__main__':
   	app.run()
   ```
 
