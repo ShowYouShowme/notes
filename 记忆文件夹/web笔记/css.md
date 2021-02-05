@@ -207,6 +207,7 @@ HTML 只需要记住四大属性：id，class，title，style
       后代：只要具备层级关系的元素，被嵌套的都可以称之为 后代元素
 
       ```
+      // 用空格间隔
       选择器1 选择器2{
       样式声明;
       }
@@ -259,16 +260,6 @@ HTML 只需要记住四大属性：id，class，title，style
          :focus 匹配元素获取焦点时的状态，针对text，password，textarea
          ```
 
-         
-
-      3. 目标伪类
-
-      4. 元素状态伪类
-
-      5. 结构伪类
-
-      6. 否定伪类
-
 3. 选择器优先级：选择器的权值加到一起，大的优先；如果权值相同，后定义的优先
 
    | 选择器类型 | 权值 |
@@ -285,3 +276,387 @@ HTML 只需要记住四大属性：id，class，title，style
 
 
 
+## 3.1 单位
+
+
+
+### 3.1.1 尺寸单位
+
+***
+
++ <span style="color:red;font-weight:bold">% 百分比：相对于父元素的百分比</span>
++ in 英寸：用的不多
++ cm 厘米：用的不多
++ mm 毫米：用的不多
++ <span style="color:red;font-weight:bold">pt 磅</span>
++ <span style="color:red;font-weight:bold">px 像素</span>
++ <span style="color:red;font-weight:bold">em 1em等于当前的字体尺寸</span>
+
+
+
+### 3.1.2 颜色单位
+
+<hr/>
+
++ rgb(r,g,b)，RGB值，如rgb(255,0,0)
++ rgb(x%,y%,z%)：RGB百分比，如rgb(100%,0%,0%)
++ <span style="color:red;font-weight:bold">#rrggbb：十六进制数，如#ff0000</span>
++ #rgb：简写的十六进制数，#aabbcc 可简写为#abc
++ 表示颜色的英文单词，比如red
+
+
+
+## 3.2 尺寸属性
+
+1. 作用：用于设置元素的宽度和高度
+
+   单位：百分比 或 像素
+
+2. 宽度属性
+
+   + width：设置元素宽度
+   + min-width：设置元素的最小宽度
+   + max-width：设置元素的最大宽度
+
+3. 高度属性
+
+   + height：设置元素高度
+   + min-height：设置元素最小高度
+   + max-height：设置元素最大高度
+
+4. 允许修改宽和高的元素
+
+   + 块级元素
+
+   + 大部分的行内块元素
+
+     ```
+     大部分表单控件元素
+     单选按钮，复选框，无法修改尺寸
+     ```
+
+   + 存在width和height属性的html元素允许被修改
+
+     比如：img，table
+
+5. 溢出：使用尺寸属性限制元素大小时，如果内容所需空间大于元素本身，会导致溢出
+
+   溢出处理：
+
+   1. overflow
+
+      ```
+      visible：溢出可见
+      hidden：溢出隐藏
+      scroll：滚动，元素会出现滚动条，当内容溢出时，滚动条可用
+      auto：自动，内容溢出时，会显示滚动条并且可用；不溢出没有滚动条
+      ```
+
+   2. overflow-x：横向溢出处理
+
+      ```
+      visible：溢出可见
+      hidden：溢出隐藏
+      scroll：滚动，元素会出现滚动条，当内容溢出时，滚动条可用
+      auto：自动，内容溢出时，会显示滚动条并且可用；不溢出没有滚动条
+      ```
+
+   3. overflow-y：纵向溢出处理
+
+      ```
+      visible：溢出可见
+      hidden：溢出隐藏
+      scroll：滚动，元素会出现滚动条，当内容溢出时，滚动条可用
+      auto：自动，内容溢出时，会显示滚动条并且可用；不溢出没有滚动条
+      ```
+
+
+
+
+## 3.3 边框属性
+
+
+
+### 3.3.1 边框
+
+***
+
+
+
+#### 边框[重点]
+
+***
+
+1. 简写方式：一个属性控制四个方向边框的效果
+
+   ```shell
+   border：width style color
+   
+   width：粗细
+   style：样式
+   	solid：实线
+   	dotted：虚线
+   	dashed：虚线
+   color：颜色
+   	rgb
+   	transparent（透明）
+   	
+   # 取消边框
+   border:none  或者 border:0
+   ```
+
+2. 单边定义
+
+   ```
+   border-方向:width style color
+   
+   方向:
+   top right bottom left
+   
+   border-left:1px dotted red
+   ```
+
+3. 单属性定义
+
+   ```
+   border-属性:值
+   
+   值:width/style/color
+   
+   border-color:#00f
+   border-style:dotted
+   ```
+
+4. 单边单属性定义
+
+   ```
+   border-方向-属性:值
+   
+   border-left-color:red
+   border-bottom-style:dotted
+   ```
+
+
+
+#### 边框倒角[重点]
+
+***
+
+作用：将四个方向的角倒成圆角
+
+```
+border-radius
+取值：绝对数值 或 百分比
+
+border-radius:5px
+border-radius:50%  如果当前宽和高相等，则将元素改为圆形
+```
+
+
+
+
+
+#### 边框阴影
+
+***
+
+```
+box-shadow
+
+取值：
+h-shadow：必须 阴影的水平偏移距离，+ 右偏移 - 左偏移
+v-shadow：必须 阴影的垂直偏移距离，+ 下偏移 - 上偏移
+blur：模糊距离
+spread：阴影尺寸
+color：颜色
+inset：默认的外阴影更改为内阴影，这是一个值
+
+基本上只需要设置h-shadow和v-shadow
+```
+
+
+
+#### 轮廓
+
+***
+
+作用：绘制于元素周围的一条线，位于边框之外
+
+```shell
+# 很少使用
+outline: width style color
+outline-width
+outline-color
+outline-style
+
+# 取消元素轮廓
+outline:none  或者 outline:0
+```
+
+
+
+## 3.4 框模型
+
+
+
+### 3.4.1 什么是框模型
+
+***
+
+框：页面一切元素都是框。
+
+框模型：Box-Model，定义了元素框处理元素内容，内边距和外边距的方式
+
+
+
+对象实际宽度：左右外边距 + 左右边框 + 左右内边距 + width
+
+
+
+对象实际高度：上下外边距 + 上下边框 + 上下内边距 + height
+
+### 3.4.2 外边距
+
+***
+
+1. 定义：围绕在元素边框周围的空白区域，正常情况下，不允许被其他元素所占据
+
+2. 语法：
+
+   ```shell
+   # 四个方向外边距
+   margin:value
+   
+   # 单边设置
+   margin-top 上外边距
+   
+   margin-right 右外边距
+   
+   margin-bottom 下外边距
+   
+   margin-left 左外边距
+   
+   # 取值
+   1. 单位  px
+   	margin-top:20px
+   	margin:15px
+   2. 单位为%
+   3. 取值为auto
+   	左右外边距可以取值为auto，允许让块级元素水平居中显示。上下边距值auto无效
+   4. 取值为负值
+   	移动元素
+   	左外边距为负数，元素向左移动
+   	上外边距为负数，元素向上移动
+   ```
+
+3. 简洁写法
+
+   ```shell
+   margin:value # 四个方向外边距相同
+   
+   margin: v1 v2;# v1 上下边距 v2 左右边距
+   
+   margin: v1 v2 v3; # v1 上 v2 左右 v3 下
+   
+   margin: v1 v2 v3 v4; # 上 右 下 左
+   ```
+
+4. 默认具备外边距的元素
+
+   ```
+    body 元素也有外边距
+   <body>
+       <!--外边距-->
+       <p>段落元素</p>
+       <h1>1级标题</h1>
+       <h2>2级标题</h2>
+       <h3>3级标题</h3>
+       <h4>4级标题</h4>
+       <h5>5级标题</h5>
+       <h6>6级标题</h6>
+       <ul>
+           <li>列表项1</li>
+           <li>列表项2</li>
+           <li>列表项3</li>
+       </ul>
+   
+       <ol>
+           <li>列表项1</li>
+           <li>列表项2</li>
+           <li>列表项3</li>
+       </ol>
+   
+       <dl>
+           <dt>外边距</dt>
+           <dd>外边距是位于元素边框之外的空白距离</dd>
+       </dl>
+   
+       <pre>预处理元素</pre>
+   </body>
+   ```
+
+   编写网页时，一般会进行css重新，改变一些元素的默认样式。比如取消某些元素的默认外边距
+
+5. 外边距特殊处理
+
+   1. 外边距合并：两个垂直外边距相遇时，他们将形成一个外边距，称为外边距合并。合并后的外边距的高度等于两个外边距中高度较大者。
+
+   2. 外边距溢出：在某些特殊情况下，为子元素设置上下外边距时，有可能会作用到父元素上。
+
+      特殊情况：
+
+      1. 父元素没有上或下边框
+      2. 必须为第一个子元素或最后一个子元素设置外边距时
+
+      解决方案：
+
+      1. 为父元素增加边框（上/下）
+      2. 在父元素中增加子元素\<table>到第一个子元素位置处
+      3. 通过设置父元素的上内边距来取代子元素的上外边距
+
+   3. 为行内元素和行内块元素设置外边距
+
+      1. 为行内元素设置上下外边距 无效
+      2. 为行内块元素设置上下外边距整行内容都跟着变
+
+
+
+### 3.4.3 内边距
+
+***
+
+1. 定义：内容区域与边框之间的距离。特点：会扩大元素边框所占用的区域
+
+2. 语法
+
+   ```
+   padding：value
+   
+   单边设置
+   padding-top/right/bottom/left:value
+   
+   取值：
+   1. 单位可以为px
+   2. 单位可以为%
+   3. 不允许取负数
+   ```
+
+3. 简洁写法
+
+   ```
+   padding:value 四个方向的内边距
+   
+   padding:V1 V2;  V1 上下 V2 左右
+   
+   padding:V1 V2 V3;上 左右 下
+   
+   padding:V1 V2 V3 V4 上 右 下 左
+   ```
+
+4. 特殊处理
+
+   对行内元素和行内块元素设置内边距时，只会影响自己，不会影响其他元素
+
+
+
+## 3.5 背景属性
