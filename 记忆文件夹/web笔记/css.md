@@ -790,3 +790,251 @@ outline:none  或者 outline:0
 
    
 
+
+
+# 第四章 渐变
+
+
+
+## 4.1 什么是渐变
+
+1. 定义：两种或多种颜色间平滑过渡的效果
+2. 分类
+   + 线性渐变：按照直线方向渐变
+   + 径向渐变：按照半径的方向渐变
+   + 重复渐变
+
+
+
+## 4.2 组成
+
+1. 色标：决定了渐变的每种颜色及其出现的位置。每一种渐变效果都是由 多个 色标 组成的（2个以上）
+
+
+
+## 4.3 渐变的语法
+
+1. 语法
+
+   ```
+   属性：background-image
+   值：	liner-gradien() 			   线性渐变
+   	  radial-gradien() 				径向渐变
+   	  repeating-liner-gradien() 	重复线性渐变  基本用不到
+   	  repeating- radial-gradien() 	重复径向渐变  基本用不到
+   ```
+
+   
+
+2. 线性渐变
+
+   ```
+   background-image:liner-gradien(angle, color-point, color-point,...)
+   
+   angle: 角度,渐变的填充方向
+          值： to top: 从下向上填充
+          	   to right: 从左向右填充
+          	   to bottom: 从上向下填充
+          	   to left:从右向左填充
+          	   
+          	   角度: 0deg-360deg
+          	       0deg   --> to top
+          	       90deg  --> to right
+          	       180deg --> to bottom
+          	       270deg --> to left
+          	       
+   color-point: 表示每个颜色值，及其出现的位置，多个色标之间用逗号分隔
+   			ex:
+   			  1. red  0%   开始的时候 是红色
+   			  2. blue 50px 填充到50个像素时，变为 蓝色
+   			  3. 色标的位置可以省略
+   			     省略位置后，每个将平均分配元素区域
+   ```
+
+3. 径向渐变
+
+   语法：
+
+   background-image：radial-gradient([size-at-position],color-point, color-point)
+
+   ```
+   size-at-position：径向渐变的半径 以及 圆心的位置
+   size: 圆的半径, px为单位
+   position: 圆心位置
+   	1. 0px 0px  圆心设置在元素的左上角
+   	2. 50% 50% 	圆心设置在元素正中间
+   	3. right bottom 关键字：top / right / bottom / left / center
+   	   将圆心设置在元素的右下角
+   ```
+
+4. 浏览器的兼容问题
+
+   各主流浏览器的主流版本 均支持渐变效果；对于不支持渐变的浏览器，可以尝试增加 浏览器前缀 去实现渐变显示。
+
+   ```
+   Firefox : -moz-
+   Chrome和Safari: -webki-
+   Opera: -o-
+   ```
+
+   前缀加载位置：
+
+   1. 如果浏览器不支持属性，则将前缀加载到属性名称前
+
+      ```
+      ex：
+      	animation: scroll 5s;
+      	
+      	加前缀
+      	-moz-animation: scroll 5s;
+      	-webki-animation: scroll 5s;
+      	-o-animation: scroll 5s;
+      ```
+
+      
+
+   2. 如果浏览器支持属性，但是不支持值的话，则将前缀加载到属性值的前面
+
+      ```
+      ex:
+      	background-image: liner-gradient()
+      	
+      	background-image: -moz-liner-gradient()
+      	background-image: -webki-liner-gradient()
+      	background-image: -o-liner-gradient()
+      ```
+
+      
+
+
+
+# 第五章 文本格式化
+
+
+
+## 5.1 字体属性
+
+1. 指定字体系列
+
+   属性：font-family
+
+   取值：value1,value2,...  [逐个匹配，看客户机器上有哪个字体]
+
+   注意：字体取值包含 中文或者特殊符号，使用""引起来
+
+   ```
+   font-family:"宋体","微软雅黑",Arial
+   ```
+
+2. 字体大小
+
+   属性：font-szie
+
+   取值： px 或者 pt 或者 em
+
+3. 字体加粗
+
+   属性：font-weight
+
+   取值：
+
+   1. normal：正常体
+   2. bold：加粗
+   3. 400~900   400：normal  900：bold
+
+4. 字体样式
+
+   属性：font-style
+
+   取值：
+
+   1. normal：正常提
+   2. italic：斜体
+
+5. 小型大写字母[很少用]
+
+   作用：针对英文字符，将小写字符变成大写字符，但是大小与小写一样
+
+   属性：font-variant
+
+   取值：
+
+   1. normal
+   2. small-caps
+
+6. 字体属性
+
+   属性：font
+
+   取值：style variant weight size family
+
+   注意：使用简写属性时，必须要设置 family的值，否则无效
+
+   ```
+   font: 12px; //无效
+   
+   font: 12px "微软雅黑"; //通过
+   ```
+
+   
+
+## 5.2 文本属性
+
+1. 文本颜色
+
+   属性：color
+
+   取值：任意合法颜色
+
+2. 文本排列方式
+
+   作用：指定当前元素中的文本，行内元素，行内块元素的 水平对齐方式
+
+   属性 ：text-align
+
+   取值：left / center / right
+
+3. 文字修饰
+
+   作用：指定文本的线条样式
+
+   属性：text-decoration
+
+   取值：
+
+   1. none 没有线条显示
+   2. underline 下划线 \<u>\</u>
+   3. overline 上划线
+   4. line-through 删除线  相当于\<s>\</s>
+
+4. 行高
+
+   作用：指定元素中一行数据的高度。如果行高的高度高于文字高度本身，那么该段文本将在行高的范围内呈现出 垂直居中的显示效果。
+
+   场合：
+
+   1. 控制一行文本垂直居中对齐
+   2. 设置行间距
+
+   属性：line-height
+
+   取值：以px为单位的数值
+
+5. 首行文本缩进
+
+   属性：text-indent
+
+   取值：缩进的距离，以px为单位的数值
+
+6. 文本阴影
+
+   属性：text-shadow
+
+   取值：h-shadow v-shaow blur color;
+
+# 第六章 表格
+
+
+
+# 第七章 浮动
+
