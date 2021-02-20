@@ -1288,14 +1288,41 @@ clone(true) # 连事件也复制
 
 2. windown.onload() 在所有页面内容加载完成触发，包括html，css，js，图片等。如果js必须依赖css或者图片才能执行，用这个
 
+   ```html
+   <script>
+       window.onload=function () {
+           console.log("onload trigger!");
+       }
+   
+       $(document).ready(function () {
+           console.log("DOM 加载完毕!");
+       })
+   </script>
+   ```
+
+   
+
 ## 4.2 事件处理
 
 1. api
 
    ```shell
+   # on 具有 delegate 的功能
    on(eve,[sel],[data],fn)		# 绑定,推荐使用
+   on("dblclick", "option", fun)
+   on("dblclick", fun)
+   
    off(eve,[sel],[fn])	   		# 解除绑定
+   off("dblclick", "option", fun)
+   off("dblclick", fun)
+   
    bind(type,[data],fn)
+   
+   # 接触绑定
+   unbind()  		# 解除全部
+   unbind(type)	# 解除一个类型的
+   unbind(type,fn) # 解除一个handler
+   
    one(type,[data],fn)			# 仅仅触发一次
    trigger(type,[data]) # 触发事件
    
@@ -1341,13 +1368,198 @@ toggle([spe],[eas],[fn])1.9*
    submit([[data],fn])
    ```
 
+
+
+
+## 4.5 鼠标悬停事件
+
+
+
+### 4.5.1 对比
+
+***
+
+1. mouseenter 和 mouseleave 进入/离开子元素时，父元素不触发事件
+2. mouseover 和 mouseout 进入/离开子元素时，父元素也会触发事件
+
+
+
+### 4.5.2 同时注册
+
+***
+
+```javascript
+// 同时绑定两个事件 方法一
+$("#d1").mouseenter(function(e){
+console.log("进入" + e.target.id)
+}).mouseleave(function(e){
+console.log("离开" + e.target.id)
+})
+
+// 同时绑定两个事件 方法二 使用mouseenter 和mouseleave
+$("#d1").hover(e=>{
+console.log("进入" + e.target.id)
+}, e=>{
+console.log("离开" + e.target.id)
+})
+```
+
+
+
+# 第五章 动画
+
+
+
+## 3.1 基本
+
+1. 显示
+
+   ```shell
+   .show()
+   
+   # 用法一
+   $("#target").show()
+   # 用法二  2000 是缓动时间
+   $("#target").show(2000, callback)
+   ```
+
+2. 隐藏
+
+   ```shell
+   .hide()
+   
+   # 用法同上
+   ```
+
+3. 切换显示和隐藏
+
+   ```shell
+   .toggle()
+   
+   # 用法同上
+   ```
+
    
 
-# 第三章 动画
+## 3.2 滑动
+
+1. 上滑
+
+   ```shell
+   .slideUp(ms,cb)
+   ```
+
+2. 下滑
+
+   ```
+   .slideDown(ms, cb)
+   ```
+
+3. 滑动切换
+
+   ```
+   .slideToggle(ms, cb)
+   ```
 
 
 
-# 第四章 插件
+## 3.3 淡入淡出
+
+1. 淡入：元素由透明变为可见
+
+   ```
+   .fadeIn(ms,cb)
+   ```
+
+2. 淡出：元素逐渐变透明
+
+   ```
+   .fadeOut(ms,cb)
+   ```
+
+3. 切换
+
+   ```
+   .fadeToggle(ms,cb)
+   ```
+
+
+
+## 3.4 自定义
+
+1. 缓动
+
+   ```
+   animate()
+   ```
+
+   ```javascript
+   $("#btn1").click(function () {
+       $("#d1").animate({
+           borderRadius:50
+       }, 2000, e=>alert("动画结束"))
+   })
+   ```
+
+   ```javascript
+   // 走直角 复合运动
+   $("#s2").click(function (e) {
+   	$(this).animate({
+   		left:1000
+   	}, 2000).animate({
+   		top:1000
+   	}, 2000)
+   	})
+   ```
+
+2. 停止动画
+
+   ```javascript
+   stop() 		// 停止一个动画
+   stop(true) // 停止全部动画,包括在排队中的
+   ```
+
+   ```javascript
+   $("#s1").click(function (e) {
+       if($(this).is(":animated")){
+           $(this).stop()
+       }else{
+           $(this).animate({
+               left:1000
+           }, 2000,e=>alert("s1移动结束"))
+       }
+   })
+   ```
+
+   ```javascript
+   $("#s2").click(function (e) {
+       if($(this).is(":animated")){
+           $(this).stop(true) // 注意此处
+       }else{
+           $(this).animate({
+               left:1000
+           }, 2000).animate({
+               top:1000
+           }, 2000)
+       }
+   })
+   ```
+
+
+
+# 第六章 类数组对象操作
+
+1. get(index) 等效于[index]，返回dom元素；get()：返回标准的数组对象
+2. length 长度
+3. <b style="color:green">each(callback)</b>等效于数组中的forEach
+4. index() 等效于数组中的indexOf
+   + var i = $("selector").index(jq对象|DOM对象) ：查找右边的元素在左边的结果集合中的下标位置
+   + var i = $(...).index()：查找当前元素在其父元素下的下标位置
+5. <b style="color:green">$.each(obj, cb)</b>：可以用来遍历数组和对象
+
+
+
+# 第七章 插件
 
 
 
@@ -1362,7 +1574,7 @@ toggle([spe],[eas],[fn])1.9*
 1. 简介：jQuery 官方出的，现成的UI效果和功能的库
 2. UI：user interface
 3. UI库：用html/css/js实现的现成的页面效果的集合
-4. [网址](https://jqueryui.com/)
+4. 网址：https://jqueryui.com/
 5. 下载：下载前选择主题风格，然后将image文件夹，css和js文件复制到项目目录
 6. 引入`jquery-ui.js`前必须先引入`jquery.js`
 7. 学习建议
@@ -1454,6 +1666,8 @@ toggle([spe],[eas],[fn])1.9*
 
 
 
+
+
 ## 4.5 第三方插件
 
 
@@ -1485,13 +1699,13 @@ toggle([spe],[eas],[fn])1.9*
 
 
 
-# 第五章 ajax
+# 第八章 ajax
 
 
 
 
 
-# 第六章 添加jQuery全局函数
+# 第九章 添加jQuery全局函数
 
 
 
