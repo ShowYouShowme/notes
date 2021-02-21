@@ -1576,10 +1576,13 @@ console.log("离开" + e.target.id)
 3. UI库：用html/css/js实现的现成的页面效果的集合
 4. 网址：https://jqueryui.com/
 5. 下载：下载前选择主题风格，然后将image文件夹，css和js文件复制到项目目录
-6. 引入`jquery-ui.js`前必须先引入`jquery.js`
 7. 学习建议
    + 看官网demo
    + 开发时不懂查手册
+7. <b style="color:red">相关文件说明</b>
+   + jquery.js 和 jquery-ui.js 放到 js 文件夹
+   + jquery-ui.css、jquery-ui.structure.css、jquery-ui.theme.css和文件夹images 放到 css文件夹
+   + 引入`jquery-ui.js`前必须先引入`jquery.js`
 
 ### 4.1.2 组件
 
@@ -1705,6 +1708,209 @@ console.log("离开" + e.target.id)
 
 
 
+## 8.1 原生Ajax
+
+1. 原生的ajax请求
+
+   ```javascript
+   let xhr = new XMLHttpRequest();
+   xhr.onreadystatechange = function () {
+       if(xhr.readyState == 4 &&
+          xhr.status == 200){
+           $("[name=desc]").text(xhr.responseText)
+       }
+   }
+   
+   xhr.open('get', 'http://127.0.0.1:9090/v1.0/search?term=1');
+   xhr.send();
+   ```
+
+
+
+## 8.2 jQuery封装的Ajax
+
+1. API
+
+   ```javascript
+   $.ajax({
+      url: "xxx.php",
+      type:"get|post|delete...",
+      data:"变量=值&变量=值$..." 或 {变量:值,变量:值} 或 ${form}.serialize()
+      dataType: "服务器响应回消息的类型" text|json|xml|script|jsonp  jsonp必须写,其它的可以不写,服务器指定
+   
+   	// 旧版的写法,成功返回响应后,新版用then
+   	// 成功收到响应且状态码为200
+   	success:function(data){
+       },
+       error:function(){
+       },
+       // 请求完成后触发,无论成功失败
+       complete:function(){
+       }
+   // 发送前处理
+   	beforeSend:function(){    
+       }
+   })
+   ```
+
+   ```javascript
+   $.ajax({
+       url:"http://127.0.0.1:9080/v1.0/search",
+       type:"get",
+       data:"term=1",
+       dataType:"json",// 响应的数据类型
+       success:function (data) {
+           $(".layui-textarea").text(JSON.stringify(data[0]))
+       },
+       error:function () {
+           console.log("请求失败")
+       }
+   })
+   ```
+
+2. <b style="color:green">简写，推荐</b>
+
+   ```
+   $.get("url",[data],fn)
+   或者 $.get("url",[data]).then()
+   
+   $.post("url",[data],fn)
+   或者
+   $.post("url",[data]).then()
+   ```
+
+   ```javascript
+   $.get("http://127.0.0.1:9090/v1.0/search?term=1").then(function (data) {
+       console.log(data)
+   })
+   ```
+
+   ```javascript
+   // 数据是百分号编码,类似get请求 param1=v1&param2=v2,只是放在body里
+   let data = $(".layui-form").serialize();
+   $.post("http://127.0.0.1:9090/v1.0/login_test", data).then(function (data) {
+       console.log(data)
+   })
+   ```
+
+   ```javascript
+   // POST 请求，数据为json
+   // 原理：如果跨域,先发起一次options请求，当options请求成功返回后，真正的ajax请求才会再次发起
+   $(".layui-btn").click(function () {
+       let data = {"name":"yd","pwd":"123456"}
+       $.ajax({
+           url     :"http://127.0.0.1:9090/v1.0/login_json",
+           type    :"post",
+           contentType: "application/json;charset=utf-8",
+           data: JSON.stringify(data),
+       }).then(function (data) {
+           console.log(data)
+       })
+   })
+   
+   // Flask 服务器设置
+   // 先安装依赖 pip install -U flask-cors
+   from flask_cors import CORS
+   
+   app = Flask(__name__)
+   CORS(app)
+   ```
+
+
+
+## 8.3 跨域
+
+  
+
++ 定义：一个域名下的网页，想访问另一个域名下的资源；ajax请求会遇到跨域问题。xhr禁止发送跨域的ajax请求
+
++ 哪些情况算跨域
+
+  1. 协议不一样：https443端口，http80端口
+  2. 端口不一样
+  3. 域名/IP不同
+  4. 二级域名不同
+
++ 解决方案
+
+  1. 使用特殊标签跨域
+
+     ```shell
+     <link href>  	# 样式
+     <script src> 	# jsonp --> jQuery 封装了该方式
+     <img src> 		# 图片
+     <iframe> 		# 基本不用
+     ```
+
+  2. 服务器的响应头增加字段
+
+     ```python
+     response.headers["Access-Control-Allow-Origin"] = "*"
+     
+     # 如果请求数据是json格式,会先发起options请求,服务器要另外配置
+     ```
+
+  3. nginx反向代理：把跨域请求代理到本服务器其它路由
+
+  4. websocket
+
++ jsonp跨域
+
+  1. 在客户端定义回调函数，在回调函数最后删除创建的\<script>
+
+     ```javascript
+     function handler(data) {
+         console.log(data['name'], data['age'], data['salary']);
+         $("body>script:last-child").remove();
+     }
+     
+     $("#b1").click(function () {
+         let $elem = $("<script>");
+         // 可以在url里面传入其它参数
+         $elem.attr("src", "http://127.0.0.1:9090/v1.0/jsonp?callback=handler");
+         $("body").append($elem);
+     })
+     ```
+
+  2. 动态创建script元素，设置src为restful路径
+
+  3. 服务器：返回js代码，包含数据
+
+     ```
+     1--从header里获取callback名
+     2--设置content-type :application/javascript
+     3--返回callback(msg)
+     ```
+
++ jquery中跨域
+
+  ```shell
+  # 底层不是用ajax实现的,只是为了api统一
+  $.ajax({
+  url:"http://127.0.0.1:9090/v1.0/jsonp",
+  type:"get",
+  dataType:"jsonp"
+  }).then(function (data) {
+  console.log(data)
+  })
+  ```
+
+  ```python
+  # python 代码
+  def jsonp():
+      data = {
+          'name'      : 'nash',
+          'salary'    : 123,
+          'age'       : 80
+      }
+      callback = request.args['callback']
+      return '{}({})'.format(callback,json.dumps(data))
+  ```
+
+  
+
+
+
 # 第九章 添加jQuery全局函数
 
 
@@ -1713,9 +1919,72 @@ console.log("离开" + e.target.id)
 
 1. 定义：直接定义在jQuery构造函数上，所有对象都可以使用。可以认为是jQuery类的静态成员函数
 
+2. 示例
+
+   ```html
+   <ul id="nav">
+       <li>1</li>
+       <li>2</li>
+       <li>3</li>
+       <li>4</li>
+       <li>5</li>
+   </ul>
+   <script>
+           // 静态成员函数
+           $.sum = function (elem_array) {
+               let sum = null;
+               let len = null;
+               let i   = null;
+               if(Array.isArray(elem_array)){
+                   len = elem_array.length;
+                   for(i = 0; i < len; ++i){
+                       sum += elem_array[i];
+                   }
+                   return sum;
+               }else{
+                   sum = 0;
+                   elem_array.each(function (idx, elem) {
+                       sum += parseInt($(elem).text());
+                   })
+                   return sum;
+               }
+           }
+           console.log("sum : " + $.sum($("#nav>li")));
+           console.log("sum : " + $.sum([7,8,9,10]))
+   </script>
+   ```
+
+   
+
 
 
 ## 6.2 jQuery实例函数
 
 1. 定义：定义在jQuery.fn原型对象上，只有jQuery的查询结果对象才能使用。可以认为是jQuery类的成员函数
+
+2. 示例
+
+   ```html
+   <ul id="nav">
+       <li>1</li>
+       <li>2</li>
+       <li>3</li>
+       <li>4</li>
+       <li>5</li>
+   </ul>
+       <script>
+           // 成员函数
+           jQuery.fn.sum = function(){
+               // this --> jQuery 对象
+               let sum = 0;
+               $(this).each(function (idx, elem) {
+                   sum += parseInt($(elem).text())
+               })
+               return sum;
+           }
+           console.log("sum = " + $("#nav>li").sum());
+       </script>
+   ```
+
+   
 
