@@ -532,16 +532,6 @@ $("新元素html代码").replaceAll("现有元素")
 
 
 
-# 类数组对象操作
-
-1. get(index) 等效于[index]，返回dom元；get()：返回标准的数组对象
-2. length 长度
-3. each(callback)等效于数组中的forEach
-4. index() 等效于数组中的indexOf
-   + var i = $("selector").index(jq对象|DOM对象) ：查找右边的元素在左边的结果集合中的下标位置
-   + var i = $(...).index()：查找当前元素在其父元素下的下标位置
-5. $.each(obj, cb)：可以用来遍历数组和对象
-
 # 插件
 
 1. 定义：拥有独立功能的函数或程序
@@ -639,148 +629,8 @@ $("新元素html代码").replaceAll("现有元素")
 
 4. masonry 彩砖墙
 
-5. ajax封装
-
-   ```javascript
-   $.ajax({
-      url: "xxx.php",
-      type:"get|post|delete...",
-       data:"变量=值&变量=值$..." 或 {变量:值,变量:值} 或 ${form}.serialize()
    
-   	dataType: "服务器响应回消息的类型" text|json|xml|script|jsonp  jsonp必须写,其它的可以不写,服务器指定
-   
-   	// 旧版的写法,成功返回响应后,新版用then
-   	// 成功收到响应且状态码为200
-   	success(data){
-           
-       },
-       error(){
-           
-       },
-       // 请求完成后触发,无论成功失败
-       complete(){
-           
-       }
-   // 发送前处理
-   	beforeSend(){
-           
-       }
-   })
-   // ajax 的流程
-   xhr.onreadystatechange=function(){
-       if(xhr.readState == 4){
-           if(xhr.status == 200){
-               success()
-           }else{
-               //404 500 ...
-               error()
-           }
-       }
-   }
-   
-   xhr.open()
-   beforeSend()
-   xhr.send()
-   ```
 
-   简写
-
-   ```javascript
-   $.get("url",[data],fn)
-   或者 $.get("url",[data]).then()
-   
-   分支：了解
-   $.getJSON("url",[data],fn)
-   $.getScript("url",[data],fn)
-   
-   $.post("url",[data],fn)
-   
-   总结：只要响应头定义了content-type jquery可以自己识别
-   
-   // 加载html代码,并加载到父元素中
-   $("parent").load("header.html", function(){
-       
-   })
-   ```
-
-6. 跨域
-
-   + 定义：一个域名下的网页，想访问另一个域名下的资源；ajax请求会遇到跨域问题。xhr禁止发送跨域的ajax请求
-
-   + 哪些情况算跨域
-
-     1. 协议不一样：https443端口，http80端口
-     2. 端口不一样
-     3. 域名/IP不同
-     4. 二级域名不同
-
-   + 解决方案
-
-     1. 使用特殊标签跨域
-
-        ```shell
-        <link href>  	# 样式
-        <script src> 	# jsonp --> jQuery 封装了该方式
-        <img src> 		# 图片
-        <iframe> 		# 基本不用
-        ```
-
-     2. 服务器的响应头增加字段
-
-        ```python
-        response.headers["Access-Control-Allow-Origin"] = "*"
-        ```
-
-     3. nginx反向代理：把跨域请求代理到本服务器其它路由
-
-     4. websocket
-
-   + jsonp跨域
-
-     1. 在客户端定义js函数
-
-        ```javascript
-        function callback(data){
-            // 使用data
-        }
-        
-        ```
-     
-
-    请求头里携带callback名
-        ```
-
-     2. 服务器：返回js代码，包含数据
-     
-        ```javascript
-         1--从header里获取callback名
-        2--设置content-type :application/javascript
-        2-返回callback(msg)
-        ```
-     
-     3. 动态创建script元素，设置src为restful路径
-     
-     4. 删除创建的script元素
-
-   + jquery中跨域
-
-     ```shell
-     # 底层不是用ajax实现的,只是为了api统一
-     $.ajax({
-     type:"GET",
-     url:"remote.php",
-     data:xxx,
-     success:fn,
-     dataType:"jsonp"
-     })
-     ```
-
-     
-
-7. 添加jQuery全局函数
-
-   + jQuery全局函数：直接定义在jQuery构造函数上，所有对象都可以使用
-   + jQuery实例函数：定义在jQuery.fn原型对象上，只有jQuery的查询结果对象才能使用
 
 
 
@@ -1563,7 +1413,7 @@ console.log("离开" + e.target.id)
 
 
 
-## 4.1 jQuery ui
+## 4.1 官方插件 jQuery UI
 
 
 
@@ -1596,25 +1446,37 @@ console.log("离开" + e.target.id)
    + Resizable：可以用鼠标改变元素大小
    + Droppable：可将一个元素拖入另外一个元素内
 
-2. Widgets 小部件
+2. <b style="color:green">Widgets 小部件</b>
 
    + accordion：手风琴
 
    + autocomplete：自动补全
 
-   + Datepick：日历插件
-
    + Button：让所有的按钮统一样式
+
+   + Checkboxradio：单选框和复选框
+
+   + Controlgroup：将多个按钮和其它小部件分组为可视集
+
+   + Datepick：日历插件
 
    + Dialog：对话框
 
+   + Menu：菜单
+
       模态对话框：对话框不关闭，无法操作网页内容
+
+   + Progressbar：进度条
+
+   + Selectmenu：可选菜单
+
+   + Slider：滑杆
+
+   + Spinner：微调器，用于输入数字，可以用上下方向键设置
 
    + Tabs：标签页
 
    + Tooltip：工具提示，鼠标放上去会提示信息
-
-   + Progressbar：进度条
 
 3. Effects 效果
 
@@ -1637,56 +1499,35 @@ console.log("离开" + e.target.id)
 
 
 
-## 4.2 layui
+## 4.2 第三方插件
+
+### 4.2.1 layui
+
+官网：https://www.layui.com/
 
 
 
-### 4.2.1 简介
+### 4.2.2 ydui
 
-***
-
-1. 官网：https://www.layui.com/
+官网：http://www.ydui.org/
 
 
 
-
-
-## 4.3 ydui
-
-
-
-### 4.3.1 简介
+### 4.2.3 bootstrap
 
 ***
 
-1. 官网：http://www.ydui.org/
 
 
+### 4.2.4 laydate
 
-
-
-## 4.4 bootstrap
-
-
-
-
-
-## 4.5 第三方插件
-
-
-
-### 4.5.1 laydate
-
-***
 
 1. 简介：日期与时间组件，不依赖于jQuery
 2. 官网：https://www.layui.com/laydate/
 
 
 
-### 4.5.2 jQuery.validator
-
-***
+### 4.2.5 jQuery.validator
 
 1. 简介：表单验证的插件，基于jQuery
 2. 只需要引入`jquery.validate.js`
@@ -1694,11 +1535,13 @@ console.log("离开" + e.target.id)
 
 
 
-### 4.5.3 masonry 彩砖墙
+### 4.2.6 masonry 彩砖墙
 
 ***
 
 1. 官网：https://masonry.desandro.com/
+
+
 
 
 
