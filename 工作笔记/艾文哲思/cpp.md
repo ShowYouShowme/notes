@@ -1366,3 +1366,11 @@ virtual tars::Int32 log2db(const DaqiGame::TLog2DBReq& tLog2DBReq, DaqiGame::TLo
 
 3. 动态语言也可以使用上述两种编程范式，比如lua，nodejs和python
 
+
+
+# 适用场景
+
+1. 只操作内存的服务（C++操作IO，比如数据库，文件，http都比较麻烦）
+2. 不接入或很少接入第三方SDK（C++接入第三方SDK很麻烦，可以嵌入python，让python来接入第三方SDK）
+3. 开发只使用标准库的东西，第三方sdk，部署用到动态库可能会有问题；而且很多第三方库质量差
+4. 混合lua或者python，用脚本写业务，提高开发效率；部分性能要求较高的接口用C++实现
