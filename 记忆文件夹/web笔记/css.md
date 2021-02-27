@@ -1506,3 +1506,931 @@ position：fixed
 3. 绝对定位：实现页面弹出内容，用绝对定位，配合着父元素做相对定位一起完成
 4. 固定定位：顶部固定，边栏（广告），使用固定定位
 
+
+
+# 第十一章 复杂选择器
+
+
+
+## 11.1 兄弟选择器
+
++ 特点
+
+  1. 通过位置关系匹配元素
+  2. 只能向后找，不能向前找
+
++ 相邻兄弟选择器
+
+  1. 相邻兄弟
+
+     ```html
+     <div id="d1"></div>
+     <p id="p1"></p>
+     <span id="span"></span>
+     ```
+
+  2. 语法
+
+     选择器1+选择器2
+
+     ```
+     #d1+p{color:red}
+     ```
+
++ 通用兄弟选择器
+
+  1. 通用兄弟：后面所有兄弟
+
+  2. 语法
+
+     选择器1~选择器2
+
+     ```
+     #d1~p{color:green}
+     
+     #d1~.blueColor{color:blue}
+     ```
+
+## 11.2 属性选择器
+
++ 属性选择器：允许使用元素附带的属性及其值来匹配页面的元素
+
++ 语法
+
+  [attr=值]
+
++ 详解
+
+  1. [attr]：匹配 附带 attr属性的元素
+
+     ```shell
+     # 匹配附带id属性的元素
+     ```
+
+  2. elem[attr]
+
+     elem：表示页面中某一具体元素
+
+     ```
+     div[id]：页面中所有附带id属性的div
+     ```
+
+  3. [attr1]\[attr2]\[attr3]...
+
+     匹配同时具备attr1、attr2和attr3属性的元素
+
+     ```
+     p[id][class]:既有id属性又有class属性的p元素
+     ```
+
+  4. [attr=value]
+
+     value：表示某一具体数值
+
+     作用：匹配 attr 属性值为value的所有元素
+
+     ```
+     input[type=text]
+     ```
+
+  5. [class~=value]
+
+     作用：
+
+     1. 用在多类选择器中
+     2. 匹配 class 属性值 是以 空格 隔开的值列表，并且value是value 是该值列表中一个独立的值
+
+  6. [attr^=value]
+
+     ^= : 以 ... 开始
+
+     作用：匹配attr属性值以 value 作为开始的元素
+
+     ```html
+        <style>
+                [class^=col]{
+                 border: 1px solid black;
+             }
+        </style>
+        <p class="col-red-1">col-red-1</p>
+        <p class="col-blue-2">col-blue-2</p>
+        <p class="col-green-3">col-green-3</p>
+     ```
+
+  7. [attr*=value]
+
+     *= ：包含 ... 字符
+
+     作用：匹配 attr 属性值 中 包含value字符的元素
+
+  8. [attr$=value]
+
+     $= ：以...作为结束
+
+     作用：匹配 attr 属性值 以 value作为结束的元素
+
+  9. 注意：属性选择器中，所有的值都可以用单引号或者双引号引起来
+
+     ```
+     [class="c1"]
+     [class='c1']
+     [class=c1]
+     ```
+
+
+
+## 11.3 伪类选择器
+
++ 目标伪类[了解]
+
+  1. 作用：突出显示活动的HTML锚元素
+
+  2. 语法
+
+     :target 或者 elem:target
+
+     ```html
+     <head>
+         <meta charset="UTF-8">
+         <title>Title</title>
+         <style>
+             div:target{
+                 font-weight: bold;
+                 color: red;
+                 background-color: yellow;
+             }
+         </style>
+     </head>
+     <body>
+             <a href="#NO1">第一章节</a>
+             <div style="height: 2000px"></div>
+             <div id="NO1">第一章节：什么是CSS</div>
+             <div style="height: 2000px"></div>
+     </body>
+     ```
+
++ 元素状态伪类[了解]
+
+  1. 作用：匹配 元素已启用， 被禁用，被选中的状态。主要应用在表单控件上
+  2. 语法
+     1. :enabled--匹配 每个已启用的元素
+     2. :disabled--匹配 每个被禁用的元素
+     3. :checked--匹配 每个被选中的元素(radio，checkbox)
+
++ 结构伪类
+
+  1. 作用：通过元素间的结构关系，来匹配元素
+
+  2. 语法
+
+     1. <b style="color:green">:first-child</b>--匹配属于其父元素中的首个子元素
+
+        ```
+        td:first-child{}
+        ```
+
+     2. <b style="color:green">:last-child</b>--匹配属于其父元素中的最后一个子元素
+
+        ```
+        td:last-child{color:red}
+        ```
+
+     3. <b style="color:green">:nth-child(n)</b>
+
+        匹配属于其父元素中的第n个子元素
+
+     4. :empty
+
+        匹配没有子元素的元素
+
+        注意：不能包含文本
+
+     5. :only-child
+
+        匹配属于其父元素中的唯一子元素
+
+        ```html
+        <div id="d1">
+        	<p id="p1"></p>
+        	<span></span>
+        </div>
+        ```
+
++ 否定伪类
+
+  1. 作用：将 匹配的元素 排除出去
+
+  2. 语法
+
+     :not(选择器)
+
+     ```
+     #tb1 td:not(:first-child){color:red}
+     ```
+
+
+
+## 11.4 伪元素选择器
+
++ 伪类：匹配元素的不同状态，匹配到的是元素
+
++ 伪元素：匹配的是某个元素中的某部分内容
+
++ 详解
+
+  1. :first-letter 或者 ::first-letter
+
+     匹配某元素的首字符
+
+  2. :first-line 或者 ::first-line
+
+     匹配某元素的首行字符
+
+  3. ::selection
+
+     匹配被用户选取的部分
+
++ <b style="color:green">单个冒号和双冒号的区别</b>
+
+  1. ：既能表示 伪类选择器 也能表示 伪元素选择器(CSS2)
+  2. :: 在CSS3 中 表示 伪元素选择器
+  3. <b style="color:green">尽量使用单冒号</b>
+
+
+
+# 第十二章  内容生成
+
+
+
+## 12.1 伪元素选择器
+
+1. :before 或者 ::before
+
+   匹配 某元素的 内容区域之前
+
+   ```
+   <div>(:before)这是一个div</div>
+   ```
+
+2. :after 或者 ::after
+
+   匹配 某元素的 内容区域之后
+
+   ```
+   <div>这是一个div(:after)</div>
+   ```
+
+3. 属性：content
+
+   取值：
+
+   1. <b style="color:red">字符串：用的最多</b>
+
+      ```
+      content:"台词"
+      ```
+
+   2. 图像：url()
+
+      ```
+      content:url(xxx.jpg)
+      ```
+
+   3. 计数器<b style="color:blue">[基本不用，难理解]</b>
+
+      1. 定义：用CSS动态生成一组 有序的数字并且插入到元素中
+
+      2. 语法
+
+         > 属性：counter-reset
+         >
+         > 语法：counter-reset: 计数器名 初始值;
+         >
+         > counter-reset: 名1 值1 名2 值2;
+         >
+         > 注意：
+         >
+         > 	1. 初始值可以省略不写，默认为0
+         >  	2. 不能放在使用的元素中声明，可以将计数器声明在使用元素的父元素中
+         >
+         > 属性：counter-increment
+         >
+         > 作用：指定计数器每次出现的增量,即每次出现的计数器值的变化范围
+         >
+         > 语法：counter-increment: 名 增量;
+         >
+         > counter-increment: 名1 增量1 名2 增量2;
+         >
+         > 注意：
+         >
+         > 1. 增量值可以为正，也可以为负数，也可以省略（默认为1）
+         > 2. 哪个元素使用计数器，在哪个元素中设置计数器的增量
+         >
+         > 函数：counter()
+         >
+         > 作用：在指定元素中，使用计数器的值；必须配合content 属性一起使用
+         >
+         > 语法：
+         >
+         > ​	xx:before{
+         >
+         > ​	content:counter(名)
+         >
+         > }
+
+4. 解决的问题
+
+   1. 浮动元素的父元素高度
+   2. 外边距溢出
+
+
+
+
+
+# 第十三章 多列
+
+1. <b style="color:red">用的不多，了解</b>
+
+2. 语法
+
+   1. 分隔列
+
+      属性：column-count
+
+      取值：数字
+
+   2. 列间隔
+
+      属性：column-gap
+
+      取值：px为单位的数值
+
+   3. 列规则
+
+      作用：定义每两列之间的线条样式
+
+      属性：column-rule
+
+      取值： width style color
+
+3. 兼容性
+
+   Chrome:
+
+   + -webkit-column-count
+   + -webkit-column-gap
+   + -webkit-column-rule
+
+   Firefox
+
+   + -moz-column-count
+   + -moz-column-gap
+   + -moz-column-rule
+
+   
+
+
+
+# 第十四章 CSS Hack
+
+ 
+
+## 14.1 浏览器运行模式
+
+
+
+模式
+
+1. 混杂模式
+2. 标准模式
+3. 准标准模式
+
+
+
+标准模式和混杂模式
+
+1. 不同模式下，浏览器对CSS和js解析效果不同
+
+2. 其它浏览器会根据DOCTYPE自动选择模式
+
+3. 触发混杂模式：不声明DOCTYPE
+
+4. 触发标准模式
+
+   ```
+   <!DOCTYPE html>
+   ```
+
+
+
+## 14.2 CSS Hack
+
++ 目的：针对不同浏览器编写不同的css样式
+
++ 原理：使用css属性优先级解决兼容性问题
+
++ 实现方式
+
+  1. css类内部Hack
+
+     在样式属性名或者值的前后增加前后缀以便识别不同的浏览器
+
+  2. 选择器Hack
+
+     在选择器前增加前缀来识别不同浏览器
+
+     ```css
+     /*IE6*/
+     *div{
+     	background-color:red
+     }
+     
+     /*IE7*/
+     *+div{
+     	background-color:red
+     }
+     ```
+
+  3. <b style="color:red">HTML头部引用Hack</b>
+
+     使用HTML条件注释判断浏览器版本
+
+     语法
+
+     ```
+     <!--[if 条件 IE 版本]>
+     	要执行的操作
+     <![endif]-->
+     ```
+
+     1. 版本
+
+        取值：6~10直接的任意数值；省略版本，则判断是否为IE浏览器
+
+        ```
+        <!--[if 条件 IE 6]>
+        	在 IE6 中执行的内容
+        <![endif]-->
+        ```
+
+     2. 条件
+
+        + gt：大于
+
+          ```
+              <!--[if gt IE 6]>
+              <h1>只在IE6以上浏览器执行</h1>
+              <![endif]-->
+          ```
+
+        + lt：小于
+
+        + gte：大于等于
+
+        + let：小于等于
+
+        + ！：非
+
+          ```
+              <!--[if !IE 6]>
+              <h1>只在非IE6浏览器执行</h1>
+              <![endif]-->
+          ```
+
+        + 省略：判断是否为IE 或者 指定版本
+
+
+
+# 第十五章 转换
+
+
+
+## 15.1 简介
+
+1. 转换：改变元素在页面中的大小、位置、形状、角度的一种方式。转换分为2D转换和3D转换
+
+   2D转换：元素在x轴和y轴进行的转换操作
+
+   3D转换：在2D的基础上，增加了Z轴
+
+2. 转换属性
+
+   1. 转换属性
+
+      属性：transform
+
+      取值：
+
+      1. none
+      2. transform-functions 一组转换函数，表示一个或者多个转换函数
+
+   2. 转换的原点
+
+      属性：transform-origin
+
+      默认：原点在元素的中心处
+
+      取值：
+
+      两个值：值1(x) 值2(y)
+
+      三个值：值1(x) 值2(y) 值3(z)
+
+
+
+## 15.2 2D转换
+
+
+
+### 15.2.1 位移
+
+***
+
+1. 2D位移：改变元素在x轴和y轴的位置
+
+2. 语法
+
+   属性：transform
+
+   函数：
+
+   1. translate(x)：改变元素在x轴上的位置；取值为正，右移
+   2. translate(x,y)：改变元素在x轴和y轴上的位置
+   3. translateX():改变元素在X轴的位置
+   4. translateY()：改变元素在Y轴的位置
+
+
+
+### 15.2.2 缩放
+
+***
+
+1. 定义：改变元素在x轴或y轴上的大小
+
+2. 语法
+
+   属性：transform
+
+   函数：
+
+   scale（value）：只给一个值，x和y轴等比缩放。
+
+   取值：
+
+   ​	默认为1。
+
+   ​	缩小：0到1之间的小数 
+
+   ​	放大：大于1的数
+
+   ​	负值：旋转180度效果显示
+
+   scale(x,y)：分别改变元素在x轴 和y轴的大小
+
+   scaleX(x)
+
+   scaleY(y)
+
+
+
+### 15.2.3 旋转
+
+***
+
+1. 语法
+
+   属性：transform
+
+   函数：rotate(ndeg)
+
+   n是旋转角度；
+
+   ​	取值为正，顺时针旋转；
+
+   ​	取值为负，逆时针旋转
+
+2. 注意
+
+   1. 转换原点：旋转围绕着原点来做的，原点不同，转换效果也不同
+   2. 旋转时，连同坐标轴也一同跟着转
+
+
+
+### 15.2.4 倾斜
+
+***
+
+1. 定义：改变元素在页面中的形状。以原点为中心，围绕着x轴和y轴产生的倾斜角度
+
+2. 语法
+
+   1. 属性：transform
+
+   2. 函数：
+
+      skew(xdeg)
+
+      ​	横向倾斜
+
+      ​	值为正，y轴按逆时针角度倾斜
+
+      ​	值为负，y轴按顺时针角度倾斜
+
+      skew(xdeg，ydeg)
+
+      ​	x：横向倾斜
+
+      ​	y：纵向倾斜
+
+      ​	值为正，x轴按顺时针角度倾斜
+
+      ​	值为负，x轴按逆时针角度倾斜
+
+      skewX(ndeg)
+
+      skewY(ndeg)
+
+
+
+## 15.3 3D转换
+
+1. perspective 属性
+
+   模拟	人眼	到	3D变换物体	之间的距离。
+
+   浏览器兼容性：
+
+   1. Chrome 和 Sarari：
+
+      -webkit-perspective：数值
+
+2. 3D转换--旋转
+
+   属性：transform
+
+   取值：
+
+   1. rotateX（ndeg）
+   
+   2. rotateY（ndeg）
+   
+   3. rotateZ（ndeg）
+   
+   4. rotate3D(x，y，z，ndeg)
+   
+      x，y，z
+   
+      ：取值为0说明该轴不参加旋转
+   
+      ​    取值为1说明该轴参加旋转
+   
+      rotate3D(1，0，0，45deg)
+   
+      rotate3D(0，1，0，45deg)
+   
+3. 3D转换--位移
+
+   1. 定义：改变元素在x，y，z上的位置
+
+   2. 语法
+
+      1. transform-style 属性
+
+         如何处理子元素的摆放位置
+
+         取值：
+
+         1. flat：默认值，不保留子元素的3D位置
+         2. preserve-3d：保留子元素的3D位置
+
+      2. transform 属性
+
+         取值：
+
+         ​	1. translateZ(z)
+
+         ​	2. translate3d(x,y,z)
+
+
+
+
+
+# 第十六章 过渡
+
+1. 什么是过渡
+
+   使得CSS属性值，在一段时间内，平缓变化的一个效果
+
+2. 过渡效果四要素
+
+   1. <b style="color:red">指定过渡属性</b>
+
+   2. <b style="color:red">指定过渡时间</b>
+
+   3. 指定过渡时间的速率
+
+      匀速
+
+      先快后慢
+
+      ......
+
+   4. 指定过渡延迟时间
+
+      当用户激发操作后，等待多长时间才激发效果
+
+3. 过渡属性
+
+   1. 指定过渡属性
+
+      属性：transition-property
+
+      取值：
+
+      	1. none
+       	2. all
+       	3. property-name：使用过渡效果的属性名称
+
+      ```
+      transition-property:background
+      ```
+
+   2. 可以设置过渡效果的属性
+
+      1. 颜色属性
+
+         color、background-color、border-color
+
+      2. 取值为数值的属性
+
+         margin、padding、background-size
+
+      3. 转换属性
+
+         transform
+
+      4. 渐变属性（用的不多）
+
+      5. 阴影属性（用的不多）
+
+      6. visibility（用的不多）
+
+   3. 指定过渡时长
+
+      属性：transition-duration
+
+      取值：s|ms 	为单位数值
+
+      注意：默认值为0s，即没有过渡效果
+
+   4. 指定过渡时间速率
+
+      属性：transition-timing-function
+
+      取值：
+
+      1. ease：默认值，先慢后快再慢
+      2. linear：匀速
+      3. ease-in：慢速开始，快速结束
+      4. ease-out：快速开始，慢速结束
+      5. ease-in-out：慢速开始结束，中间先快后慢
+
+   5. 过渡延迟
+
+      属性：transition-delay
+
+      取值：s|ms	为单位的时间
+
+   6. 简写方式
+
+      transition：property duration timing-funtion delay
+
+      ```
+      transition： transform  linear 5s;background 3s
+      ```
+
+
+
+# 第十七章 动画
+
+
+
+## 17.1 定义
+
+使元素从一种样式逐渐变化为另外一种样式的过程。CSS中实现动画，会存在兼容性问题，与动画相关的操作尽量加上浏览器前缀
+
+
+
+## 17.2 使用步骤
+
+1. 声明动画：指定动画名称以及创建动画中的每个状态
+
+2. 为元素调用动画
+
+   指定	调用的动画名称，时长，播放次数
+
+   
+
+
+
+## 17.3 声明动画
+
+指定动画名称及各个关键帧
+
+关键帧：当前元素状态的	时间点	以及	样式
+
+语法：
+
+​	在样式表中声明
+
+```
+@keyframes	动画名称{
+
+	%0|from{动画开始时的样式}
+	......
+	100%|to{动画结束时的样式}	
+
+}
+```
+
+
+
+## 17.4 调用动画
+
+
+
+动画属性
+
+1. animation-name
+
+   作用：指定调用动画名称
+
+2. animation-duration
+
+   作用：指定动画完成一个周期所用时间 s|ms
+
+3. animation-timing-function
+
+   作用：指定动画的速率
+
+   取值：ease、linear、ease-in、ease-out、ease-in-out
+
+4. animation-delay
+
+   作用：指定动画的延迟	s|ms
+
+5. animation-iteration-cout
+
+   作用：指定动画播放次数
+
+   取值：
+
+   	1. 具体数值
+    	2. infinite：无限次播放
+
+6. animation-direction
+
+   作用：指定动画播放方向
+
+   默认：由0%播放到100%
+
+   取值：
+
+    1. normal：默认播放
+
+    2. reverse：逆向播放
+
+    3. alternate：轮流播放
+
+       奇数次数：0%~100%
+
+       偶数次数：·100%~0%
+
+7. 简写
+
+   属性：animation
+
+   取值：name	duration	timing-function	delay	iteration-cout	direction
+
+8. animation-fill-mode
+
+   作用：规定动画播放前后的填充效果
+
+   取值：
+
+   	1. none：默认值，没有填充效果
+    	2. forwards：动画播放完成后，会保持在最后一个帧的状态上
+    	3. backwards：动画播放前，应用在第一个帧的状态上（只有在延迟（delay）时间内，才会显示在第一帧上）
+    	4. both：播放前和播放后分别采用对应的填充状态
+
+9. animation-play-state
+
+   作用：规定动画是播放还是暂停
+
+   取值：
+
+   	1. paused：暂停
+    	2. running：播放
+
+# 第十八章 CSS优化
+
