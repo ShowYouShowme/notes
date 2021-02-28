@@ -275,6 +275,110 @@ Bootstrap官方检测HTML的工具。检测 bootstrap 样式结构
 
 
 
+### 2.7.1 网页布局方法
+
+***
+
+1. Table布局
+   + 好处：简单易控制
+   + 不足：语义错误，页面渲染效率低
+2. DIV+CSS布局
+   + 好处：语义正确，页面渲染速度快
+   + 不足：不易控制
+3. Bootstrap栅格系统
+   + 好处：简单易控，渲染速度快， <b style="color:red">支持响应式</b>
+   + 不足：没有
+
+
+
+### 2.7.2 使用方法
+
+***
+
+1. 最外层必须使用容器
+
+   ```html
+   <div class="container">
+   <div>
+   ```
+
+2. 容器里可以放置任何内容，若想使用栅格系统，必须用<b style="color:red">div.row</b>
+
+   ```
+   <div class="row">
+   <div>
+   ```
+
+3. 一个行中不能放置其它内容，只能放置列，列中可以放置任何内容
+
+   ```html
+   <div class="row">
+       <div class="col-md-3 col-md-offset-9">
+           <input type="text" class="form-control">
+       </div>
+   </div>
+   ```
+
+4. Bootstrap中行默认均分为<b style="color:red">12等分</b>，每个列必须指定行中占比
+
+5. 栅格系统针对不同的屏幕提供不同列
+
+   >.col-<b style="color:red">lg</b>-1/2/3/.../12
+   >.col-<b style="color:red">md</b>-1/2/3/.../12
+   >.col-<b style="color:red">sm</b>-1/2/3/.../12
+   >.col-<b style="color:red">xs</b>-1/2/3/.../12
+
+
+
+### 2.7.3 适用性
+
+***
+
+种类
++ .col-xs-*：适合于xs/sm/md/lg 屏幕
++ .col-sm-*：适合于sm/md/lg 屏幕
++ .col-md-*：适合于md/lg 屏幕
++ .col-lg-*：适合于lg 屏幕
+
+
+
+常见错误
+
+```html
+<!--不同屏幕大小,指定列数量不能相同(重复了),否则报错-->
+<div class="col-xs-12 col-sm-12">lg-6(lg)</div>
+```
+
+
+
+列隐藏
+
++ .hidden-xs：仅在xs屏幕下隐藏
++ .hidden-sm：仅在sm屏幕下隐藏
++ .hidden-md：仅在md屏幕下隐藏
++ .hidden-lg：仅在lg屏幕下隐藏
+
+```html
+<!-- xs-6 md-6 lg-6 sm隐藏 -->
+<div class="row">
+	<div class="col-xs-6 hidden-sm">lg-6(lg)</div>
+</div>
+```
+
+
+
+嵌套：列中可以再嵌入行，行中再有列
+
+```
+.container>
+	.row>
+		.col-*-*>
+			.row>
+				.col-*-*>
+```
+
+
+
 # 第三章 组件
 
 
