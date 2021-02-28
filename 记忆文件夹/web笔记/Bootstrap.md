@@ -160,7 +160,9 @@ Bootstrap是一个HTML/<b style="color:red">CSS</b>/JS框架，用于开发响�
        <![endif]-->
    </head>
    <body>
-   <h1>你好，世界！</h1>
+       <div class="container">
+   
+       </div>
    
    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
    <script src="jQuery/jquery-3.5.1.js"></script>
@@ -183,6 +185,93 @@ Bootstrap是一个HTML/<b style="color:red">CSS</b>/JS框架，用于开发响�
 
 
 # 第二章 全局CSS样式
+
+
+
+## 2.1 按钮
+
++ .btn：按钮基础样式
++ .btn-default：白底黑色按钮
++ .btn-danger/warning/success/info/primary：五种颜色的按钮
++ .btn-lg/sm/xs：按钮大小
++ .btn-block：块级按钮
+
+
+
+## 2.2 图片
+
++ .img-rounded：圆角图片
++ .img-circle：圆形图片
++ .img-thumbnail：缩略图（padding、边框）
++ .img-responsive：响应式图片
+
+
+
+## 2.3 文本
+
++ .text-danger/success/warning/info/primary：文字颜色
++ .bg-danger/success/warning/info/primary：背景颜色
++ .text-left/center/right/justify：对齐方式
++ .text-uppercase/lowercase/capitailze：转换
+
+
+
+## 2.4 列表
+
++ list-unstyled：去除提示符号
++ list-inline：行内列表
+
+
+
+## 2.5 屏幕分类
+
+1. 大型pc屏幕（Large-<b style="color:red">lg</b>）：width>=1200px
+2. 中等pc屏幕（Medium-<b style="color:red">md</b>）：1200px>width>992px
+3. 小型PAD屏幕（Small-<b style="color:red">sm</b>）：992px>width>768px
+4. 超小PHONE屏幕（ExtraSmall-<b style="color:red">xs</b>）：769px>width
+
+
+
+## 2.6 表格
+
+
+
+### 2.6.1 表格样式
+
+***
+
++ .table
++ .table-bordered：带边框的表格
++ <b style="color:red">.table-striped：隔行变色</b>
++ <b style="color:red">.table-hover：带悬停变色的表格</b>
++ .table-responsive：响应式表格（<b style="color:red">写在table的父元素中</b>）
+
+
+
+### 2.6.2 Bootlint
+
+***
+
+Bootstrap官方检测HTML的工具。检测 bootstrap 样式结构
+
+网址：https://github.com/twbs/bootlint
+
+使用
+
+```html
+<!--在html里加上这个-->
+<script>
++function(){
+    var s=document.createElement("script");
+    s.onload=function(){bootlint.showLintReportForCurrentDocument([]);};
+    s.src="https://stackpath.bootstrapcdn.com/bootlint/latest/bootlint.min.js";
+    document.body.appendChild(s)}()
+</script>
+```
+
+
+
+## 2.7 <b style="color:red">栅格系统</b>
 
 
 
