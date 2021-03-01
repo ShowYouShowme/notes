@@ -379,7 +379,155 @@ Bootstrap官方检测HTML的工具。检测 bootstrap 样式结构
 
 
 
+## 2.8 表单
+
+Bootstrap提供三种形式表单
+
+1. 默认表单
+2. 行内表单
+3. 水平表单
+
+<b style="color:green">官方demo更美观些</b>
+
+
+
+### 2.8.1 默认表单
+
+***
+
+```html
+<form>
+  <div class="form-group">
+    <label class="control-label">用户名</label>
+    <input class="form-control">
+    <label class="help-block">6~8位字母</label>
+  </div>
+</form>
+```
+
+
+
+### 2.8.2 行内表单
+
+***
+
+```html
+<form class="form-inline">
+  <div class="form-group">
+    <!--读屏软件-->
+    <label class="sr-only">用户名</label>
+    <input class="form-control">
+  </div>
+</form>
+```
+
+
+
+### 2.8.3 水平表单
+
+***
+
+水平表单=表单+栅格系统（变形）
+
+|          | 默认栅格系统  | 水平表单中栅格       |
+| -------- | ------------- | -------------------- |
+| 最外元素 | div.container | form.form-horizontal |
+| 行       | div.row       | div.form-group       |
+| 列       | div.col-\*-\* | div.col-\*-\*        |
+
+```html
+<!--写法类似栅格系统,比较麻烦-->
+<form class="form-horizontal">
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
+    <div class="col-sm-10">
+      <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+</form>
+```
+
+
+
 # 第三章 组件
+
+
+
+## 3.1 下拉菜单
+
+下拉菜单必须有三级结构
+
+```html
+<div class="dropdown">
+    <a data-toggle="dropdown">触发元素</a>
+    <div data-toggle="dropdown-menu">隐藏元素</div>
+</div>
+```
+
+
+
+Bootstrap 示例
+
+```html
+<div class="dropdown">
+  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Dropdown
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+    <li><a href="#">Action</a></li>
+    <li><a href="#">Another action</a></li>
+    <li><a href="#">Something else here</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a href="#">Separated link</a></li>
+  </ul>
+</div>
+```
+
+
+
+## 3.2 导航
+
+
+
+### 3.2.1 标签页式导航--页签组件
+
+***
+
+```html
+<ul class="nav nav-tabs">
+    <li><a data-toggle="tab" href=#>十元套餐</a></li>
+    <li class="active"><a data-toggle="tab" href=#>二十元套餐</a></li>
+    <li><a data-toggle="tab" href=#>三十元套餐</a></li>
+</ul>
+```
+
+
+
+
+
+## 3.3  图标字体
+
+Web项目中常用的图标字体
+
+1. FontAwesome：675免费的图标
+2. Glyphicons：800多个收费的图标
+
+
+
+服务器端字体使用
+
+1. web服务器项目目录必须有字体文件
+
+2. 使用
+
+   ```html
+   <span class="glyphicon glyphicon-cloud"></span>
+   ```
+
+
+
+## 3.4 导航栏
 
 
 
