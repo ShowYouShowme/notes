@@ -515,6 +515,14 @@ Web项目中常用的图标字体
 
 
 
+常用小图标
+
+```
+主页、用户、配置、汉堡包、刷新、打分、我喜欢、发邮件、拍照、定位、购物车、放大镜、删除、加号、减号、叉号、前进、后退、前一张、后一张、播放、暂停、快进、快退
+```
+
+
+
 服务器端字体使用
 
 1. web服务器项目目录必须有字体文件
@@ -527,7 +535,188 @@ Web项目中常用的图标字体
 
 
 
-## 3.4 导航栏
+## 3.4 <b style="color:red">导航栏</b>
+
+![](img\navbar.png)
+
+### 3.4.1 导航条颜色
+
+***
+
++ 浅色底深色字：.navbar-default
++ 深色底浅色字：.navbar-inverse
+
+
+
+### 3.4.2 导航条定位方式
+
+***
+
++ 相对定位：默认
++ 绝对定位：.nav-fixed-*
+
+
+
+### 3.4.3 导航条位置
+
+***
+
++ 顶部：.navbar-fixed-top
++ 底部：.navbar-fixed-bottom
+
+
+
+## 3.5 按钮组
+
++ 水平按钮组
+
+  ```html
+  <div class="btn-group">
+      <a href="#" class="btn btn-success">
+          <span class="glyphicon glyphicon-backward"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+          <span class="glyphicon glyphicon-play"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+          <span class="glyphicon glyphicon-pause"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+          <span class="glyphicon glyphicon-stop"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+          <span class="glyphicon glyphicon-forward"></span>
+      </a>
+  </div>
+  ```
+
++ 垂直按钮组
+
+  ```html
+  <div class="btn-group-vertical">
+      <a href="#" class="btn btn-success">
+      	<span class="glyphicon glyphicon-backward"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+      	<span class="glyphicon glyphicon-play"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+      	<span class="glyphicon glyphicon-pause"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+      	<span class="glyphicon glyphicon-stop"></span>
+      </a>
+      <a href="#" class="btn btn-success">
+      	<span class="glyphicon glyphicon-forward"></span>
+      </a>
+  </div>
+  ```
+
+
+
+## 3.6 警告框
+
+1. 危险警告框
+
+   ```html
+   <div class="alert alert-danger">
+       <h4>
+           <span class="glyphicon glyphicon-alert"></span>
+           警告
+       </h4>
+       <p>
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+       </p>
+   </div>
+   ```
+
+2. 提示警告框
+
+   ```html
+   <div class="alert alert-info" data-dismiss="alert">
+       <span class="close">&times;</span>
+       <h4 class="glyphicon glyphicon-alert">通知</h4>
+       <p>
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+           您的浏览器版本太低，请更新!
+       </p>
+   </div>
+   ```
+
+3. 其它警告框：查看Bootstrap官方Demo
+
+
+
+## 3.7 进度条
+
+1. 普通进度条
+
+   ```html
+   <div class="progress">
+       <div class="progress-bar progress-bar-danger" style="width: 10%">10%</div>
+   </div>
+   ```
+
+2. 带条纹进度条
+
+   ```html
+   <div class="progress">
+       <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 45%">45%</div>
+   </div>
+   ```
+
+3. 动态效果进度条
+
+   ```html
+   <div class="progress">
+       <div class="progress-bar progress-bar-warning progress-bar-striped active" style="width: 45%">45%</div>
+   </div>
+   ```
+
+## 3.8 缩略图
+
+```html
+<div class="thumbnail">
+    <img src="img/1.png">
+    <div class="caption">
+        <h4>世界名画--01</h4>
+        <p>$9999.99</p>
+        <a href="#">添加到购物车</a>
+    </div>
+</div>
+```
+
+
+
+## 3.9 面板
+
+```html
+<div class="panel panel-颜色">
+    <div class="panel-heading"></div>
+    <div class="panel-body"></div>
+    <div class="panel-footer"></div>
+</div>
+```
+
+
+
+重要用途：实现手风琴
+
+## 3.10 自学组件
+
+1. 面包屑
+2. 分页条
+3. 分页器
+4. 徽章
+5. 巨幕
+6. 页头
+7. 水井
 
 
 
