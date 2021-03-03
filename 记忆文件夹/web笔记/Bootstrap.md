@@ -724,6 +724,75 @@ Web项目中常用的图标字体
 
 
 
+## 4.1 轮播广告
+
+```html
+<div class="carousel" data-ride="carousel">
+	<div class="carousel-innel">
+        <div class="item"></div>
+        <div class="item active"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+        <div class="item"></div>
+    </div>
+</div>
+```
+
+示例代码
+
+```html
+<div class="container">
+    <!--广告轮播 data-pause:null 鼠标悬停后不暂停-->
+    <div id="ad5" class="carousel" data-ride="carousel"
+    data-interval="1100" data-pause="null" style="border: 1px solid black;background-color: #ddd">
+        <!--轮播广告滚动内容-->
+        <div class="carousel-inner">
+            <div class="item">
+                <img src="img/1.png">
+                <div class="carousel-caption">
+                    <h4>世界名画--001</h4>
+                </div>
+            </div>
+            <div class="item active">
+                <img src="img/2.png">
+                <div class="carousel-caption">
+                    <h4>世界名画--002</h4>
+                </div>
+            </div>
+            <div class="item">
+                <img src="img/3.png">
+                <div class="carousel-caption">
+                    <h4>世界名画--003</h4>
+                </div>
+            </div>
+            <div class="item">
+                <img src="img/4.png">
+                <div class="carousel-caption">
+                    <h4>世界名画--004</h4>
+                </div>
+            </div>
+        </div>
+
+        <!--可选:上一页 下一页 在inner元素外面-->
+        <a href="#ad5" class="carousel-control left" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+
+        <a href="#ad5" class="carousel-control right" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+
+        <!--序号指示器-->
+        <ul class="carousel-indicators">
+            <li data-slide-to="0" class="active" data-target="#ad5"></li>
+            <li data-slide-to="1" data-target="#ad5"></li>
+            <li data-slide-to="2" data-target="#ad5"></li>
+            <li data-slide-to="3" data-target="#ad5"></li>
+        </ul>
+    </div>
+</div>
+```
+
 # 第五章 定制
 
 
