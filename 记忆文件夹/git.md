@@ -358,6 +358,36 @@ git checkout -- main.cpp
 
 
 
+## 16 tag
+
+1. 查看tag
+
+   ```SHELL
+   # 查看全部tag
+   git tag -l -n
+   
+   # 查看特定tag的详细信息
+   git show v2.1.2
+   ```
+
+2. 打tag
+
+   ```SHELL
+   # 在指定commit上打tag
+   git tag test_tag c809ddbf83939a89659e51dc2a5fe183af384233
+   
+   # 在最前面的commit上打tag
+   git tag -a v2.1.2 -m "Version 2.1.2"
+   ```
+
+3. 删除tag
+
+   ```SHELL
+   git tag -d test_tag
+   ```
+
+
+
 
 # git配置代理
 

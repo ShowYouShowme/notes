@@ -117,7 +117,21 @@ npm install @types/node
 
 ### npm教程
 
-1. 切换阿里源
+1. 使用cnpm
+
+   ```shell
+   # 安装cnpm
+   npm install cnpm -g --registry=https://registry.npm.taobao.org
+   
+   # 查看版本
+   cnpm -v
+   
+   # 之后用cnpm命令替代npm
+   ```
+
+   
+
+2. 切换阿里源
 
    ```shell
    npm config set registry https://registry.npm.taobao.org/
@@ -128,19 +142,19 @@ npm install @types/node
 
    
 
-2. 配置代理
+3. 配置代理
 
    ```shell
    npm config set proxy=http://127.0.0.1:8090
    ```
 
-3. 全局安装
+4. 全局安装
 
    ```shell
    npm install ${包名} -g
    ```
 
-4. 安装
+5. 安装
 
    ```shell
    npm install ${包名}
@@ -154,7 +168,7 @@ npm install @types/node
    npm install
    ```
 
-5. 执行`package.json`里面的指令
+6. 执行`package.json`里面的指令
 
    ```shell
    npm run ${cmd}
@@ -170,31 +184,31 @@ npm install @types/node
 
    
 
-6. 卸载
+7. 卸载
 
    ```shell
    npm uninstall ${包名}
    ```
 
-7. 更新
+8. 更新
 
    ```shell
    npm update ${包名}
    ```
 
-8. 检查包是否过时
+9. 检查包是否过时
 
    ```shell
    npm outdated
    ```
 
-9. 列出安装的全部包
+10. 列出安装的全部包
 
    ```shell
    npm ls
    ```
 
-10. 参数说明
+11. 参数说明
 
    > 1. --save 或者-S
    >
@@ -251,7 +265,8 @@ npm install @types/node
    > }
    > ```
    >
-   > 
+
+
 
 ### 示例代码
 
