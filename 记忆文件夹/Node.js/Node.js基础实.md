@@ -1594,3 +1594,46 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 </html>
 ```
 
+
+
+## 1-15 promise
+
+1. 函数体内部出现`await`关键词时，要在function前加`async`
+
+2. 函数返回值为`Promise`时，调用该函数时加上`await`；在`Promise`里面使用`resolve`传出参数
+
+3. 示例代码
+
+   + 示例一
+
+     ```javascript
+     function __settimeout(ms : number):Promise<void>{
+         return new Promise<void>((resolve, reject)=>{
+             setTimeout(()=>{
+                 resolve();
+             }, ms);
+         })
+     }
+     
+     async function sync_time_out(){
+         await __settimeout(2000);
+         console.log("after 2 s!");
+     }
+     ```
+
+   + 示例二
+
+     ```javascript
+     // 函数声明: keys(pattern: string, cb?: Callback<string[]>): R;
+     function __keys(pattern : string):Promise<string[]>{
+         return new Promise<string[]>((resolve , reject) => {
+             redis_client.keys(pattern,(err: Error | null, reply: string[]) : void =>{
+                 if (err) {
+                     reject(err);
+                 }else{
+                     resolve(reply);
+                 }
+             });
+         })
+     }
+     ```
