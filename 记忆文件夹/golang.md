@@ -157,6 +157,131 @@ c := 3 // 自动类型推导
 
 
 
+### 2.2.1 类型
+
+***
+
+1. 布尔值
+
+   ```
+   bool
+   ```
+
+2. 字符串
+
+   ```
+   string
+   ```
+
+3. 整形
+
+   ```
+   int int8 int16 int32 int64
+   ```
+
+4. 无符号整形
+
+   ```
+   uint uint8 uint16 uint32 uint64
+   ```
+
+5. 字节
+
+   ```
+   byte
+   ```
+
+6. Unicode编码值
+
+   ```
+   rune
+   ```
+
+7. 浮点
+
+   ```
+   float32 float64
+   ```
+
+8. 复数
+
+   ```
+   complex64 complex128
+   ```
+
+
+
+### 2.2.2 类型转换
+
+***
+
+1. go语言不允许隐式类型转换
+
+2. 别名和原有类型也不能进行隐式类型转换
+
+3. 示例
+
+   ```go
+   // go test -v type_test.go
+   package type_test
+   
+   import "testing"
+   
+   type MyInt int64
+   func TestImplicit(t *testing.T)  {
+   	var a int = 1
+   	var b int64
+   	b = int64(a) + 1
+   
+   	var c MyInt
+   	c = MyInt(b) + 1
+   	t.Log("a = ",a, " c = ", b," c = ",c)
+   }
+   ```
+
+
+
+
+
+### 2.2.3 类型预定值
+
+***
+
+```go
+math.MaxInt64
+
+math.MaxFloat64
+
+math.MaxUint32
+```
+
+
+
+### 2.2.4 指针类型
+
+***
+
+1. 不支持指针运算
+
+2. string是值类型，默认为空字符串不是nil
+
+3. 示例
+
+   ```GO
+   func TestPoint(t *testing.T) {
+   	var a int = 1
+   	var aPtr *int = &a
+   	t.Log(a, aPtr)
+   	t.Logf("%T %T", a, aPtr)//打印数据类型
+   }
+   
+   func TestString(t *testing.T) {
+   	var s string
+   	t.Log("*" + s + "*") // string 默认为空字符串
+   	t.Log(len(s))
+   }
+   ```
+
 ## 2.3 运算符
 
 
