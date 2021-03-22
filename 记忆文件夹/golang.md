@@ -2,6 +2,22 @@
 
 
 
+## 1.0 安装
+
+1. 下载安装包安装
+
+2. 设置环境变量
+
+   ```shell
+   # GOLANG 的安装目录
+   export GOROOT=/usr/local/go
+   
+   # go.exe的目录
+   export PATH=$PATH:$GOROOT/bin
+   ```
+
+   
+
 ## 1.1 第一个程序
 
 ```go
@@ -63,7 +79,89 @@ func main()  {
 }
 ```
 
+
+
 # 第二章 程序基本结构
+
+
+
+## 2.1 变量和常量
+
+
+
+### 2.1.1 编写测试程序
+
+***
+
+1. 源码文件以<b style="color:red">_test</b>结尾：xxx_test.go
+
+2. 方法名以Test开头：func Testxxx()
+
+3. 代码示例
+
+   ```GO
+   // go test -v first_test.go
+   package try_test
+   
+   import (
+   	"testing"
+   )
+   
+   func TestFirstTry(t *testing.T)  {
+   	var a int = 1
+   	var b int = 2
+   	t.Log("a = ", a, " b = " , b)
+   }
+   ```
+
+
+
+### 2.1.2 变量赋值
+
+***
+
+```GO
+var a int = 1
+var b int = 2
+
+c := 3 // 自动类型推导
+```
+
+
+
+### 2.1.3 常量
+
+***
+
+```go
+	const (
+		Mon = 1
+		Tue = 2
+		Wed = 3
+	)
+
+	const (
+		Readable = 1 << iota
+		Writeable
+		Executable
+	)
+// Readable  : 1
+// Writeable : 2
+// Executable : 4
+	fmt.Print(Readable, " Writeable : ", Writeable , " Executable : ", Executable)
+```
+
+
+
+## 2.2 数据类型
+
+
+
+## 2.3 运算符
+
+
+
+## 2.4 条件和循环
 
 
 
