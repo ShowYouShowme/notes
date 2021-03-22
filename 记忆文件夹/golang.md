@@ -282,11 +282,140 @@ math.MaxUint32
    }
    ```
 
+
+
 ## 2.3 运算符
 
 
 
+### 2.3.1 算术运算符
+
+***
+
+| 运算符 | 描述 |
+| :----: | :--: |
+|   +    |  加  |
+|   -    |  减  |
+|   *    |  乘  |
+|   /    |  除  |
+|   %    | 求余 |
+|   ++   | 自增 |
+|   --   | 自减 |
+
+go没有前置++(++a)，只有后置++(a++)
+
+
+
+数组比较
+
+```GO
+func TestCompareArray(t *testing.T){
+	a := [...]int{1,2,3,4}
+	b := [...]int{1,3,4,5}
+	//c := [...]int{1,2,3,4,5} 长度不同不能比较,会导致编译错误
+	d := [...]int{1,2,3,4}
+
+	t.Log(a == b) // 两个数组长度相同且每个值相等,则数组相等
+	t.Log(a == d)
+}
+```
+
+
+
+
+
+### 2.3.2 位运算符
+
+***
+
+&^ 按位置零
+
+```go
+// 右边为1,则结果为0
+// 右边为0,则结果为左边数据
+1 &^ 0 --1
+1 &^ 1 --0
+0 &^ 1 --0
+0 &^ 0 --0
+```
+
+```go
+const(
+	Readable = 1
+	Writeable = 2
+	Executable = 4
+)
+
+func TestBitClear(t *testing.T) {
+	var a int = 7
+	a = a &^ Readable
+	a = a &^ Writeable
+	t.Log(a&Readable == Readable,a&Writeable == Writeable, a&Executable == Executable)
+}
+```
+
+
+
+
+
 ## 2.4 条件和循环
+
+
+
+### 2.4.1 循环
+
+***
+
+只支持for循环
+
+```go
+func TestWhileLoop(t *testing.T) {
+	var n int = 0
+	for n < 5{
+		t.Log(n)
+		n++
+	}
+}
+
+// 无限循环
+func TestLoopInfinite(t *testing.T){
+	var n int = 0
+	for {
+		t.Log(n)
+		n++
+	}
+}
+```
+
+
+
+### 2.4.2 条件
+
+***
+
+```GO
+// condition 结果必须为布尔值
+// 第一种条件语句
+if condition{
+    
+}else{
+    
+}
+
+// 第二种条件语句
+if condition-1{
+    
+}else if condition-2{
+    
+}else{
+    
+}
+
+// 第三种
+if var declaration; condition{
+    
+}
+```
 
 
 
