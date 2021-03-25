@@ -268,3 +268,65 @@ FFmpeg 常用的命令行参数如下。
 
 ### 4.10 推流
 
+
+
+#### 4.10.1 视频文件有多个流
+
+***
+
+1. 查看sdp信息
+
+   ```shell
+   ffmpeg -re -i 120.mp4 -an -c:v copy -f rtp rtp://127.0.0.1:6666
+   
+   SDP:
+   v=0
+   o=- 0 0 IN IP4 127.0.0.1
+   s=No Name
+   c=IN IP4 127.0.0.1
+   t=0 0
+   a=tool:libavformat 58.45.100
+   m=video 6666 RTP/AVP 96
+   b=AS:187
+   a=rtpmap:96 MP4V-ES/90000
+   a=fmtp:96 profile-level-id=1; config=000001B001000001B58913000001000000012000C48D88002D2004601443000001B24C61766335332E382E30
+   ```
+
+2. 将sdp信息复制到test.sdp
+
+3. 用VLC打开sdp文件
+
+4. 推流
+
+   ```shell
+   ffmpeg -re -i 120.mp4 -an -c:v copy -f rtp rtp://127.0.0.1:6666
+   ```
+
+
+
+#### 4.10.2 单一流的文件
+
+***
+
+1. 提取视频流，并转码为h264
+
+   ```shell
+   ffmpeg -i 120.mp4 -an -c:v libx264 output.mp4
+   ```
+
+2. 查看sdp信息（同上）
+
+3. 将sdp信息复制到test.sdp（同上）
+
+4. 用VLC打开sdp文件（同上）
+
+5. 推流
+
+   ```shell
+   ffmpeg -re -i output.mp4 -c copy -f rtp rtp://127.0.0.1:6666
+   ```
+
+   
+
+
+
