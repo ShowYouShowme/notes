@@ -324,6 +324,9 @@ FFmpeg 常用的命令行参数如下。
 
    ```shell
    ffmpeg -re -i output.mp4 -c copy -f rtp rtp://127.0.0.1:6666
+   
+   # 或者
+   ffmpeg -re -i output.mp4 -vcodec copy -f rtp rtp://127.0.0.1:6666
    ```
 
    
