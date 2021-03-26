@@ -831,9 +831,105 @@ func TestIfMultiSet(t *testing.T){
 
 
 
+### 5.1.1 差异
+
+***
+
+1. 可以有多个返回值
+2. 全部参数都是值传递
+3. 函数可以作为变量的值
+4. 函数可以作为参数和返回值
+
+
+
+### 5.1.2 案例
+
+***
+
+1. 多返回值的函数
+
+   ```go
+   func returnMultiValues()(int,int)  {
+   	return rand.Intn(10), rand.Intn(20)
+   }
+   ```
+
+2. 函数装饰器
+
+   ```go
+   // 计算函数调用的时间
+   func timeSpend(inner func(op int) int)func(op int)int  {
+   	return func(n int) int {
+   		start := time.Now()
+   		ret := inner(n)
+   		fmt.Println("time spend: ", time.Since(start).Seconds())
+   		return ret
+   	}
+   }
+   
+   func slowFun(op int) int {
+   	time.Sleep(time.Second * 2)
+   	return op
+   }
+   
+   func TestFn(t *testing.T)  {
+   	tsSF := timeSpend(slowFun)
+   	t.Log(tsSF(10))
+   }
+   ```
+
+   
+
 ## 5.2 可变参数和defer
 
 
+
+### 5.2.1 可变参数
+
+***
+
+```go
+// 可变长参数
+func sum(ops ...int) int {
+	s := 0
+	for _, op := range ops{
+		s += op
+	}
+	return s
+}
+
+func TestVarParam(t *testing.T)  {
+	t.Log(sum(1,2,3,4))
+	t.Log(sum(1,2,3,4,5,6,7,8,9,10))
+}
+```
+
+
+
+
+
+### 5.2.2 defer
+
+***
+
+1. 作用：函数延迟执行，在调用函数退出前执行，主要用于释放资源
+
+2. 案例
+
+   ```go
+   // 延迟执行
+   func TestDefer(t *testing.T)  {
+   	// 函数退出先执行,用于清理资源,释放锁
+   	defer func() {
+   		t.Log("Clear resources")
+   	}()
+   
+   	t.Log("Started")
+   	panic("err") // 即使panic,defer依旧执行
+   }
+   ```
+
+   
 
 # 第六章 面向对象编程
 
@@ -865,7 +961,180 @@ func TestIfMultiSet(t *testing.T){
 
 
 
+### 7.1.1 错误机制
+
+***
+
+1. 没有异常机制
+2. error类型实现了error接口
+3. 用error.New快速创建错误实例
+
+
+
+### 7.1.2 案例
+
+***
+
+1. 抛出指定错误
+
+   ```go
+   var LessThanTwoError  = errors.New("n should be not less than 2")
+   var LargeThanHundredError = errors.New("n should be not large than 100")
+   func GetFibonacci(n int)  ([]int, error){
+   	if n < 2 {
+   		return nil, LessThanTwoError
+   	}
+   
+   	if n > 100{
+   		return nil, LargeThanHundredError
+   	}
+   	fibList := []int{1,1}
+   	for i := 2; i< n; i++{
+   		fibList = append(fibList, fibList[i -2] + fibList[i -1])
+   	}
+   	return fibList, nil
+   }
+   func TestGetFibonacci(t *testing.T)  {
+   	if v,err := GetFibonacci(-10); err != nil{
+   		if err == LessThanTwoError{
+   			t.Log("It is less.")
+   		}
+   		t.Error(err)
+   	}else{
+   		t.Log(v)
+   	}
+   }
+   ```
+
+   
+
+2. 减少嵌套
+
+   ```go
+   func GetFibonacci1(str string)  {
+   	var i int
+   	var err error
+   	var list []int
+   
+   	// 双层嵌套
+   	if i, err = strconv.Atoi(str); err == nil{
+   		if list, err = GetFibonacci(i); err == nil{
+   			fmt.Println(list)
+   		}else{
+   			fmt.Println("Error", err)
+   		}
+   	}else{
+   		fmt.Println("Error", err)
+   	}
+   }
+   
+   func GetFibonacci2(str string)  {
+   	var i int
+   	var err error
+   	var list []int
+   
+   	if i, err = strconv.Atoi(str); err != nil{
+   		fmt.Println("Error", err)
+   		return
+   	}
+   
+   	if list, err = GetFibonacci(i); err != nil{
+   		fmt.Println("Error", err)
+   		return
+   	}
+   	fmt.Println(list)
+   }
+   ```
+
+   
+
+
+
 ## 7.2 panic和recover
+
+
+
+### 7.2.1 panic
+
+***
+
+1. 用于不可恢复的错误
+2. panic退出前会指定defer指定的内容
+
+
+
+os.Exit 与 panic
+
+1. os.Exit 退出时不会调用defer指定的函数
+2. os.Exit 退出时不输出当前调用栈的信息
+
+
+
+代码
+
+1. 示例一
+
+   ```go
+   // defer 不会被调用
+   func main()  {
+   	defer func() {
+   		fmt.Println("final")
+   	}()
+   	fmt.Println("start")
+   	os.Exit(128)
+   }
+   ```
+
+   
+
+2. 示例二
+
+   ```go
+   // defer 被调用,并且显示调用栈信息
+   func main()  {
+   	defer func() {
+   		fmt.Println("final")
+   	}()
+   	fmt.Println("start")
+   	panic("wrong info")
+   }
+   ```
+
+   
+
+
+
+### 7.2.2 recover
+
+***
+
+1. 和C++对比
+
+   ```c++
+   // recover 类似C++的此功能
+   try{
+       ...
+   }catch(...){
+       // 捕获全部异常
+   }
+   ```
+
+2. 从panic中恢复
+
+   ```go
+   func main()  {
+   	defer func() {
+           // 处理错误
+   		if err := recover(); err != nil{
+   			fmt.Println("recovered from ", err)
+   		}
+   	}()
+   	fmt.Println("start")
+   	panic("wrong info") // 抛出错误
+   }
+   ```
+
+   
 
 
 
@@ -874,6 +1143,94 @@ func TestIfMultiSet(t *testing.T){
 
 
 ## 8.1 构建可复用的模块
+
+
+
+### 8.1.1 package
+
+***
+
+1. 以首字母大写来表明可被包外代码访问
+2. 代码package可以和所在目录不一致
+3. 同一目录里的go代码的package要保持一致
+
+
+
+获取package
+
+1. 通过go get 获取远程依赖
+
+   + go get -u 强制从网络更新远程依赖
+
+2. 注意代码在GitHub上的组织形式，以适应go get
+
+   直接以代码路径开始，不要有src
+
+
+
+本地包
+
+1. 在$GOPATH/目录下，创建如下结构的文件夹和文件：
+
+   ```shell
+   |----bin
+   |----pkg
+   |----src
+   |    |
+   	 |------hello
+   	 |      |-------hello2.go
+   	 |      |-------hello.go
+   	 |------main
+   	        |
+   	        |------main.go
+   ```
+
+2. 代码
+
+   hello.go
+
+   ```go
+   package hello
+    
+   import (
+     "fmt"
+   )
+    
+   func SayHello() {
+     fmt.Println("SayHello()-->Hello")
+   }
+   ```
+
+   hello2.go
+
+   ```go
+   package hello
+    
+   import (
+     "fmt"
+   )
+    
+   func SayWorld() {
+     fmt.Println("SayWorld()-->World")
+   }
+   ```
+
+   main.go
+
+   ```go
+   package main
+    
+   import (
+     "hello"
+   )
+    
+   func main() {
+     hello.SayHello()
+     hello.SayWorld()
+   }
+   ```
+
+3. 总结：GitHub上面的代码，直接copy到src目录下就可以使用了
 
 
 
