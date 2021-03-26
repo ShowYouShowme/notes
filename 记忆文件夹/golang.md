@@ -419,7 +419,271 @@ if var declaration; condition{
 
 
 
+```go
+func TestIfMultiSet(t *testing.T){
+	if v,err := SomeFunc(); err=nil{
+		t.Log("1==1")
+	}else{
+		t.Log("2==2")
+	}
+}
+```
+
+
+
+### 2.4.3 switch
+
+***
+
+1. 条件表达式不限制为常量或者整数
+
+2. 单个case中，可以出现多个结果选项，使用逗号分隔
+
+3. 与C语言等相反，不需要用break明确退出case
+
+4. 可不设定switch后的条件表达式，此时整个switch与多个if...else逻辑相同
+
+5. 示例
+
+   ```go
+   func TestSwitchMultiCase(t *testing.T){
+   	for  i := 0; i < 5; i++{
+   		switch i{
+   		case 0, 2:
+   			t.Log("Even")
+   		case 1,3:
+   			t.Log("Odd")
+   		default:
+   			t.Log("it is not 0-3")
+   		}
+   	}
+   }
+   
+   // 类似多个if...else
+   func TestSwitchCaseCondition(t *testing.T){
+   	for i :=0; i< 5; i++{
+   		switch{
+   		case i%2 == 0:
+   			t.Log("Even")
+   		case i%2 == 1:
+   			t.Log("Odd")
+   		default:
+   			t.Log("unknow")
+   		}
+   	}
+   }
+   ```
+
+   
+
 # 第三章  常用集合
+
+
+
+## 3.1 数组和切片
+
+
+
+### 3.1.1 数组
+
+1. 数组定义
+
+   ```go
+   func TestArrayInit(t *testing.T)  {
+   	var arr [3]int //未赋值
+   	arr1 := [4]int{1,2,3,4} // 定义同时赋值
+   	arr3 := [...]int{1,2,4,5} // 元素个数有赋的值决定
+   	t.Log(arr[1], arr[2])
+   	t.Log(arr1, arr3)
+   }
+   ```
+
+2. 数组遍历
+
+   ```go
+   // 遍历
+   func TestArrayTravel(t *testing.T){
+   	arr3 := [...]int{1,3,4,5}
+   	for i := 0; i < len(arr3);i++{
+   		t.Log(arr3[i])
+   	}
+   
+   	for idx, e:= range arr3{
+   		t.Log(idx, e)
+   	}
+   
+   	for _, e:= range arr3{
+   		t.Log(e)
+   	}
+   }
+   ```
+
+3. 多维数组
+
+   ```go
+   // 多维数组
+   c := [2][2]int{{1,2},{3,4}}
+   ```
+
+4. 截取数组一部分
+
+   ```go
+   func TestArraySection(t *testing.T)  {
+   	arr3 := [...]int{1,2,3,4,5}
+   	arr3_sec := arr3[3:]
+   	t.Log(arr3_sec)
+   }
+   ```
+
+
+
+### 3.1.2 切片
+
+***
+
+1. 切片其实就是C++的Vector
+
+2. 示例代码
+
+   ```GO
+   // 切片定义时 中括号里为空 数组定义时中括号有... 或者数字
+   func TestSliceInit(t *testing.T)  {
+   	var s0 []int
+   	t.Log(len(s0), cap(s0)) // 和C++的vector类似
+   
+   	s0 = append(s0,1)
+   	t.Log(len(s0), cap(s0))
+   
+   	s1 := []int{1,2,3,4}
+   	t.Log(len(s1), cap(s1))
+   
+   	s2 := make([]int, 3, 5) // size == 3 capacity == 5
+   	t.Log(len(s2), cap(s2))
+   	// t.Log(s2[0], s2[1], s2[3], s2[4])
+   }
+   
+   // 增长模式类似C++的vector
+   func TestSliceGrowing(t *testing.T)  {
+   	s :=[]int{}
+   	for i:= 0; i < 10; i++{
+   		s = append(s,i)
+   		t.Log(len(s), cap(s))
+   	}
+   }
+   
+   func TestSliceShareMemory(t *testing.T)  {
+   	year := []string{"11","22","33","44","55","66",
+   		"77","88", "99", "1010","1213", "1212"}
+   	Q2 := year[3:6]
+   	t.Log(Q2, len(Q2), cap(Q2))
+   
+   	summer := year[5:8]
+   	t.Log(summer, len(summer), cap(summer))
+   	summer[0] = "Unknow" // Q2也受到影响
+   	t.Log(Q2)
+   	t.Log(year)
+   }
+   ```
+
+   
+
+
+
+
+
+### 3.1.3 数组和切片对比
+
+***
+
+1. 数组容量不可伸缩，切片可以
+2. 数组可以比较，切片不行
+
+
+
+## 3.2 Map声明和访问
+
+
+
+### 3.2.1 声明
+
+***
+
+1. 示例代码
+
+   ```go
+   m := map[string]int{"one":1, "two":2, "three":3}
+   
+   m1 := map[string]int{}
+   
+   m1["one" ] = 1
+   
+   m2 := make(map[string]int, 10) // 初始化时指定capacity
+   ```
+
+2. 初始化
+
+   ```go
+   func TestInitMap(t *testing.T)  {
+   	m1 := map[int]int{1:1,2:4,3:9}
+   	t.Log(m1[2])
+   
+   	t.Logf("Len m1=%d", len(m1))
+   
+   	m2 := map[int]int{}
+   	m2[4] = 16
+   	t.Logf("len m2=%d", len(m2))
+   
+   	m3 := make(map[int]int,10)
+   	t.Logf("len m3=%d", len(m3))
+   }
+   ```
+
+3. 访问不存在的元素
+
+   ```go
+   func TestAccessNotExistingKey(t *testing.T)  {
+   	m1 := map[int]int{}
+   	t.Log(m1[1]) // 类似C++,元素不存在返回默认值0
+   
+   	m1[2] = 0
+   	t.Log(m1[2])
+   	// m1[3] = 0 // 根据OK来判断元素是否存在
+   
+   	if v,ok := m1[3]; ok{
+   		t.Logf("key 3's val is %d",v)
+   	}else{
+   		t.Log("key 3 is no existing")
+   	}
+   }
+   ```
+
+4. 遍历
+
+   ```go
+   func TestTravelMap(t *testing.T)  {
+   	m1 := map[int]int{1:1,2:4,3:9}
+   	for k,v := range m1{
+   		t.Log(k,v)
+   	}
+   }
+   ```
+
+   
+
+
+
+## 3.3 Map与工厂模式
+
+
+
+### 3.3.1 知识点
+
+1. Map的value可以是方法
+2. 与Dock Type接口方式一起，可以实现单一方法对象的工厂模式
+
+
+
+### 3.3.2 示例
 
 
 

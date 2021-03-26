@@ -542,7 +542,7 @@ outline:none  或者 outline:0
    	margin:15px
    2. 单位为%
    3. 取值为auto
-   	左右外边距可以取值为auto，允许让块级元素水平居中显示。上下边距值auto无效
+   	左右外边距可以取值为auto，允许让块级元素水平居中显示。上下边距值auto无效,需要先指定块级元素的宽度
    4. 取值为负值
    	移动元素
    	左外边距为负数，元素向左移动
@@ -2386,6 +2386,7 @@ position：fixed
    取值：
 
    	1. 具体数值
+
     	2. infinite：无限次播放
 
 6. animation-direction
@@ -2430,6 +2431,7 @@ position：fixed
    取值：
 
    	1. paused：暂停
+   
     	2. running：播放
 
 # 第十八章 CSS优化
