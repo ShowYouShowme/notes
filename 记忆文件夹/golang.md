@@ -685,6 +685,63 @@ func TestIfMultiSet(t *testing.T){
 
 ### 3.3.2 示例
 
+***
+
+1. 工厂模式
+
+   ```go
+   func TestMapWithFunValue(t *testing.T)  {
+   	m := map[int]func(op int)int{}
+   	m[1] = func (op int)int  {
+   		return op
+   	}
+   
+   	m[2] = func (op int)int  {
+   		return op * op
+   	}
+   
+   	m[3] = func (op int)int  {
+   		return op * op *op
+   	}
+   
+   	t.Log(m[1](2), m[2](2),m[3](2))
+   }
+   ```
+
+   
+
+2. 实现set
+
+   ```go
+   // 实现set
+   func TestMapForSet(t *testing.T)  {
+   	mySet := map[int]bool{}
+   	mySet[1] = true
+   
+   	var n = 1
+   	// 判断元素是否存在
+   	if mySet[n]{
+   		t.Logf("%d is existing", n)
+   	}else{
+   		t.Logf("%d is not existing", n)
+   	}
+   
+   	mySet[3] = true
+   	t.Log(len(mySet))
+   
+   	//删除元素
+   	delete(mySet, 1) // 指定key
+   
+   	if mySet[n]{
+   		t.Logf("%d is existing", n)
+   	}else{
+   		t.Logf("%d is not existing", n)
+   	}
+   }
+   ```
+
+   
+
 
 
 
@@ -692,6 +749,79 @@ func TestIfMultiSet(t *testing.T){
 # 第四章 字符串
 
 
+
+## 4.1 差异
+
+1. string 是数据类型，不是引用或者指针
+2. string 是只读的byte slice，len函数可以得到它所包含的byte数
+3. string的 byte 数组可以存放任何数据
+
+
+
+## 4.2 案例
+
+1. 字符串切割和拼接
+
+   ```go
+   func TestStringFn(t *testing.T)  {
+   	s := "A,B,C"
+   	parts := strings.Split(s,",")
+   	for _, part := range parts{
+   		t.Log(part)
+   	}
+   	t.Log(strings.Join(parts, "-"))
+   }
+   ```
+
+2. 字符串转换
+
+   ```go
+   func TestConv(t *testing.T)  {
+   	s := strconv.Itoa(10)
+   	t.Log("str " + s)
+   	if i, err := strconv.Atoi("20"); err ==nil{
+   		t.Log(10 + i)
+   	}
+   }
+   ```
+
+3. 字符串编码
+
+   ```go
+   // string 可以存放任意数据
+   func TestString(t *testing.T)  {
+   	var s string
+   	t.Log(s)
+   
+   	s = "hello"
+   	t.Log(len(s))
+   
+   	s = "\xE4\xB8\xA5" // 存放二进制数据
+   	t.Log(s)
+   	//s[1] = '3' // 错误,string 不可更改
+   
+   	t.Log("==========")
+   	s = "中"
+   	t.Log(len(s))
+   
+   
+   	c := []rune(s) // 转为unicode
+   	t.Log(len(c))
+   
+   	t.Logf("中 unicode %x", c[0])
+   	t.Logf("中 UTF8 %x",s)
+   }
+   
+   func TestStringToRune(t *testing.T)  {
+   	s := "中华人民共和国"
+   	for _, c := range s{
+   		// c 是rune
+   		t.Logf("%c %x", c, c)
+   	}
+   }
+   ```
+
+   
 
 # 第五章 函数
 

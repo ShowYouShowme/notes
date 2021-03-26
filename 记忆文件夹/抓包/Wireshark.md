@@ -57,3 +57,4 @@
 
 # 第二章 抓本地网络包
 
+选中名称为<b style="color:red">Adapter for loopback traffic capture</b>的网卡
