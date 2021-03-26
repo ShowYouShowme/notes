@@ -1150,7 +1150,7 @@ os.Exit 与 panic
 
 ***
 
-1. 以首字母大写来表明可被包外代码访问
+1. 以<b style="color:red">首字母大写</b>来表明可被包外代码访问
 2. 代码package可以和所在目录不一致
 3. 同一目录里的go代码的package要保持一致
 
@@ -1234,7 +1234,147 @@ os.Exit 与 panic
 
 
 
+### 8.1.2 init 方法
+
+***
+
+1. main函数执行前，全部依赖的package的init方法都会被执行
+2. 不同包的init函数按照包导入的依赖关系决定执行顺序
+3. 每个包可以有多个init函数
+4. 包的每个源文件也可以有多个init函数
+
+
+
+代码
+
+```go
+// import 该包的时候会调用两个init函数
+package series
+
+import "fmt"
+
+func init()  {
+	fmt.Println("init1")
+}
+
+func init()  {
+	fmt.Println("init2")
+}
+
+func GetFibonacciSerie(n int) []int {
+	ret := []int{1,1}
+	for i := 2; i < n; i++{
+		ret = append(ret, ret[i - 2] + ret[i - 1])
+	}
+	return ret
+}
+
+func Square(input int)int  {
+	return input * input
+}
+
+```
+
+
+
+
+
+### 8.1.3 使用远程package
+
+***
+
+1. 命令行
+
+   ```shell
+   # 每次都从网络更新
+   go get -u ${URL}
+   
+   # URL 
+   https://github.com/easierway/concurrent_map.git
+   
+   # 去掉前缀 https:// 和 后缀 .git
+   
+   go get -u github.com/easierway/concurrent_map
+   ```
+
+2. 代码示例
+
+   ```go
+   package remote_package
+   
+   import "testing"
+   import cm "github.com/easierway/concurrent_map"  // 重命名包
+   func TestConcurrentMap(t *testing.T)  {
+   	m := cm.CreateConcurrentMap(99)
+   	m.Set(cm.StrKey("key"), 10)
+   	t.Log(m.Get(cm.StrKey("key")))
+   }
+   ```
+
+   
+
+
+
 ## 8.2 依赖管理
+
+
+
+### 8.2.1 依赖问题
+
+***
+
+1. 同一环境下，不同项目无法使用同一包的不同版本
+2. 无法管理对包的特定版本的依赖
+
+
+
+### 8.2.2 vendor 路径
+
+***
+
+1. Go 1.5 release 支持vendor目录
+
+2. 依赖查找次序如下
+
+   > 1. 当前包的vendor目录
+   > 2. 向上级目录查找，直到找到src下的vendor目录
+   > 3. 在GOPATH下面查找依赖包
+   > 4. 在GOROOT目录下查找
+
+
+
+### 8.2.3 依赖管理工具
+
+***
+
+1. godep
+2. glide
+3. dep
+4. <b style="color:red">go mod：官方的包管理器，推荐使用</b>
+
+
+
+
+
+### 8.2.4 go mod 使用
+
+***
+
+1. 设置代理
+
+   ```shell
+   go env -w GOPROXY="https://goproxy.io,direct"
+   ```
+
+2. 开启
+
+   ```shell
+   go env -w GO111MODULE=on
+   ```
+
+3. 
+
+
 
 
 
@@ -1243,6 +1383,23 @@ os.Exit 与 panic
 
 
 ## 9.1 协程机制
+
+```go
+func TestGroutine(t *testing.T)  {
+	for i := 0; i< 10; i++{
+		go func(i int) {
+			fmt.Println(i)
+		}(i) // 传值进函数,不会有问题
+
+		// 下面这种写法会存在竞争,导致结果出错
+		//go func() {
+		//	fmt.Println(i)
+		//}()
+	}
+
+	time.Sleep(time.Microsecond * 50)
+}
+```
 
 
 
