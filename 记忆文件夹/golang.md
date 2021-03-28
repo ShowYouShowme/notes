@@ -1363,6 +1363,7 @@ func Square(input int)int  {
 1. 设置代理
 
    ```shell
+   # 必须要设置,否则包下载容易出错
    go env -w GOPROXY="https://goproxy.io,direct"
    ```
 
@@ -1372,7 +1373,25 @@ func Square(input int)int  {
    go env -w GO111MODULE=on
    ```
 
-3. 
+3. 编辑
+
+   ```shell
+   go mod edit
+   ```
+
+4. 拉取缺少的模块，移除不用的模块
+
+   ```shell
+   go mod tidy
+   ```
+
+5. 初始化
+
+   ```shell
+   go mod init ${name}
+   ```
+
+   
 
 
 
@@ -1405,13 +1424,172 @@ func TestGroutine(t *testing.T)  {
 
 ## 9.2 共享内存并发机制
 
+1. 非线程安全程序
 
+   ```go
+   func TestCounter(t *testing.T) {
+   	counter := 0
+   	for i := 0; i < 5000; i++ {
+   		go func() {
+   			counter++
+   		}()
+   	}
+   	time.Sleep(1 * time.Second)
+   	t.Logf("counter = %d \n", counter)
+   }
+   ```
+
+2. 线程安全
+
+   ```go
+   func TestCounterThreadSafe(t *testing.T) {
+   	counter := 0
+   	var mut sync.Mutex
+   	for i := 0; i < 5000; i++ {
+   		go func() {
+   			defer func() {
+   				mut.Unlock()
+   			}()
+   			mut.Lock()
+   			counter++
+   		}()
+   	}
+   	time.Sleep(1 * time.Second)
+   	t.Logf("counter = %d \n", counter)
+   }
+   ```
+
+3. 线程同步，等待其它线程完成WaitGroup
+
+   ```go
+   func TestCounterWaitGroup(t *testing.T) {
+   	counter := 0
+   	var mut sync.Mutex
+   	var wg sync.WaitGroup
+   	for i := 0; i < 5000; i++ {
+   		wg.Add(1)
+   		go func() {
+   			defer func() {
+   				mut.Unlock()
+   			}()
+   			mut.Lock()
+   			counter++
+   			wg.Done()
+   		}()
+   	}
+   	wg.Wait() // 等待其它线程完成
+   	t.Logf("counter = %d \n", counter)
+   }
+   ```
+
+   
 
 ## 9.3 CSP并发机制
+
+1. 顺序执行
+
+   ```go
+   func service() string {
+   	time.Sleep(time.Microsecond * 50)
+   	return "Done"
+   }
+   
+   func otherTask() {
+   	fmt.Println("working on something else")
+   	time.Sleep(time.Microsecond * 100)
+   	fmt.Println("Task is done")
+   }
+   
+   func TestServie(t *testing.T) {
+   	fmt.Println(service())
+   	otherTask()
+   }
+   ```
+
+2. 异步执行[用channel进行数据交互]
+
+   ```go
+   func service() string {
+   	time.Sleep(time.Microsecond * 50)
+   	return "Done"
+   }
+   
+   func AsyncService() chan string {
+   	retCh := make(chan string)
+   	
+   	go func() {
+   		ret := service()
+   		fmt.Println("return result.")
+   		retCh <- ret // 阻塞,直到对方读取
+   		fmt.Println("service exited.")
+   	}()
+   	return retCh
+   }
+   
+   func otherTask() {
+   	fmt.Println("working on something else")
+   	time.Sleep(time.Microsecond * 1000)
+   	fmt.Println("Task is done.")
+   }
+   
+   func TestAsyncService(t *testing.T)  {
+   	retCh := AsyncService()
+   	otherTask()
+   	fmt.Println(<-retCh) // 阻塞,直到有数据可读
+   	time.Sleep(time.Second * 1)
+   }
+   ```
+
+   
+
+
+
+### 9.3.1 channel
+
+***
+
+1. 普通channel
+
+   > + 写入会阻塞，直到另一方读取
+   > + 读取会阻塞，直到另一方写入
+
+2. buffer channel
+
+   > + 容量未满，可以直接写入，不阻塞；如果容量满了，必须等到接受消息的一方读取一个数据
+   > + 读取数据时，如果channel有数据直接返回；否则阻塞到对方写入数据
 
 
 
 ## 9.4 多路选中和超时
+
+```go
+func service() string {
+	time.Sleep(time.Millisecond * 50)
+	return "Done"
+}
+
+func AsyncService() chan string {
+	retCh := make(chan string)
+	
+	go func() {
+		ret := service()
+		fmt.Println("return result.")
+		retCh <- ret // 阻塞,直到对方读取
+		fmt.Println("service exited.")
+	}()
+	return retCh
+}
+
+// 设置超时
+func TestSelect(t *testing.T) {
+	select {
+	case ret := <-AsyncService():
+		t.Log(ret)
+	case <-time.After(time.Millisecond * 10):
+		t.Error("time out")
+	}
+}
+```
 
 
 
@@ -1419,7 +1597,144 @@ func TestGroutine(t *testing.T)  {
 
 
 
+### 9.5.1 channel的关闭
+
+***
+
+1. <b style="color:red">向关闭的channel发数据，会导致panic</b>
+
+2. <b style="color:green">从已关闭的channel读取数据，返回数据的0值</b>
+
+3. 安全读取
+
+   ```go
+   // ok 为bool值,true表示正常接受,false表示通道关闭
+   v,ok <-ch
+   ```
+
+4. channel的接受者会在channel关闭时，立刻返回，上述ok值为false。可利用此机制进行广播
+
+   示例一
+
+   ```go
+   func dataProducer(ch chan int, wg *sync.WaitGroup) {
+   	go func() {
+   		for i := 0; i < 10; i++ {
+   			ch <- i
+   		}
+   		wg.Done()
+   	}()
+   }
+   
+   func dataReceive(ch chan int, wg *sync.WaitGroup) {
+   	go func() {
+   		// 1-- 有时候不知道Producer放多少数据,如何知道对方已经放完了
+   		// 1.1 -- 用特殊值表示已经放完,比如-1
+   		// 1.2 -- 如果此时有多个Receive,Producer 必须知道Receive的个数
+   		for i := 0; i < 10; i++ {
+   			data := <-ch // 返回0值
+   			fmt.Println(data)
+   		}
+   		wg.Done()
+   	}()
+   }
+   
+   func TestCloseChannel(t *testing.T) {
+   	var wg sync.WaitGroup
+   	ch := make(chan int)
+   	wg.Add(1)
+   	dataProducer(ch, &wg)
+   	wg.Add(1)
+   	dataReceive(ch, &wg)
+   	wg.Wait()
+   }
+   ```
+
+   示例二
+
+   ```go
+   func dataProducer(ch chan int, wg *sync.WaitGroup) {
+   	go func() {
+   		for i := 0; i < 10; i++ {
+   			ch <- i
+   		}
+   		close(ch)
+   		wg.Done()
+   	}()
+   }
+   
+   func dataReceive(ch chan int, wg *sync.WaitGroup) {
+   	go func() {
+   		for  {
+               // 利用ok判断对方是否已经关闭
+   			if data, ok := <-ch; ok{
+   				fmt.Println(data)
+   			} else{
+   				break
+   			}
+   		}
+   		wg.Done()
+   	}()
+   }
+   
+   func TestCloseChannel(t *testing.T) {
+   	var wg sync.WaitGroup
+   	ch := make(chan int)
+   	wg.Add(1)
+   	dataProducer(ch, &wg)
+   	wg.Add(1)
+   	dataReceive(ch, &wg)
+   	wg.Add(1)
+   	dataReceive(ch, &wg)
+   	wg.Wait()
+   }
+   ```
+
+   
+
+
+
 ## 9.6 任务的取消
+
+示例代码
+
+```go
+func isCancelled(cancelChan chan struct{}) bool{
+	select {
+	case <- cancelChan:
+		return true
+	default:
+		return false
+	}
+}
+
+// 只能取消一个
+func cancel_1(cancelChan chan struct{})  {
+	cancelChan <- struct{}{}
+}
+
+// 取消全部
+func cancel_2(cancelChan chan struct{})  {
+	close(cancelChan)
+}
+
+func TestCancel(t *testing.T)  {
+	cancelChan := make(chan struct{},0)
+	for i := 0; i < 5; i++{
+		go func(i int, cancelCh chan struct{}) {
+			for{
+				if isCancelled(cancelCh){
+					break
+				}
+				time.Sleep(time.Millisecond * 5)
+			}
+			fmt.Println(i, "cancelled")
+		}(i ,cancelChan)
+	}
+	cancel_2(cancelChan)
+	time.Sleep(time.Second * 1)
+}
+```
 
 
 
@@ -1427,29 +1742,287 @@ func TestGroutine(t *testing.T)  {
 
 
 
+### 9.7.1 Context
+
+***
+
+1. 根Context：通过context.Background()创建
+
+2. 子Context：context.WithCancel(parentContext)创建
+
+   ```go
+   ctx, cancel := context.WithCancel(context.Background())
+   ```
+
+   
+
+3. 当前Context被取消时，基于它的子context都会被取消
+
+4. 接收取消通知<- ctx.Done()
+
+5. 案例
+
+   ```go
+   func isCancelled(ctx context.Context) bool{
+   	select {
+   	case <- ctx.Done():
+   		return true
+   	default:
+   		return false
+   	}
+   }
+   
+   func TestCancel(t *testing.T)  {
+   	ctx, cancel := context.WithCancel(context.Background())
+   	for i := 0; i < 5; i++{
+   		go func(i int, ctx context.Context) {
+   			for{
+   				if isCancelled(ctx){
+   					break
+   				}
+   				time.Sleep(time.Millisecond * 5)
+   			}
+   			fmt.Println(i, "cancelled")
+   		}(i ,ctx)
+   	}
+   	cancel()
+   	time.Sleep(time.Second * 1)
+   }
+   ```
+
+   
+
 # 第十章 典型并发任务
 
 
 
 ## 10.1 只运行一次
 
+```go
+type Singleton struct {
+
+}
+
+var singleInstance *Singleton
+var once sync.Once
+func GetSingletonObj() *Singleton {
+	once.Do(func() {
+		fmt.Println("Create Obj")
+		singleInstance = new(Singleton)
+	})
+	return singleInstance
+}
+
+func TestGetSingletonObj(t *testing.T)  {
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++{
+		wg.Add(1)
+		go func() {
+			obj := GetSingletonObj()
+			fmt.Printf("%x \n", unsafe.Pointer(obj))
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+```
+
 
 
 ## 10.2 仅需任意任务完成
+
+```go
+func runTask(id int) string {
+	time.Sleep(10 * time.Millisecond)
+	return fmt.Sprintf("the result is from %d", id)
+}
+
+func FirstResponse() string {
+	numOfRunner := 10
+	ch := make(chan string, numOfRunner) // 确保其他协程可以完成
+	for i := 0; i < numOfRunner; i++{
+		go func(i int) {
+			ret := runTask(i)
+			ch <- ret
+		}(i)
+	}
+	return <-ch
+}
+
+func TestFirstResponse(t *testing.T)  {
+	t.Log("Before:", runtime.NumGoroutine())
+	t.Log(FirstResponse())
+	time.Sleep(time.Second * 1)
+	t.Log("After:", runtime.NumGoroutine())
+}
+```
 
 
 
 ## 10.3 所有任务完成
 
+```go
+func runTask(id int) string {
+	time.Sleep(10 * time.Millisecond)
+	return fmt.Sprintf("the result is from %d", id)
+}
+
+func AllResponse() string {
+	numOfRunner := 10
+	ch := make(chan string, numOfRunner)
+	for i := 0; i < numOfRunner; i++{
+		go func(i int) {
+			ret := runTask(i)
+			ch <- ret
+		}(i)
+	}
+
+	finalRet := ""
+	for j := 0; j < numOfRunner; j++{
+		finalRet += <-ch + "\n"
+	}
+	return finalRet
+}
+
+func TestAllResponse(t *testing.T)  {
+	t.Log("Before:", runtime.NumGoroutine())
+	t.Log(AllResponse())
+	time.Sleep(time.Second * 1)
+	t.Log("After:", runtime.NumGoroutine())
+}
+
+```
+
 
 
 ## 10.4 对象池
+
+```go
+type ReuseableObj struct {
+
+}
+
+type ObjPool struct {
+	bufChan chan *ReuseableObj
+}
+
+func NewObjPool(numOfObj int) *ObjPool {
+	objPool := ObjPool{}
+	objPool.bufChan = make(chan *ReuseableObj, numOfObj)
+	for i := 0; i < numOfObj; i++{
+		objPool.bufChan <- &ReuseableObj{}
+	}
+	return &objPool
+}
+
+func (p *ObjPool) GetObj(timeout time.Duration)(*ReuseableObj,error) {
+	select {
+	case ret := <- p.bufChan:
+		return ret, nil
+	case <- time.After(timeout): // 超时控制
+		return nil, errors.New("time out")
+	}
+}
+
+func (p *ObjPool)ReleaseObj(obj *ReuseableObj) error{
+	select {
+	case p.bufChan <- obj:
+		return nil
+	default:
+		return errors.New("overflow")
+	}
+}
+
+func TestObjPool(t *testing.T) {
+	pool := NewObjPool(10)
+
+    // 往满的池子放对象
+	//if err := pool.ReleaseObj(&ReuseableObj{}); err != nil{
+	//	t.Error(err)
+	//}
+    
+    // 多拿一个对象,会导致出错
+	for i := 0; i < 11; i++{
+		if v, err := pool.GetObj(time.Second * 1); err != nil{
+			t.Error(err)
+		}else{
+			fmt.Printf("%T \n", v)
+			//if err := pool.ReleaseObj(v); err != nil{
+			//	t.Error(err)
+			//}
+		}
+	}
+	fmt.Println("Done")
+}
+```
 
 
 
 ## 10.5 sync.pool对象缓存
 
+1. 生命周期受到GC影响，不时候做连接池等，需自己管理生命周期的资源的池化
 
+2. 协程安全，会有锁的开销
+
+3. 适合于通过复用，降低复杂对象的创建和GC代价
+
+4. 示例代码
+
+   示例一
+
+   ```go
+   func TestSyncPool(t *testing.T)  {
+   	pool := &sync.Pool{
+   		New: func() interface{}{
+   			fmt.Println("Create a new object.")
+   			return 100
+   		},
+   	}
+   
+   	v := pool.Get().(int)
+   	fmt.Println(v)
+   	pool.Put(3)
+   
+   	runtime.GC() // 强制GC,会清空Pool
+   	v1, _ := pool.Get().(int)
+   	fmt.Println(v1)
+   	//v2, _ := pool.Get().(int)
+   	//fmt.Println(v2)
+   	//v3, _ := pool.Get().(int)
+   	//fmt.Println(v3)
+   }
+   ```
+
+   示例二
+
+   ```go
+   func TestSyncPoolInMultiGroutine(t *testing.T){
+   	pool := &sync.Pool{
+   		New : func() interface{}{
+   			fmt.Println("Create a new object")
+   			return 10
+   		},
+   	}
+   
+   	pool.Put(100)
+   	pool.Put(100)
+   	pool.Put(100)
+   
+   	var wg sync.WaitGroup
+   	for i := 0; i < 10; i++{
+   		wg.Add(1)
+   		go func(id int) {
+   			fmt.Println(pool.Get())
+   			wg.Done()
+   		}(i)
+   	}
+   	wg.Wait()
+   }
+   ```
+
+   
+
+   
 
 
 
