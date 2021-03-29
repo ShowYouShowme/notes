@@ -2054,6 +2054,40 @@ func TestObjPool(t *testing.T) {
 
 
 
+路由规则
+
+1. URL分为两种
+
+   > 以/结尾，表示子树，可以匹配它的子路径
+   >
+   > 末尾不是/，表示叶子
+
+2. 采用最长匹配原则
+
+3. 如果没有找到任何匹配项，返回404错误
+
+
+
+示例
+
+```go
+func main()  {
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		fmt.Fprintf(writer, "Hello World!")
+	})
+
+	http.HandleFunc("/time", func(writer http.ResponseWriter, request *http.Request) {
+		t := time.Now()
+		timeStr := fmt.Sprintf("\"time\": \"%s\"", t)
+		writer.Write([]byte(timeStr))
+	})
+
+	http.ListenAndServe(":8080", nil)
+}
+```
+
+
+
 ## 14.4 构建RESTful服务
 
 1. 案例一
