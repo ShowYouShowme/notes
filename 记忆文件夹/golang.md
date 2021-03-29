@@ -2042,6 +2042,111 @@ func TestObjPool(t *testing.T) {
 
 
 
+## 14.1 内置JSON解析
+
+
+
+## 14.2 easyjson
+
+
+
+## 14.3 HTTP服务
+
+
+
+## 14.4 构建RESTful服务
+
+1. 案例一
+
+   ```go
+   // 普通HTTP服务
+   package main
+   
+   import (
+   	"fmt"
+   	"github.com/julienschmidt/httprouter"
+   	"log"
+   	"net/http"
+   )
+   
+   func Index(w http.ResponseWriter, r *http.Request,_ httprouter.Params)  {
+   	fmt.Fprint(w, "Welcome!\n")
+   }
+   
+   func Hello(w http.ResponseWriter, r *http.Request,ps httprouter.Params)  {
+   	fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+   }
+   
+   func main()  {
+   	router := httprouter.New()
+   	router.GET("/", Index)
+   	router.GET("/hello/:name", Hello)
+   	log.Fatal(http.ListenAndServe(":8080", router))
+   }
+   
+   ```
+
+2. 案例二
+
+   ```go
+   // RESTful 服务
+   package main
+   
+   import (
+   	"encoding/json"
+   	"fmt"
+   	"github.com/julienschmidt/httprouter"
+   	"log"
+   	"net/http"
+   )
+   
+   type Employee struct {
+   	ID 		string 	`json:"id"`
+   	Name 	string 	`json:"name"`
+   	Age 	int 	`json:"age"`
+   }
+   
+   var employeeDB map[string]*Employee
+   
+   func init()  {
+   	employeeDB = map[string]*Employee{}
+   	employeeDB["Mike"] = &Employee{"e-1", "Mike", 35}
+   	employeeDB["Rose"] = &Employee{"e-2", "Rose", 45}
+   }
+   func Index(w http.ResponseWriter, r *http.Request,_ httprouter.Params)  {
+   	fmt.Fprint(w, "Welcome!\n")
+   }
+   
+   func Hello(w http.ResponseWriter, r *http.Request,ps httprouter.Params)  {
+   	qName := ps.ByName("name")
+   	var ok bool
+   	var info *Employee
+   	var infoJson []byte
+   	var err error
+   
+   	if info, ok = employeeDB[qName]; !ok{
+   		w.Write([]byte("\"error\":\"Not Found\""))
+   		return
+   	}
+   
+   	if infoJson, err = json.Marshal(info); err != nil{
+   		w.Write([]byte(fmt.Sprintf("{\"error\":\"%s\"}", err)))
+   		return
+   	}
+   	w.Write(infoJson)
+   }
+   
+   func main()  {
+   	router := httprouter.New()
+   	router.GET("/", Index)
+   	router.GET("/hello/:name", Hello)
+   	log.Fatal(http.ListenAndServe(":8080", router))
+   }
+   
+   ```
+
+   
+
 # 第十五章 性能调优
 
 
