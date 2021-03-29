@@ -2088,6 +2088,73 @@ func main()  {
 
 
 
+处理GET请求
+
+```go
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		request.ParseForm()
+		if request.Method == "GET" {
+			fmt.Println("method:", request.Method)
+			username := request.Form.Get("username")
+			password := request.Form.Get("password")
+			fmt.Println("username : ", username, ", password :", password)
+		}
+		fmt.Fprintf(writer, "Hello World!")
+	})
+```
+
+
+
+处理POST请求
+
+```go
+	http.HandleFunc("/update_user_info", func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method == "POST" {
+			err := request.ParseForm()
+			if err != nil{
+				log.Fatal("ParseForm error")
+				return
+			}
+			username := request.Form.Get("username")
+			password := request.Form.Get("password")
+			response := fmt.Sprintf("username : %s, password : %s \n", username, password)
+			fmt.Fprintf(writer, response)
+		}
+	})
+
+	type UserInfo struct {
+	Name 	string 	`json:"name"`
+	Age  	int    	`json:"age"`
+	Salary 	int  	`json:"salary"`
+}
+
+	// POST 请求解析JSON
+	http.HandleFunc("/statistics", func(writer http.ResponseWriter, request *http.Request) {
+
+		// 在这里读取数据
+		if request.Method == "POST" {
+			body, err := ioutil.ReadAll(request.Body)
+			u := new(UserInfo)
+			// JSON的序列化
+			err = json.Unmarshal([]byte(body), u)
+			if err != nil{
+				return
+			}
+			println(u.Name, u.Age, u.Salary)
+
+			u.Name = "justin bieber"
+			u.Age = 18
+			// JSON的反序列化
+			if jsonStr , err:= json.Marshal(u); err == nil{
+				fmt.Println(jsonStr)
+				fmt.Fprintf(writer, string(jsonStr))
+			}
+		}
+	})
+```
+
+
+
 ## 14.4 构建RESTful服务
 
 1. 案例一
