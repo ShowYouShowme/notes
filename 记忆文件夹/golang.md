@@ -2254,3 +2254,194 @@ func main()  {
 
 # 第十六章 高可用性服务设计
 
+
+
+
+
+# 第十七章 计时器
+
+
+
+## 17.1 定时执行
+
+1. 示例一
+
+   ```go
+   	ticker := time.NewTicker(time.Second * 3)
+   	for i := range ticker.C{
+   		fmt.Println(i)
+   	}
+   ```
+
+   
+
+2. 示例二
+
+   ```go
+   	t := time.NewTimer(time.Second * 3)
+   	for{
+   		v := <- t.C
+   		fmt.Println("timer running...",v)
+   		t.Reset(time.Second * 3)
+   	}
+   ```
+
+
+
+## 17.2 延迟执行
+
+示例
+
+```go
+	fmt.Println("programme begin...", time.Now())
+	t := time.After(time.Second * 5)
+	fmt.Println("t = ", <-t)
+```
+
+
+
+
+
+## 17.3 睡眠
+
+示例
+
+```go
+	fmt.Println("t1 : ", time.Now())
+	time.Sleep(time.Second * 5)
+	fmt.Println("t2 : ", time.Now())
+```
+
+
+
+
+
+# 第十八章 网络编程
+
+
+
+## 18.1 UDP编程
+
+
+
+### 18.1.1 客户端
+
+***
+
+```go
+package main
+
+import (
+	"fmt"
+	"net"
+	"os"
+	"strconv"
+)
+
+const (
+	SERVER_IP       = "127.0.0.1"
+	SERVER_PORT     = 10006
+	SERVER_RECV_LEN = 10
+)
+func checkError(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+func main() {
+	serverAddr := SERVER_IP + ":" + strconv.Itoa(SERVER_PORT)
+	conn, err := net.Dial("udp", serverAddr) // 连接
+	checkError(err)
+
+	defer conn.Close()
+	for{
+		fmt.Printf("请输入数据:")
+		var input string
+		fmt.Scanln(&input)
+		if _, err = conn.Write([]byte(input)); err != nil{ // 发送数据
+			panic(err)
+		}
+		fmt.Println("Write:", input)
+
+		msg := make([]byte, SERVER_RECV_LEN)
+		if _, err = conn.Read(msg); err != nil{   // 接收数据
+			panic(err)
+		}
+		fmt.Println("Response:", string(msg))
+	}
+
+}
+```
+
+
+
+
+
+### 18.1.2 服务器
+
+***
+
+```go
+package main
+
+import (
+	"fmt"
+	"net"
+	"strconv"
+	"strings"
+)
+
+const (
+	SERVER_IP       = "127.0.0.1"
+	SERVER_PORT     = 10006
+	SERVER_RECV_LEN = 10
+)
+
+func main() {
+	address := SERVER_IP + ":" + strconv.Itoa(SERVER_PORT)
+	var(
+		addr *net.UDPAddr
+		err error
+		conn *net.UDPConn
+		rAddr *net.UDPAddr
+	)
+	// STEP-1 创建地址
+	if addr, err = net.ResolveUDPAddr("udp", address); err != nil{
+		panic(err)
+	}
+
+	// STEP-2 监听端口
+	if conn, err = net.ListenUDP("udp", addr); err != nil{
+		panic(err)
+	}
+
+	defer conn.Close()
+	for {
+		// Here must use make and give the lenth of buffer
+		data := make([]byte, SERVER_RECV_LEN)
+		// STEP-3 接收数据
+		if _, rAddr, err = conn.ReadFromUDP(data); err != nil{
+			panic(err)
+		}
+		strData := string(data)
+		fmt.Println("Received:", strData)
+		upper := strings.ToUpper(strData)
+		// STEP-4 发送数据
+		if _, err = conn.WriteToUDP([]byte(upper), rAddr); err != nil{
+			panic(err)
+		}
+		fmt.Println("Send:", upper)
+	}
+}
+
+```
+
+
+
+
+
+## 18.2 TCP编程
+
+
+
