@@ -111,27 +111,46 @@
    ./configure --prefix=/usr/local/protobuf
    make -j${CPU核心}  # top命令然后按数字1即可显示CPU核心数
    make install
-   # refresh shared library cache.
-   ldcnfig
    ```
-
+   
 3. 设置环境变量
 
-   ```shell
-   vim  /etc/profile
-   # (动态库搜索路径) 
-   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/protobuf/lib
-   # (静态库搜索路径) 
-   export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/protobuf/lib
-   export PATH=$PATH:/usr/local/protobuf/bin
-   echo "/usr/local/protobuf/lib" >> /etc/ld.so.conf
-   ldconfig
-   # 执行命令重新加载环境变量
-   source /etc/profile
+   + 复杂方法
+
+     ```shell
+     vim  /etc/profile
+     # (动态库搜索路径) 
+     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/protobuf/lib
+     # (静态库搜索路径) 
+     export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/protobuf/lib
+     export PATH=$PATH:/usr/local/protobuf/bin
+     echo "/usr/local/protobuf/lib" >> /etc/ld.so.conf
+     ldconfig
+     # 执行命令重新加载环境变量
+     source /etc/profile
+     
+     # 查看版本
+     protoc --version
+     ```
+
+   + <b style="color:red">简单方法[推荐]</b>
+
+     ```shell
+     ## 此方式引入第三方库,编译时不用指定头文件和库路径,运行时也不需要ldconfig加载库
+     
+     # 复制头文件到系统路径
+     cp -rf /usr/local/protobuf/include/* /usr/include
+     
+     # 复制可执行文件到系统路径
+     cp -rf /usr/local/protobuf/bin/* /usr/local/bin
+     
+     # 复制库到系统路径
+     cp -rf /usr/local/protobuf/lib/* /usr/lib64/
+     ```
+
+     
+
    
-   # 查看版本
-   protoc --version
-   ```
 
 4. makefile示例
 
