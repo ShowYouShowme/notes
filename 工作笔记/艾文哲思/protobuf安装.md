@@ -141,4 +141,4 @@
            g++  -std=c++11 main.cpp person.pb.cc -o main -I/usr/local/protobuf/include -lprotobuf -lpthread
    ```
 
-   
+5. 编译时指定路径；编译和安装完成后，把include和lib里面的内容copy到系统对应路径，然后ldconfig刷新缓存就能使用动态库了
