@@ -47,10 +47,10 @@ cmake --help
    ```shell
    ## 第一步 生成项目
    # 生成vs2017 32位项目
-   cmake -G " Visual Studio 15 2017" ../../../source
+   cmake -G "Visual Studio 15 2017" ../../../source
    
    # 生成vs2017 64位项目
-   cmake -G " Visual Studio 15 2017 Win64" ../../../source
+   cmake -G "Visual Studio 15 2017 Win64" ../../../source
    
    ## 第二步 编译
    用VS打开项目，点击生成-->生成解决方案 即可
