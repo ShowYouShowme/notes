@@ -1,15 +1,15 @@
 
 
-# 安装gcc-7.3
+# 安装gcc-10.1
 
 1. 下载源码
 
    ```shell
-   wget http://ftp.gnu.org/gnu/gcc/gcc-7.3.0/gcc-7.3.0.tar.xz
+   wget https://mirrors.aliyun.com/gnu/gcc/gcc-10.1.0/gcc-10.1.0.tar.gz
    
-   tar xvf gcc-7.3.0.tar.xz
+   tar xvf gcc-10.1.0.tar.gz
    
-   cd ./gcc-7.3.0
+   cd ./gcc-10.1.0
    ```
 
 2. 安装gcc和g++
@@ -44,8 +44,8 @@
 
    ```shell
    #STEP-1 卸载之前的gcc
-   yum remove gcc-c++
-   yum remove gcc
+   yum remove gcc-c++ -y
+   yum remove gcc -y
    
    #STEP-2 安装
    make install
