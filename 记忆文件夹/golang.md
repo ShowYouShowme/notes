@@ -1393,6 +1393,79 @@ func Square(input int)int  {
 
    
 
+### 8.2.5 使用项目内的包
+
+***
+
+1. 开启GO111MODULE
+
+   ```shell
+   go env -w GO111MODULE=on
+   ```
+
+2. 初始化项目
+
+   ```shell
+   go mod init ${name}
+   ```
+
+3. 文件架构
+
+   ```shell
+   -----SRC
+   |     |
+   |     |-------src
+   |			   |
+   |			   |-----hello.go
+   |		       |-----main.go
+   |			   |-----signal
+   |			           |
+   |					   |
+   |					   |-------http.go
+   |					   |-------rand.go
+   |					   |-------signal.go
+   |-----go.mod
+   ```
+
+4. 注释
+
+   ```shell
+   # package signal
+   http.go
+   rand.go
+   signal.go
+   
+   # package main
+   hello.go
+   main.go
+   ```
+
+5. main.go 引用signal包
+
+   ```go
+   // save-to-disk 是go.mod 内 module的名称
+   import "save-to-disk/src/signal"
+   ```
+
+6. 编译
+
+   ```shell
+   # STEP-1 进入源码目录
+   cd ../src
+   
+   # STEP-2 编译
+   go build
+   或者
+   go build .
+   
+   # 不要这样编译,如果有多个文件都是package main,会报错
+   go build main.go 
+   ```
+
+   
+
+
+
 
 
 
