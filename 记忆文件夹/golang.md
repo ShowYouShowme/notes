@@ -222,7 +222,8 @@ c := 3 // 自动类型推导
 3. 示例
 
    ```go
-   // go test -v type_test.go
+   // go test -v .
+   // 或者 go test -v
    package type_test
    
    import "testing"
@@ -2100,6 +2101,201 @@ func TestObjPool(t *testing.T) {
 
 
 # 第十一章 测试
+
+
+
+## 11.1 单元测试
+
+
+
+
+
+内置单元测试框架
+
+1. Fail，Error：该测试失败，该测试继续执行，其它测试继续执行
+
+   ```go
+   func TestErrorInCode(t *testing.T) {
+   	fmt.Println("Start")
+   	t.Error("Error")
+   	fmt.Println("End")
+   }
+   ```
+
+   
+
+2. FailNow，Fatal：该测试失败，该测试终止，其它测试继续执行
+
+   ```go
+   func TestFailInCode(t *testing.T) {
+   	fmt.Println("Start")
+   	t.Fatal("Error")
+   	fmt.Println("End")
+   }
+   ```
+
+   
+
+3. 代码覆盖率
+
+   ```shell
+   # 不需要指定文件
+   go test -v -cover
+   ```
+
+4. 断言
+
+   ```shell
+   https://github.com/stretchr/testify/
+   ```
+
+   示例代码
+
+   ```go
+   // 不使用断言
+   func TestSquare(t *testing.T) {
+   	inputs := [...]int{1,2,3}
+   	expected := [...]int{1,4,19}
+   	for i:=0; i < len(inputs); i++{
+   		ret := square(inputs[i])
+   		if ret != expected[i]{
+   			t.Errorf("inputs is %d, the expected is %d, the actual %d",inputs[i], expected[i], ret)
+   		}
+   	}
+   }
+   ```
+
+   ```go
+   // 使用断言
+   import (
+   	"fmt"
+   	"github.com/stretchr/testify/assert"
+   	"testing"
+   )
+   func TestSquareWithAssert(t *testing.T) {
+   	inputs := [...]int{1,2,3}
+   	expected := [...]int{1,4,19}
+   	for i:=0; i < len(inputs); i++{
+   		ret := square(inputs[i])
+   		assert.Equal(t, expected[i], ret)
+   	}
+   }
+   ```
+
+   
+
+
+
+## 11.2 Benchmark
+
+1. 示例代码
+
+   ```go
+   func BenchmarkConcatStringByAdd(b *testing.B) {
+   
+   	elems := []string{"1","2","3","4","5"}
+   	b.ResetTimer()
+   	for i := 0; i < b.N; i++ {
+   		ret := ""
+   		for _, elem := range elems{
+   			ret += elem
+   		}
+   	}
+   	b.StopTimer()
+   }
+   
+   func BenchmarkConcatStringByBytesBuffer(b *testing.B) {
+   	elems := []string{"1","2","3","4","5"}
+   	b.ResetTimer()
+   	for i := 0; i < b.N; i++ {
+   		var buf bytes.Buffer
+   		for _, elem := range elems{
+   			buf.WriteString(elem)
+   		}
+   	}
+   	b.StopTimer()
+   }
+   ```
+
+2. 运行性能测试
+
+   ```shell
+   go test -bench=.
+   
+   # 显示内存分配情况
+   go test -bench=. -benchmem
+   ```
+
+3. 结果说明
+
+   ```shell
+   BenchmarkConcatStringByAdd-6             9460536               127.3 ns/op
+   BenchmarkConcatStringByBytesBuffer-6    20035194                59.75 ns/op
+   
+   # -6 CPU核心数
+   # 9460536               127.3 ns/op
+   # 执行9460536次,每次花费127.3 ns
+   ```
+
+   
+
+
+
+## 11.3 BDD
+
+1. 框架地址
+
+   ```shell
+   # BDD 是一个测试框架
+   https://github.com/smartystreets/goconvey.git
+   ```
+
+2. 安装
+
+   ```shell
+   go get -u github.com/smartystreets/goconvey
+   ```
+
+3. 启动WEB UI
+
+   ```shell
+   $GOPATH/bin/goconvey
+   ```
+
+4. 测试代码
+
+   ```go
+   package test
+   
+   import (
+   	. "github.com/smartystreets/goconvey/convey"
+   	"testing"
+   )
+   func TestSpec(t *testing.T) {
+   	Convey("Given 2 even numbers", t, func(){
+   		a := 2
+   		b := 4
+   
+   		Convey("When add the two numbers", func(){
+   			c := a + b
+   
+   			Convey("Then the result is still even", func() {
+   				So(c % 2, ShouldEqual, 0)
+   			})
+   		})
+   	})
+   }
+   ```
+
+5. 运行测试
+
+   ```shell
+   go test -v
+   ```
+
+   
+
+
 
 
 
