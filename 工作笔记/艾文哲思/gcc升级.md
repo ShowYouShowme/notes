@@ -50,8 +50,17 @@
    #STEP-2 安装
    make install
    
-   #STEP-3 重新登录
+   #STEP-3 删除旧的so
+   rm -f /usr/lib64/libstdc++.so*
+   rm -f /usr/local/lib64/libstdc++.so.6.0.28-gdb.py
+
+   # 重新加载动态库 新的C++ so放/usr/local/lib64
+   vim /etc/ld.so.conf
+   /usr/local/lib64
+   ldconfig
+   
+   #STEP-4 重新登录
    su - root
    ```
-
+   
    
