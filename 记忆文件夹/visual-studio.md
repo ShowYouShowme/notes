@@ -30,7 +30,7 @@
 
 ## 2.2 将开源代码解压至共享目录
 
-![](D:\notes\记忆文件夹\img\vs-d-1.png)
+![](img\vs-d-1.png)
 
 
 
@@ -38,25 +38,25 @@
 
 ## 2.3 vs创建Linux项目，导入项目
 
-![](D:\notes\记忆文件夹\img\vs-d-2.png)
+![](img\vs-d-2.png)
 
 
 
 ## 2.4 配置在Linux下编译
 
-![](D:\notes\记忆文件夹\img\vs-d-3.png)
+![](img\vs-d-3.png)
 
 
 
 ## 2.5 配置源文件路径
 
-![](D:\notes\记忆文件夹\img\vs-d-4.png)
+![](img\vs-d-4.png)
 
 
 
 ## 2.6 设置文件夹映射
 
-![](D:\notes\记忆文件夹\img\vs-d-5.png)
+![](img\vs-d-5.png)
 
 
 
@@ -64,7 +64,7 @@
 
 ## 2.7 配置构建和调试
 
-![](D:\notes\记忆文件夹\img\vs-d-6.png)
+![](img\vs-d-6.png)
 
 
 
@@ -72,13 +72,13 @@
 
 ## 2.8 构建项目
 
-![](D:\notes\记忆文件夹\img\vs-d-7.png)
+![](img\vs-d-7.png)
 
 
 
 ## 2.9 配置调试信息
 
-![](D:\notes\记忆文件夹\img\vs-d-8.png)
+![](img\vs-d-8.png)
 
 
 
