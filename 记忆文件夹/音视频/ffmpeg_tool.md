@@ -109,6 +109,10 @@ FFmpeg 的命令行参数非常多，可以分成五个部分。
 > -i input.mp4 \ # 输入文件
 > -c:v libvpx-vp9 -c:a libvorbis \ # 输出文件参数
 > output.webm # 输出文件
+> 
+> 
+> # 转换编码为VP8
+> ffmpeg i output.mp4 -c:v libvpx output.webm
 > ```
 
 上面的命令将 mp4 文件转成 webm 文件，这两个都是容器格式。输入的 mp4 文件的音频编码格式是 aac，视频编码格式是 H.264；输出的 webm 文件的视频编码格式是 VP9，音频格式是 Vorbis。
@@ -202,10 +206,7 @@ FFmpeg 常用的命令行参数如下。
 有时，需要从视频里面提取音频（demuxing），可以像下面这样写。
 
 > ```bash
-> $ ffmpeg \
-> -i input.mp4 \
-> -vn -c:a copy \
-> output.aac
+> $ ffmpeg -i input.mp4 -vn -c:a copy output.aac
 > ```
 
 上面例子中，`-vn`表示去掉视频，`-c:a copy`表示不改变音频编码，直接拷贝。
@@ -215,9 +216,7 @@ FFmpeg 常用的命令行参数如下。
 添加音轨（muxing）指的是，将外部音频加入视频，比如添加背景音乐或旁白。
 
 > ```bash
-> $ ffmpeg \
-> -i input.aac -i input.mp4 \
-> output.mp4
+> $ ffmpeg -i input.aac -i input.mp4 output.mp4
 > ```
 
 上面例子中，有音频和视频两个输入文件，FFmpeg 会将它们合成为一个文件。
@@ -327,6 +326,26 @@ FFmpeg 常用的命令行参数如下。
    
    # 或者
    ffmpeg -re -i output.mp4 -vcodec copy -f rtp rtp://127.0.0.1:6666
+   ```
+
+   
+
+
+
+#### 4.10.3  推送音频流
+
+***
+
+1. 转码为opus
+
+   ```shell
+   ffmpeg -i output.aac -vn -c:a libopus output.ogg
+   ```
+
+2. 推流
+
+   ```shell
+   ffmpeg -re -i output.ogg -c copy -f rtp rtp://127.0.0.1:5004
    ```
 
    
