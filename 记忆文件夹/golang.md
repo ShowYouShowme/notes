@@ -2303,6 +2303,237 @@ func TestObjPool(t *testing.T) {
 
 
 
+## 12.1 反射编程
+
+1. 基本代码
+
+   ```go
+   func CheckType(v interface{})  {
+   	t := reflect.TypeOf(v)
+   	switch t.Kind() {
+   	case reflect.Float32, reflect.Float64:
+   		fmt.Println("Float")
+   	case reflect.Int,reflect.Int32,reflect.Int64:
+   		fmt.Println("integer")
+   	default:
+   		fmt.Println("Unknown",t)
+   	}
+   }
+   
+   func TestBasicType()  {
+   	var f float64 = 12
+   	CheckType(f)
+   }
+   
+   func TestTypeAndValue()  {
+   	var f int64 = 10
+   	fmt.Println(reflect.TypeOf(f), reflect.ValueOf(f))
+   	fmt.Println(reflect.ValueOf(f).Type())
+   }
+   ```
+
+2. 利用反射访问对象成员和方法
+
+   ```go
+   type Employee struct{
+   	EmployeeID string
+   	Name string `format:"normal"`
+   	Age  int
+   }
+   
+   func (e *Employee)UpdateAge(newVal int)  {
+   	e.Age = newVal
+   }
+   func main()  {
+   	e := &Employee{"1","Mike",30}
+   	v := reflect.ValueOf(*e).FieldByName("Name") // 通过名称访问成员
+   	fmt.Printf("%v, %T", v,v)
+   
+   	if nameField, ok := reflect.TypeOf(*e).FieldByName("Name"); !ok{
+   		fmt.Println("failed to get Name's field.")
+   	}else{
+   		fmt.Println("Tag:format", nameField.Tag.Get("format"))
+   	}
+   
+   // 通过名称调用成员函数
+   reflect.ValueOf(e).MethodByName("UpdateAge").Call([]reflect.Value{reflect.ValueOf(3)})
+   	fmt.Println("Update Age : ", e)
+   }
+   ```
+
+   
+
+## 12.2 万能程序
+
+
+
+### 12.2.1 比较切片和map
+
+***
+
+```go
+func TestDeepEqual(t *testing.T)  {
+	a := map[int]string{1:"one", 2:"two", 3:"three"}
+	b := map[int]string{1:"one", 2:"two", 4:"three"}
+
+	//t.Log(a == b)
+	t.Log(reflect.DeepEqual(a,b))
+
+	s1 := []int{1,2,3}
+	s2 := []int{1,2,3}
+	s3 := []int{2,3,1}
+	t.Log("s1 == s2 : ", reflect.DeepEqual(s1, s2))
+	t.Log("s1 == s3 : ", reflect.DeepEqual(s1, s3))
+}
+```
+
+
+
+
+
+### 12.2.1 反射的特点
+
+***
+
+1. 提高程序灵活性
+2. 降低程序可读性
+3. 降低程序的性能
+
+
+
+通过反射设置不同类的对象的相同属性
+
+```go
+type Employee struct {
+	EmployeeID string
+	Name string `format:"normal"`
+	Age  int
+}
+
+type Customer struct {
+	CookieID string
+	Name     string
+	Age      int
+}
+
+func fillBySettings(st interface{}, settings map[string]interface{}) error  {
+	if reflect.TypeOf(st).Kind() != reflect.Ptr{
+		return errors.New("not ptr")
+	}
+	
+	if reflect.TypeOf(st).Elem().Kind() != reflect.Struct{
+		return errors.New("not struct")
+	}
+
+	var (
+		field reflect.StructField
+		exist bool
+	)
+	for k,v := range settings{
+		if field, exist = reflect.TypeOf(st).Elem().FieldByName(k); exist == false{
+			continue
+		}
+
+		if reflect.TypeOf(v) != field.Type{
+			continue
+		}
+
+		// 设置值
+		reflect.ValueOf(st).Elem().FieldByName(k).Set(reflect.ValueOf(v))
+	}
+	fmt.Println("success")
+	return nil
+}
+
+func TestFillNameAndAge(t *testing.T)  {
+	m := map[string]interface{}{"Name":"nash", "Age":28}
+	e := new(Employee)
+	fillBySettings(e, m)
+
+	fmt.Println(e)
+
+	c := &Customer{}
+	fillBySettings(c, m)
+	fmt.Println(c)
+}
+```
+
+
+
+## 12.3 不安全编程
+
+
+
+1. 类型转换
+
+   ```go
+   func TestUnsafe(t *testing.T)  {
+   	i := 10
+   	f := *(*float64)(unsafe.Pointer(&i))
+   	t.Log(unsafe.Pointer(&i))
+   	t.Log(f)
+   }
+   ```
+
+2. 别名之间类型转换
+
+   ```go
+   type MyInt int
+   
+   func TestConvert(t *testing.T)  {
+   	a := []int{1,2,3,4}
+   	b := *(*[]MyInt)(unsafe.Pointer(&a))
+   	t.Log(b)
+   }
+   ```
+
+3. 共享buffer实现线程安全
+
+   ```go
+   func TestAtomic(t *testing.T)  {
+   	var shareBufPtr unsafe.Pointer
+   
+   	writeDataFun := func() {
+   		data := []int{}
+   		for i := 0; i < 100; i++ {
+   			data = append(data, i)
+   		}
+   		atomic.StorePointer(&shareBufPtr, unsafe.Pointer(&data))
+   	}
+   
+   	readDataFun := func() {
+   		data := atomic.LoadPointer(&shareBufPtr)
+   		fmt.Println(data, (*[]int)(data))
+   	}
+   
+   	var wg sync.WaitGroup
+   
+   	writeDataFun()
+   	for i := 0; i < 10; i++{
+   		wg.Add(1)
+   		go func() {
+   			for i := 0; i < 10; i++{
+   				writeDataFun()
+   				time.Sleep(time.Millisecond * 100)
+   			}
+   			wg.Done()
+   		}()
+   
+   		wg.Add(1)
+   		go func() {
+   			for i := 0; i< 10; i++{
+   				readDataFun()
+   				time.Sleep(time.Millisecond * 100)
+   			}
+   			wg.Done()
+   		}()
+   	}
+       wg.Wait()
+   }
+   ```
+
+   
+
 # 第十三章 常见架构模式的实现
 
 
