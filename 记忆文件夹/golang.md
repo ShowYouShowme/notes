@@ -2521,7 +2521,47 @@ func main()  {
 
 
 
+## 15.1 性能分析工具
+
+
+
+## 15.2 性能调优示例
+
+
+
+## 15.3 别让性能锁住
+
+
+
+
+
+## 15.4 GC友好代码
+
+
+
+
+
 # 第十六章 高可用性服务设计
+
+
+
+## 16.1 高效字符串连接
+
+
+
+
+
+## 16.2 面向错误的设计
+
+
+
+
+
+## 16.3 面向恢复的设计
+
+
+
+## 16.4 Chaos Engineering
 
 
 
@@ -2713,4 +2753,31 @@ func main() {
 ## 18.2 TCP编程
 
 
+
+
+
+
+
+# 第十九章 语言特性
+
+
+
+## 19.1 类型断言
+
+```go
+func assertType(param interface{}){
+	str , ok:= param.(string) // 类型断言
+	if ok == false{
+		fmt.Println("param is not string")
+		return
+	}
+	fmt.Println("param : ", str)
+}
+
+func TestTypeAssert(t *testing.T) {
+	assertType(1)
+	assertType([]int{1,2,6})
+	assertType("justin")
+}
+```
 
