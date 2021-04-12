@@ -2756,6 +2756,184 @@ func main()  {
 
 
 
+### 一、准备工作
+
+***
+
++ 安装graphviz
++ 将$GOPATH/bin 加入$PATH
++ 安装go-torch
+
+
+
+
+
+### 二、支持多种profile
+
+***
+
++ go help testflag
++ url
+
+
+
+### 三、案例
+
+***
+
+1. 代码
+
+   ```go
+   package main
+   
+   import (
+   	"log"
+   	"math/rand"
+   	"os"
+   	"runtime/pprof"
+   	"time"
+   )
+   
+   const (
+   	col = 10000
+   	row = 10000
+   )
+   
+   func fillMatrix(m *[row][col]int) {
+   	s := rand.New(rand.NewSource(time.Now().UnixNano()))
+   
+   	for i := 0; i < row; i++ {
+   		for j := 0; j < col; j++ {
+   			m[i][j] = s.Intn(100000)
+   		}
+   	}
+   }
+   
+   func calculate(m *[row][col]int) {
+   	for i := 0; i < row; i++ {
+   		tmp := 0
+   		for j := 0; j < col; j++ {
+   			tmp += m[i][j]
+   		}
+   	}
+   }
+   
+   func main()  {
+   
+   	// CPU profile
+   	f, err := os.Create("cpu.prof")
+   	if err != nil{
+   		log.Fatal("could not create CPU profile:", err)
+   	}
+   
+   	if err := pprof.StartCPUProfile(f); err != nil{
+   		log.Fatal("could not start CPU profile:", err)
+   	}
+   
+   	defer pprof.StopCPUProfile()
+   
+   	x := [row][col]int{}
+   	fillMatrix(&x)
+   	calculate(&x)
+       
+   	f1, err := os.Create("mem.prof")
+   	if err != nil{
+   		log.Fatal("Could not create memory profile:", err)
+   	}
+   	if err := pprof.WriteHeapProfile(f1); err != nil{
+   		log.Fatal("could not write memory profile :", err)
+   	}
+   
+   	f1.Close()
+   
+   	f2, err := os.Create("goroutine.prof")
+   	if err != nil{
+   		log.Fatal("could not create goroutine prof:", err)
+   	}
+   
+   	if gProf := pprof.Lookup("goroutine"); gProf == nil{
+   		log.Fatal("could not write goroutine profile:")
+   	}else{
+   		gProf.WriteTo(f2,0)
+   	}
+   	f2.Close()
+   }
+   ```
+
+2. 性能分析命令
+
+   1. 查看cpu情况
+
+      ```shell
+      # STEP-1 载入prof文件
+      
+      go tool pprof ${app} ${prof}
+      go tool pprof performance.exe cpu.prof
+      
+      # STEP-2 查看统计信息
+      top
+      
+      # STEP-3 查看指定函数详情
+      list fillMatrix
+      
+      # STEP-4  退出
+      exit
+      ```
+
+   2. 查看内存
+
+      ```shell
+      # STEP-1 载入prof文件
+      
+      go tool pprof performance.exe mem.prof
+      
+      # STEP-2 查看统计信息
+      top
+      
+      # STEP-3 查看指定函数详情
+      list main
+      
+      # STEP-4  退出
+      exit
+      ```
+
+   3. 查看协程
+
+   4. 通过http输出profile
+
+      1. 打开网页查看
+
+         ```shell
+         http://${host}:${port}/debug/pprof/
+         ```
+
+      2. 通过命令行查看
+
+         ```shell
+         # STEP-1
+         go tool pprof http://127.0.0.1:8081/debug/pprof/profile
+         
+         # STEP-2 
+         top
+         
+         # STEP-3 按累计时间排序
+         top -cum 
+         
+         # STEP-4 查看某个函数详情
+          list GetFibonacciSerie
+          
+         # STEP-5 退出
+         exit
+         ```
+
+         
+
+      
+
+      
+
+   
+
 ## 15.2 性能调优示例
 
 
