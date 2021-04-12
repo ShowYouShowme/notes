@@ -1636,6 +1636,13 @@ func TestGroutine(t *testing.T)  {
 
 ## 9.4 多路选中和超时
 
+select 语法
+
+1. 如果多个case都可以运行，随机选中一个执行
+2. 如果没有case可以执行
+   + 存在default，执行default
+   + 不存在default，阻塞
+
 ```go
 func service() string {
 	time.Sleep(time.Millisecond * 50)
