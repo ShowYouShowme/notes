@@ -940,15 +940,358 @@ func TestVarParam(t *testing.T)  {
 
 
 
+### 6.1.1  数据封装
+
+***
+
+```go
+type Employee struct{
+	Id string
+	Name string
+	Age int
+}
+
+func main()  {
+	e := Employee{"0", "Bob", 20}
+	e1 := Employee{Name: "Mike", Age: 30}
+	e2 := new(Employee) // 等价于 e2 := &Employee{}
+	e2.Id = "2"
+	e2.Name = "Rose"
+
+	fmt.Println(e)
+	fmt.Println(e1)
+	fmt.Println(e1.Id)
+	fmt.Println(e2)
+	fmt.Printf("e is %T \n", e) // 输出类型
+	fmt.Printf("e2 is %T \n", e2)
+}
+```
+
+
+
+
+
+
+
+### 6.1.2 行为定义
+
+***
+
+1. 方式一
+
+   ```go
+   // 会有对象copy,不建议使用
+   func (e Employee)String() string {
+   	return fmt.Sprintf("ID:%s-Name:%s-Age:%d", e.Id, e.Name, e.Age)
+   }
+   ```
+
+   
+
+2. 方式二
+
+   ```go
+   // 不存在对象COPY
+   func (e *Employee)String() string {
+   	fmt.Printf("Address is %x \n", unsafe.Pointer(&e.Name))
+   	return fmt.Sprintf("...ID:%s-Name:%s-Age:%d", e.Id, e.Name, e.Age)
+   }
+   ```
+
+   
+
 ## 6.2 go语言的相关接口
+
+
+
+### 接口实现
+
+***
+
+1. 接口为非入侵性，<b style="color:red">实现不依赖于接口定义</b>
+
+2. 接口定义可以包含在接口使用者包内
+
+3. 示例代码
+
+   ```go
+   type Programmer interface {
+   	WriteHelloWorld() string
+   }
+   
+   type GoProgrammer struct{
+   
+   }
+   
+   func (self *GoProgrammer) WriteHelloWorld() string {
+   	return "fmt.Println(\"Hello World!\")"
+   }
+   
+   func TestClient(t *testing.T) {
+   	var p Programmer = new(GoProgrammer)
+   	t.Log(p.WriteHelloWorld())
+   }
+   ```
+
+
+
+### 自定义类型
+
+***
+
+```go
+type IntConv func(op int) int
+
+func timeSpent(inner IntConv)IntConv  {
+	return func(op int) int {
+		start := time.Now()
+		ret := inner(op)
+		fmt.Println("time spent:", time.Since(start).Seconds())
+		return ret
+	}
+}
+
+func f1(param int)int{
+	for i := 0; i < param; i++{
+		time.Sleep(time.Second)
+		fmt.Println(".")
+	}
+	return param
+}
+
+func TestFunWrap(t *testing.T) {
+	timeSpent(f1)(3)
+}
+```
 
 
 
 ## 6.3 扩展和复用
 
+1. 组合
+
+   ```go
+   type Pet struct{
+   
+   }
+   
+   func (this *Pet)Speak()  {
+   	fmt.Println("...")
+   }
+   
+   func (this *Pet)SpeakTo(host string)  {
+   	this.Speak()
+   	fmt.Println(" ", host)
+   }
+   
+   // 组合
+   type Dog struct {
+   	p *Pet
+   }
+   
+   func (this *Dog)Speak()  {
+   	this.p.Speak()
+   }
+   
+   func (this *Dog)SpeakTo(host string)  {
+   	this.p.SpeakTo(host)
+   }
+   
+   func TestDog(t *testing.T) {
+   	dog := new(Dog)
+   	dog.SpeakTo("Chao")
+   }
+   ```
+
+2. 不支持override
+
+3. 匿名嵌套
+
+   ```go
+   type Pet struct{
+   
+   }
+   
+   func (this *Pet)Speak()  {
+   	fmt.Println("...")
+   }
+   
+   func (this *Pet)SpeakTo(host string)  {
+   	this.Speak()
+   	fmt.Println(" ", host)
+   }
+   
+   // 1-- 匿名嵌套
+   // 2-- 组合
+   type Dog struct {
+   	Pet
+   }
+   
+   // 尝试override Pet 的函数,失败
+   func (this *Dog)Speak()  {
+   	fmt.Println("Wang!")
+   }
+   
+   func TestDog(t *testing.T) {
+   	dog := new(Dog)
+   	dog.SpeakTo("Chao")
+   }
+   ```
+
+   
+
+4. 不支持里氏替换
+
+   ```go
+   // Dog 和 Pet 都是struct,不能进行类型转换
+   // 下面的代码是错误的
+   var dog Pet := new(Dog)
+   ```
+
+   
+
 
 
 ## 6.4 多态
+
+
+
+### 多态
+
+***
+
+```go
+type Code string
+
+type Programmer interface {
+	WriteHelloWorld() Code
+}
+
+type GoProgrammer struct {
+}
+
+func (this *GoProgrammer) WriteHelloWorld() Code {
+	return "fmt.Println(\"Hello World!\")"
+}
+
+type JavaProgrammer struct {
+
+}
+
+func (this *JavaProgrammer) WriteHelloWorld() Code {
+	return "System.out.Println(\"Hello World!\")"
+}
+
+func writeFirstProgram(p Programmer)  {
+	// %v 使用默认类型输出 , 不同的数据类型不一样
+	fmt.Printf("%T %v\n", p, p.WriteHelloWorld())
+}
+
+func TestPolymorphism(t *testing.T)  {
+	goProg := new(GoProgrammer)
+	javaProg := new(JavaProgrammer)
+	writeFirstProgram(goProg)
+	writeFirstProgram(javaProg)
+}
+```
+
+
+
+
+
+### 空接口与类型断言
+
+***
+
+1. 空接口可以表示任何类型
+
+2. 通过断言将空接口转换为制定类型
+
+3. 示例代码
+
+   ```go
+   func DoSomething(p interface{})  {
+   	if i, ok := p.(int); ok{
+   		fmt.Println("Integer", i)
+   		return
+   	}
+   
+   	if s, ok :=p.(string);ok{
+   		fmt.Println("string", s)
+   		return
+   	}
+   
+   	fmt.Println("unknown Type")
+   }
+   
+   func TestEmptyInterfaceAssertion(t *testing.T) {
+   	DoSomething(10)
+   	DoSomething("123")
+   	DoSomething(false)
+   }
+   ```
+
+   示例二
+
+   ```go
+   func DoSomething(p interface{})  {
+   	switch v:=p.(type) {
+   	case int:
+   		fmt.Println("Integer",v)
+   	case string:
+   		fmt.Println("string",v)
+   	default:
+   		fmt.Println("unknown type")
+   	}
+   }
+   
+   func TestEmptyInterfaceAssertion(t *testing.T) {
+   	DoSomething(10)
+   	DoSomething("123")
+   	DoSomething(false)
+   }
+   ```
+
+   
+
+### 接口实践
+
+***
+
+1. 倾向于使用小的接口定义，很多接口只包含一个方法
+
+   ```go
+   type Reader interface{
+       Read(p []byte)(n int, err error)
+   }
+   
+   type Writer interface{
+       Write(p []byte)(n int, err error)
+   }
+   ```
+
+   
+
+2. 较大的接口，由多个小接口组合而成
+
+   ```go
+   type ReadWriter interface{
+       Reader
+       Writer
+   }
+   ```
+
+   
+
+3. 只依赖于必要功能的最小接口
+
+   ```go
+   func StoreData(reader Reader)error{
+       //...
+   }
+   ```
+
+   
 
 
 
@@ -1392,6 +1735,12 @@ func Square(input int)int  {
    go mod init ${name}
    ```
 
+6. 删除下载的模块缓存
+
+   ```shell
+   go clean --modcache
+   ```
+
    
 
 ### 8.2.5 使用项目内的包
@@ -1451,6 +1800,8 @@ func Square(input int)int  {
 6. 编译
 
    ```shell
+   ## 必须有文件package 为main,并且存在main函数
+   
    # STEP-1 进入源码目录
    cd ../src
    
@@ -1460,9 +1811,9 @@ func Square(input int)int  {
    go build .
    
    # 不要这样编译,如果有多个文件都是package main,会报错
-   go build main.go 
+go build main.go 
    ```
-
+   
    
 
 

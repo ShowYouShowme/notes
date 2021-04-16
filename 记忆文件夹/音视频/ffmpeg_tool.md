@@ -348,7 +348,16 @@ FFmpeg 常用的命令行参数如下。
    ffmpeg -re -i output.ogg -c copy -f rtp rtp://127.0.0.1:5004
    ```
 
-   
+
+
+
+## 4.11 提取h264裸流
+
+```shell
+ffmpeg.exe -i output.mp4 -vcodec copy -bsf h264_mp4toannexb -f h264 douyin.h264
+```
+
+
 
 
 
