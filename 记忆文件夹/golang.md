@@ -2910,6 +2910,7 @@ func TestFillNameAndAge(t *testing.T)  {
 1. 安装
 
    ```shell
+   # WIN 上可通过everything 查找 easyjson的路径
    go get -u github.com/mailru/easyjson/...
    ```
 
@@ -3376,9 +3377,377 @@ func main()  {
 
 
 
+### 通过bench产生profile
+
+***
+
+1. cpu profile
+
+   ```shell
+   # 产生cpu profile
+   go test -bench=. -cpuprofile=cpu.prof
+   
+   go tool pprof cpu.prof
+   ```
+
+2. mem profile
+
+   ```shell
+   go test -bench=. -memprofile=mem.prof
+   
+   go tool pprof mem.prof
+   ```
+
+3. 调优代码
+
+   + 代码目录
+
+     ```shell
+     ---models
+     |    |
+     |    |------structs.go
+     |
+     |-----optimization_test.go
+     |
+     |-----optmization.go
+     ```
+
+   + structs.go
+
+     ```go
+     package models
+     
+     type Request struct {
+     	TransactionID string `json:"transaction_id"`
+     	PayLoad       []int  `json:"payload"`
+     }
+     
+     type Response struct {
+     	TransactionID string `json:"transaction_id"`
+     	Expression    string `json:"exp"`
+     }
+     
+     ```
+
+   + optimization_test.go
+
+     ```go
+     package profiling
+     
+     import "testing"
+     
+     func TestCreateRequest(t *testing.T) {
+     	str := createRequest()
+     	t.Log(str)
+     }
+     
+     func TestProcessRequest(t *testing.T) {
+     	reqs := []string{}
+     	reqs = append(reqs, createRequest())
+     	reps := processRequest(reqs)
+     	t.Log(reps[0])
+     }
+     
+     func BenchmarkProcessRequest(b *testing.B) {
+     
+     	reqs := []string{}
+     	reqs = append(reqs, createRequest())
+     	b.ResetTimer()
+     	for i := 0; i < b.N; i++ {
+     		_ = processRequest(reqs)
+     	}
+     	b.StopTimer()
+     
+     }
+     ```
+
+   + optmization.go
+
+     ```go
+     package profiling
+     
+     import (
+     	"demo_01/src/models"
+     	"encoding/json"
+     	"strconv"
+     )
+     
+     func createRequest() string {
+     	payload := make([]int, 100, 100)
+     	for i := 0; i < 100; i++ {
+     		payload[i] = i
+     	}
+     	req := models.Request{"demo_transaction", payload}
+     	v, err := json.Marshal(&req)
+     	if err != nil {
+     		panic(err)
+     	}
+     	return string(v)
+     }
+     
+     func processRequest(reqs []string) []string {
+     	reps := []string{}
+     	for _, req := range reqs {
+     		reqObj := &models.Request{}
+     		json.Unmarshal([]byte(req), reqObj)
+     		ret := ""
+     		for _, e := range reqObj.PayLoad {
+     			ret += strconv.Itoa(e) + ","
+     		}
+     		repObj := &models.Response{reqObj.TransactionID, ret}
+     		repJson, err := json.Marshal(&repObj)
+     		if err != nil {
+     			panic(err)
+     		}
+     		reps = append(reps, string(repJson))
+     	}
+     	return reps
+     }
+     
+     ```
+
+     
+
+
+
 
 
 ## 15.3 别让性能锁住
+
+
+
+#### 读锁对性能影响
+
+***
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"testing"
+)
+
+var cache map[string]string
+
+const NUM_OF_READER int = 40
+const READ_TIMES = 100000
+
+func init()  {
+	cache = make(map[string]string) // map构造方法
+
+	cache["a"] = "aa"
+	cache["b"] = "bb"
+}
+
+func lockFreeAccess()  {
+	var wg sync.WaitGroup
+	wg.Add(NUM_OF_READER)
+	for i := 0; i < NUM_OF_READER; i++ {
+		go func() {
+			for j := 0; j < READ_TIMES; j++{
+				_, err := cache["a"]
+				if !err{
+					fmt.Println("Nothing")
+				}
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+func lockAccess()  {
+	var wg sync.WaitGroup
+	wg.Add(NUM_OF_READER)
+	m := new(sync.RWMutex) // 读写锁
+	for i := 0; i< NUM_OF_READER; i++{
+		go func() {
+			for j := 0; j < READ_TIMES; j++{
+				m.RLock()
+				_, err := cache["a"]
+				if err == false{
+					fmt.Println("Nothing")
+				}
+				m.RUnlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+func BenchmarkLockFree(b *testing.B) {
+	b.ResetTimer() // TODO 为什么不用加stopTimer
+	for i := 0; i < b.N; i++ {
+		lockFreeAccess()
+	}
+
+}
+
+func BenchmarkLock(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		lockAccess()
+	}
+}
+```
+
+运行测试
+
+```shell
+go test -bench=.
+```
+
+分析影响性能的代码
+
+```shell
+go test -bench=. -cpuprofile=cpu.prof
+go tool pprof cpu.prof
+top -cum
+list lockAccess
+exit
+```
+
+
+
+
+
+#### 使用锁的注意点
+
+***
+
+1. 减少锁的影响范围
+2. 减少发生锁冲突的概率
+   + sync.Map
+   + ConcurrentMap
+3. 避免锁的使用
+
+
+
+#### 线程安全的锁
+
+***
+
+```go
+// 定义接口
+type Map interface {
+	Set(key interface{}, value interface{})
+	Get(key interface{})(interface{}, bool)
+	Del(key interface{})
+}
+```
+
+```go
+// RWLock 实现的Map
+type RWLockMap struct {
+	m map[interface{}]interface{}
+	lock sync.RWMutex
+}
+
+func (this *RWLockMap)Get(key interface{})  (interface{}, bool){
+	this.lock.RLock()
+	v, ok := this.m["key"]
+	this.lock.RUnlock()
+	return v,ok
+}
+
+func (this *RWLockMap)Set(key interface{},value interface{})  {
+	this.lock.Lock()
+	this.m[key] = value
+	this.lock.Unlock()
+}
+
+func (this *RWLockMap) Del(key interface{}) {
+	this.lock.Lock()
+	delete(this.m, key)
+	this.lock.Unlock()
+}
+
+func CreateRWLockMap() *RWLockMap {
+	m := make(map[interface{}]interface{}, 0)
+	return &RWLockMap{m : m}
+}
+```
+
+```go
+// sync.map 实现的Map
+// 比RWLock 实现的Map性能高很多
+type SyncMap struct {
+	m sync.Map
+}
+
+func (this *SyncMap)Get(key interface{})  (interface{}, bool){
+	return this.m.Load(key)
+}
+
+func (this *SyncMap)Set(key interface{},value interface{})  {
+	this.m.Store(key, value)
+}
+
+func (this *SyncMap) Del(key interface{}) {
+	this.m.Delete(key)
+}
+
+func CreateSyncMap() *SyncMap {
+	return &SyncMap{}
+}
+```
+
+```go
+// 测试代码
+import (
+	"strconv"
+	"sync"
+	"testing"
+)
+
+const (
+	NumOfReader = 100
+	NumOfWriter = 200
+)
+func benchmarkMap(b *testing.B, mp Map) {
+	for i := 0; i < b.N; i++ {
+		var wg sync.WaitGroup
+		for i := 0; i < NumOfWriter; i++{
+			wg.Add(1)
+			go func() {
+				for j := 0; j < 100; j++{
+					mp.Set(strconv.Itoa(i), i * i)
+					mp.Set(strconv.Itoa(i), i * i)
+					mp.Del(strconv.Itoa(i))
+				}
+				wg.Done()
+			}()
+		}
+
+		for i := 0; i < NumOfReader; i++{
+			wg.Add(1)
+			go func() {
+				for j:=0; j < 100; j++{
+					mp.Get(strconv.Itoa(i))
+				}
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}
+}
+
+func BenchmarkName(b *testing.B) {
+
+	b.Run("RWLock", func(b *testing.B) {
+		hm := CreateRWLockMap()
+		benchmarkMap(b, hm)
+	})
+
+	b.Run("sync.map", func(b *testing.B) {
+		hm := CreateSyncMap()
+		benchmarkMap(b, hm)
+	})
+}
+```
 
 
 
@@ -3387,6 +3756,16 @@ func main()  {
 ## 15.4 GC友好代码
 
 
+
+#### 避免内存分配和复制
+
+***
+
+1. 复杂对象传入引用
+   + 数组的传递
+   + 结构体传递
+2. 初始化至合适大小：比如数组
+3. 复用内存
 
 
 
