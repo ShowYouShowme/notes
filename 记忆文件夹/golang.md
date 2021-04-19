@@ -945,6 +945,7 @@ func TestVarParam(t *testing.T)  {
 ***
 
 ```go
+// 大写开头的成员,包外可见; 小写开头的成员,包内可见
 type Employee struct{
 	Id string
 	Name string
@@ -2906,7 +2907,48 @@ func TestFillNameAndAge(t *testing.T)  {
 
 ## 14.2 easyjson
 
+1. 安装
 
+   ```shell
+   go get -u github.com/mailru/easyjson/...
+   ```
+
+2. 生成代码文件
+
+   ```shell
+   # 类似Protobuf
+   
+   # 项目路径
+   tests/（在gopath目录下）
+   └── src
+       ├── json_test.go
+       └── models
+           ├── models_easyjson.go	（easyjson命令生成的文件)
+           └── models.go	（模型文件）
+   ```
+
+   ```go
+   // models.go
+   package models
+   
+   type Request struct {
+   	TransactionID string `json:"transaction_id"`
+   	PayLoad       []int  `json:"payload"`
+   }
+   
+   type Response struct {
+   	TransactionID string `json:"transaction_id"`
+   	Expression    string `json:"exp"`
+   }
+   ```
+
+   执行命令
+
+   ```shell
+   easyjson -all models.go
+   ```
+
+   
 
 ## 14.3 HTTP服务
 
@@ -3284,15 +3326,55 @@ func main()  {
          exit
          ```
 
+      3. 代码
+
+         ```go
+   package main
          
-
+      // import 里增加 _ "net/http/pprof" 即可
+         import (
+         	"fmt"
+         	"net/http"
+         	_ "net/http/pprof"
+         )
+         
+         func GetFibonacciSerie(n int) []int {
+         	ret := make([]int, 2, n)
+         	ret[0] = 1
+         	ret[1] = 1
+         	for i := 2; i < n; i++ {
+         		ret = append(ret, ret[i-2]+ret[i-1])
+         	}
+         	return ret
+         }
+         
+         func createFBS(w http.ResponseWriter, r *http.Request) {
+         	var fbs []int
+         	for i := 0; i < 1000000; i++ {
+         		fbs = GetFibonacciSerie(50)
+         	}
+         	w.Write([]byte(fmt.Sprintf("%v", fbs)))
+         
+         }
+         
+         func main() {
+         	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+         		w.Write([]byte("Welcome!"))
+         	})
+         	http.HandleFunc("/Fibonacci", createFBS)
+         
+         	http.ListenAndServe(":8080", nil)
+         }
+         
+         ```
       
-
+         
       
-
    
 
 ## 15.2 性能调优示例
+
+
 
 
 
