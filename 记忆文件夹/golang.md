@@ -3879,11 +3879,103 @@ func BenchmarkName(b *testing.B) {
 
 
 
+#### 字符串拼接方法
+
+***
+
+1. fmt.Sprintf
+2. <b style="color:red">strings.Builder</b>
+3. bytes.Buffer
+4. 字符串相加
+
+
+
+#### 示例代码
+
+***
+
+```go
+import (
+	"bytes"
+	"fmt"
+	"strconv"
+	"strings"
+	"testing"
+)
+
+const numbers = 100
+
+func BenchmarkSprintf(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var s string
+		for i := 0; i < numbers; i++{
+			s = fmt.Sprintf("%v%v", s, i)
+		}
+	}
+	b.StopTimer()
+}
+
+func BenchmarkStringBuilder(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var builder strings.Builder
+		for i := 0; i < numbers; i++{
+			builder.WriteString(strconv.Itoa(i))
+		}
+		_ = builder.String()
+	}
+	b.StopTimer()
+}
+
+func BenchmarkBytesBuf(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var buf bytes.Buffer
+		for i := 0; i < numbers; i++{
+			buf.WriteString(strconv.Itoa(i))
+		}
+		_ = buf.String()
+	}
+	b.StopTimer()
+}
+
+func BenchmarkStringAdd(b *testing.B) {
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var s string
+		for i := 0; i < numbers; i++{
+			s += strconv.Itoa(i)
+		}
+	}
+	b.StopTimer()
+}
+```
+
+
+
 
 
 ## 16.2 面向错误的设计
 
+1. 隔离错误
 
+   > + 微内核模式：某个plugin出错不影响其它plugin
+   > + 微服务设计：某个服务挂掉，依赖于它的服务可以降级，仍然能工作（比如缓存一部分信息）
+   > + 重用和隔离：日志服务可打印普通日志和关键数据日志；部署两套，一套只用来打印普通日志，一套用来打印关键数据
+
+2. 冗余
+
+   > + router服务可以部署多个，不仅可以用来做负载均衡，还可以在某个router失效时，其它route依然正常工作
+   > + 单点失效：一台MySQL服务最大支持1000QPS，客户端QPS为1500，因此部署两台MySQL服务，但是一台失效后，全部Query会请求到一台机器，导致其挂掉-->对其流量限制或者部署更多机器
+
+3. 流量限制：token bucket
+
+4. 慢响应：在所有的阻塞操作上加上超时
+
+5. 错误传递：断路器
+
+   > 好友服务依赖数据库的数据，如果多次访问数据库超时，那以后访问好友服务时，会直接返回缓存里面的数据；过一段时间后，好友服务再次尝试访问数据库，看其是否恢复正常。
 
 
 
@@ -3891,9 +3983,76 @@ func BenchmarkName(b *testing.B) {
 
 
 
+#### 健康检查
+
+***
+
+1. 注意僵尸进程
+
+   > + 池化资源耗尽
+   >
+   > + 死锁
+   >
+   > + 检查方式
+   >
+   >   ```shell
+   >   # 1-- http的ping  --> 必须要检查到关键路径
+   >   
+   >   # 2-- 检查进程是否存在
+   >   ```
+   >
+   >   
+
+   
+
+#### Let it crash
+
+***
+
+> 对待未知错误的最好方式
+
+
+
+#### 构建可恢复的系统
+
+***
+
++ 拒绝单体系统：一部分功能出错时，不能单独重启该功能
+
++ 面向错误和恢复的设计
+
+  > 1. 依赖服务不可用时，可以继续存活
+  > 2. 快速启动
+  > 3. 无状态
+
+
+
+#### 与客户端协商
+
+***
+
+> 服务器：我太忙了，请慢点发送数据。
+>
+> 客户端：好，我一分钟后再发送。
+
+
+
+
+
+
+
+
+
 ## 16.4 Chaos Engineering
 
-
+> 原理：在整个系统中在随机位置引发故障，以快速了解他们正在构建的服务是否健壮，是否可以弹性扩容，是否可以处理计划外的故障。
+>
+> 做法：在生产环境中注入错误
+>
+> 1. 任意关掉主机
+> 2. 模拟慢响应
+>
+> 重要性：了解即可。
 
 
 
