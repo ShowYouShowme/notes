@@ -3332,13 +3332,15 @@ func main()  {
          ```go
    package main
          
+         ```
+      
       // import 里增加 _ "net/http/pprof" 即可
          import (
          	"fmt"
          	"net/http"
          	_ "net/http/pprof"
          )
-         
+      
          func GetFibonacciSerie(n int) []int {
          	ret := make([]int, 2, n)
          	ret[0] = 1
@@ -3348,29 +3350,30 @@ func main()  {
          	}
          	return ret
          }
-         
+      
          func createFBS(w http.ResponseWriter, r *http.Request) {
          	var fbs []int
          	for i := 0; i < 1000000; i++ {
          		fbs = GetFibonacciSerie(50)
          	}
          	w.Write([]byte(fmt.Sprintf("%v", fbs)))
-         
+      
          }
-         
+      
          func main() {
          	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
          		w.Write([]byte("Welcome!"))
          	})
          	http.HandleFunc("/Fibonacci", createFBS)
-         
+      
          	http.ListenAndServe(":8080", nil)
          }
-         
+      
          ```
       
          
       
+         ```
    
 
 ## 15.2 性能调优示例
@@ -3763,9 +3766,108 @@ func BenchmarkName(b *testing.B) {
 
 1. 复杂对象传入引用
    + 数组的传递
+   
+     ```go
+     // go test -bench=.
+     import "testing"
+     
+     const NumOfElems = 1000
+     
+     type Content struct {
+     	Detail [10000]int
+     }
+     
+     func withValue(arr [NumOfElems]Content)int  {
+     	return 0
+     }
+     
+     func withRef(arr *[NumOfElems]Content)int  {
+     	return 0
+     }
+     
+     func BenchmarkWithValue(b *testing.B){
+     	var arr [NumOfElems]Content
+     
+     	b.ResetTimer()
+     	for i := 0; i < b.N; i++{
+     		withValue(arr)
+     	}
+     	b.StopTimer()
+     }
+     
+     func BenchmarkWithRef(b *testing.B){
+     	var arr [NumOfElems]Content
+     
+     	b.ResetTimer()
+     	for i := 0; i < b.N; i++{
+     		withRef(&arr)
+     	}
+     	b.StopTimer()
+     }
+     ```
+   
    + 结构体传递
+   
 2. 初始化至合适大小：比如数组
+
+   ```go
+   import "testing"
+   
+   const numOfElems = 100000
+   const times = 1000
+   
+   func BenchmarkAutoGrow(t *testing.B)  {
+   	for i := 0; i < times; i++{
+   		var s []int
+   		for j := 0; j < numOfElems; j++{
+   			s = append(s,j)
+   		}
+   	}
+   }
+   
+   func BenchmarkProperInit(t *testing.B)  {
+   	for i := 0; i < times; i++{
+   		s := make([]int,0,numOfElems)
+   		for j := 0; j < numOfElems; j++{
+   			s = append(s,j)
+   		}
+   	}
+   }
+   
+   func BenchmarkOverSizeInit(t *testing.B)  {
+   	for i := 0; i< times; i++{
+   		s := make([]int, 0, numOfElems * 8)
+   		for j := 0; j < numOfElems; j++{
+   			s = append(s,j)
+   		}
+   	}
+   }
+   ```
+
+   
+
 3. 复用内存
+
+4. 打印GC日志
+
+   ```shell
+   # win
+   set GOGCTRACE=1
+   set GODEBUG=gctrace=1
+   go test -bench=BenchmarkWithRef
+   ```
+
+5. 使用trace查看GC
+
+   ```shell
+   # 产生文件
+   go test -bench=BenchmarkWithRef -trace=trace_value.out
+   
+   # 利用web打开查看
+   go tool trace trace_value.out
+   ```
+
+   
 
 
 
