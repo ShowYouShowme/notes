@@ -67,6 +67,7 @@ CentOS-7-x86_64-Minimal-1810.iso
 5. 配置阿里源
 
    ```shell
+   # 阿里云有个域名无法解析,直接删掉即可
    yum install wget net-tools -y
    # 备份
    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
