@@ -4270,3 +4270,96 @@ func TestTypeAssert(t *testing.T) {
 }
 ```
 
+
+
+
+
+# 第二十章 文件
+
+
+
+## 20.1 二进制文件
+
+
+
+### 读取
+
+***
+
+1. ioutil
+
+   ```go
+   	content, err := ioutil.ReadFile("output.bin")
+   	if err != nil{
+   		log.Fatal(err)
+   		return
+   	}
+   ```
+
+2. file.Read
+
+   ```go
+   	file, err := os.Open("output.bin")
+   	if err != nil {
+   		fmt.Println("打开文件失败: ", err.Error())
+   		return
+   	}
+   	defer file.Close()
+   
+   	st, err := file.Stat()
+   	if err != nil{
+   		fmt.Println("获取文件状态失败")
+   		return
+   	}
+   	fileSize := st.Size()
+   
+   	data := make([]byte, fileSize,fileSize)
+   	_, err = file.Read(data)
+   	if err != nil{
+   		log.Fatal(err)
+   		return
+   	}
+   	if err := file.Close(); err != nil{
+   		fmt.Println("关闭文件失败...")
+   	}
+   	fmt.Println("编码成功")
+   ```
+
+   
+
+### 写入
+
+***
+
+1. ioutil
+
+   ```go
+   	var buf []byte = []byte{0x11,0x22,0x33,0x44,0x88,0x99}
+   	if err := ioutil.WriteFile("out.bin",buf,0666); err != nil{
+   		log.Fatal(err)
+   	}
+   ```
+
+2. file.write
+
+   ```go
+   func writeBufferToFile(buf *[]byte)  {
+   	file, err := os.Create("output.bin")
+   	if err != nil {
+   		fmt.Println("文件创建失败 ", err.Error())
+   		return
+   	}
+   	defer file.Close()
+   
+   	file.Write(*buf)
+   	if err := file.Close(); err != nil{
+   		fmt.Println("关闭文件失败...")
+   	}
+   	fmt.Println("编码成功")
+   }
+   ```
+
+   
+
+## 20.2 文本文件
+
