@@ -92,13 +92,13 @@
 3. 停止服务
 
    ```shell
-   service mysql stop
+   service mysqld stop
    ```
 
 4. 启动服务
 
    ```shell
-   service mysql start
+   service mysqld start
    ```
 
    
