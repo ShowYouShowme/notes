@@ -533,6 +533,8 @@ func TestIfMultiSet(t *testing.T){
    	arr3 := [...]int{1,2,3,4,5}
    	arr3_sec := arr3[3:]
    	t.Log(arr3_sec)
+       
+       t.Log(arr3[1:3])
    }
    ```
 
@@ -549,16 +551,16 @@ func TestIfMultiSet(t *testing.T){
    ```GO
    // 切片定义时 中括号里为空 数组定义时中括号有... 或者数字
    func TestSliceInit(t *testing.T)  {
-   	var s0 []int
+   	var s0 []int // 定义方式一
    	t.Log(len(s0), cap(s0)) // 和C++的vector类似
    
    	s0 = append(s0,1)
    	t.Log(len(s0), cap(s0))
    
-   	s1 := []int{1,2,3,4}
+   	s1 := []int{1,2,3,4} // 定义方式二
    	t.Log(len(s1), cap(s1))
    
-   	s2 := make([]int, 3, 5) // size == 3 capacity == 5
+   	s2 := make([]int, 3, 5) // size == 3 capacity == 5 定义方式三 
    	t.Log(len(s2), cap(s2))
    	// t.Log(s2[0], s2[1], s2[3], s2[4])
    }
@@ -837,7 +839,7 @@ func TestIfMultiSet(t *testing.T){
 ***
 
 1. 可以有多个返回值
-2. 全部参数都是值传递
+2. <b style="color:red">全部参数都是值传递</b>
 3. 函数可以作为变量的值
 4. 函数可以作为参数和返回值
 

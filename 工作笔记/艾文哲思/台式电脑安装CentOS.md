@@ -74,3 +74,28 @@ CentOS-7-x86_64-Minimal-1810.iso
    wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
    yum makecache
    ```
+
+
+
+# centos8 
+
+1. 更换阿里源
+
+   ```shell
+   cd /etc/yum.repos.d
+   
+   mkdir back
+   mv ./*.repo ./back
+   wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-8.repo
+   yum clean all
+   yum makecache
+   ```
+
+2. 重启网卡
+
+   ```shell
+   # 和 centos7 不一样
+   systemctl restart NetworkManager
+   ```
+
+   
