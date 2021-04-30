@@ -4245,6 +4245,115 @@ func main() {
 
 
 
+### 18.2.1 客户端
+
+***
+
+```go
+package main
+
+import (
+	"log"
+	"net"
+	"strconv"
+)
+
+const (
+	SERVER_IP       = "127.0.0.1"
+	SERVER_PORT     = 10006
+	MTU = 1600
+)
+
+func main() {
+	address := SERVER_IP + ":" + strconv.Itoa(SERVER_PORT)
+	conn, err := net.Dial("tcp", address)
+	if err != nil{
+		panic(err)
+	}
+
+	for {
+		msg := "what is up,dude"
+		n, err := conn.Write([]byte(msg))
+		if err != nil{
+			panic(err)
+		}
+		log.Printf("send %d bytes", n)
+
+		buffer := make([]byte, MTU)
+		n, err = conn.Read(buffer)
+		if err != nil{
+			panic(err)
+		}
+		log.Printf("recv %d bytes, msg : %s", n, buffer)
+	}
+}
+```
+
+
+
+### 18.2.2 服务器
+
+***
+
+```go
+package main
+
+import (
+	"log"
+	"net"
+	"strconv"
+	"strings"
+)
+
+const (
+	SERVER_IP       = "127.0.0.1"
+	SERVER_PORT     = 10006
+	MTU = 1600
+)
+
+func handler(conn net.Conn)  {
+	var n int
+	var err error
+	buf := make([]byte, MTU)
+
+	for{
+		if n, err = conn.Read(buf); err != nil{
+			// n = 0  且 err 为EOF 时对方关闭描述符
+			panic(err)
+		}
+
+		data := buf[:n]
+		log.Printf("recv : %s", data)
+
+		upper := strings.ToUpper(string(data))
+		if _, err = conn.Write([]byte(upper)); err != nil{
+			panic(err)
+		}
+		log.Printf("send : %s", upper)
+
+		// TODO 这里可以close
+	}
+
+}
+func main()  {
+	address := SERVER_IP + ":" + strconv.Itoa(SERVER_PORT)
+	sock, err := net.Listen("tcp", address)
+	if err != nil{
+		panic(err)
+	}
+
+	for {
+		conn, err := sock.Accept()
+		if err != nil{
+			panic(err)
+		}
+		go handler(conn)
+	}
+}
+```
+
+
+
 
 
 
