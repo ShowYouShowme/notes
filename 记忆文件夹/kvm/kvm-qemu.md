@@ -203,4 +203,49 @@ yum install bridge-utils -y
 >     virsh autostart ${domain} --disable # 禁止自动启动
 >     ```
 >
->     
+
+
+
+## 2.3 快速创建虚拟机
+
+1. 用virt-manager 安装系统
+
+2. 基于模板创建虚拟机
+
+   > 1. 复制卷
+   >
+   >    ```shell
+   >    cp /var/lib/libvirt/images/centos7.0.qcow2 /kvm/images/c2.qcow2
+   >    ```
+   >
+   > 2. 复制配置文件
+   >
+   >    ```shell
+   >    cd /etc/libvirt/qemu
+   >    
+   >    cp centos7.0.xml c2.xml
+   >    ```
+   >
+   > 3. 修改配置文件
+   >
+   >    ```shell
+   >    # 修改虚拟机名称
+   >    <name>
+   >    
+   >    # 修改UUID
+   >    <uuid>
+   >    
+   >    # 修改卷
+   >    <source file='/kvm/images/c2.qcow2'/>
+   >    
+   >    # 修改网卡地址
+   >    <mac address='52:54:00:e3:8d:11'/>
+   >    ```
+   >
+   > 4. 创建并启动虚拟机
+   >
+   >    ```shell
+   >    virsh create c2.xml
+   >    ```
+   >
+   > 5. 启动图形界面virt-manager，查看c2是否已经启动
