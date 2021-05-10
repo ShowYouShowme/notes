@@ -68,6 +68,7 @@ CentOS-7-x86_64-Minimal-1810.iso
 
    ```shell
    # 阿里云有个域名无法解析,直接删掉即可
+   # mirrors.cloud.aliyuncs.com 搜索cloud,命中的行都删除
    yum install wget net-tools -y
    # 备份
    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup

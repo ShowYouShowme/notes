@@ -58,5 +58,28 @@
 
 
 
+## 2.2 安装依赖
+
+```shell
+yum install python3
+
+# 安装ninja 和 meson
+pip3 install ninja
+pip3 install meson
+
+# 用法 生成build目录
+meson build
+
+cd ./build
+
+# 编译
+ninja 
+
+# 安装
+ninja install
+```
+
+
+
 
 

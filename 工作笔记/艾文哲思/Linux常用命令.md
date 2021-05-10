@@ -822,7 +822,7 @@ yum安装时会显示安装的Repository
   >
   >       ```shell
   >       nc -l ${port} > ${file}
-  >       
+  >
   >       # 示例
   >       nc -l 9900 > nc.txt
   >       ```
@@ -831,7 +831,7 @@ yum安装时会显示安装的Repository
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >       
+  >
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -855,7 +855,7 @@ yum安装时会显示安装的Repository
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >       
+  >
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -866,8 +866,17 @@ yum安装时会显示安装的Repository
   >    # 可以替代telnet
   >    nc -zv 192.168.3.79 22
   >    ```
+  >    
+  > 6. 替代telnet 连接服务
+  >
+  >    ```shell
+  >    # 输入时,按下回车数据才会发送;Telnet 按下任意键都会发送数据
+  >    nc ${host} ${port}
+  >    ```
   >
   >    
+  >
+  > 
 
 # chown
 
@@ -1777,3 +1786,34 @@ vim /etc/fstab
   8. F8 --> 增加nice值
   9. F9 --> **杀掉指定进程**
   10. F10 --> 退出htop
+
+
+
+# top
+
+1. 查看CPU个数
+
+   ```shell
+   按下Q上的数字1
+   ```
+
+2. 按CPU使用率排序
+
+   ```shell
+   shift + p
+   ```
+
+3. 按内存使用排序
+
+   ```shell
+   shift + m
+   ```
+
+4. 存储单位修改
+
+   ```shell
+   shift + e
+   ```
+
+   
+

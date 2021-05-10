@@ -2,6 +2,14 @@
 
 
 
+## 1.0 开启虚拟化支持
+
+```shell
+处理器 --> 虚拟化引擎 -->  虚拟化inter VT-x/EPT或AMD-V/RVI(V)
+```
+
+
+
 ## 1.1 检查CPU是否支持硬件虚拟化
 
 ```shell
@@ -101,7 +109,7 @@ yum install bridge-utils -y
 >
 >    ```shell
 >    virsh list
->    
+>
 >    virsh list --all # 列出全部
 >    ```
 >
@@ -122,7 +130,7 @@ yum install bridge-utils -y
 >
 >    ```shell
 >    virsh console ${domain}
->    
+>
 >    virsh console c2
 >    ```
 >
@@ -135,6 +143,7 @@ yum install bridge-utils -y
 > 6. 强制关机
 >
 >    ```shell
+>    # 类似kill -9,kvm 的虚拟机在宿主机上就是一个进程
 >    virsh destroy ${domain}
 >    ```
 >
@@ -161,7 +170,7 @@ yum install bridge-utils -y
 >
 >     ```shell
 >     # 类似vmware 中的挂起操作，vmware的挂起操作是把运行状态保存到磁盘，宿主机掉电，它不会的丢失数据
->     virsh save ${file} --paused
+>     virsh save ${domain} ${file} --paused
 >     ```
 >
 > 11. 从指定文件恢复虚拟机
@@ -199,7 +208,7 @@ yum install bridge-utils -y
 >
 >     ```shell
 >     virsh autostart ${domain}
->     
+>
 >     virsh autostart ${domain} --disable # 禁止自动启动
 >     ```
 >
@@ -249,3 +258,57 @@ yum install bridge-utils -y
    >    ```
    >
    > 5. 启动图形界面virt-manager，查看c2是否已经启动
+
+
+
+
+
+# 第三章 qemu-img
+
+
+
+## 3.1 常见命令
+
+1. 创建磁盘
+
+   ```shell
+   # 磁盘最大空间为40G
+   qemu-img create -f qcow2 base.qcow2 40G
+   ```
+
+2. 查看磁盘信息
+
+   ```shell
+   qemu-img info base.qcow2
+   ```
+
+3. 磁盘扩容
+
+   ```shell
+   qemu-img resize base.qcow2 +2G
+   ```
+
+
+
+
+
+
+# 第四章 qemu
+
+1. 安装虚拟机
+
+   ```shell
+   # 创建磁盘镜像
+   qemu-img create -f qcow2 fedora.img 10G
+   
+   # 安装系统
+   qemu-system-x86_64 -m 2048 -enable-kvm fedora.img -cdrom ./Fedora-Live-Desktop-x86_64-20-1.iso
+   ```
+
+2. 启动虚拟机
+
+   ```shell
+   qemu-system-x86_64 -m 2048 -enable-kvm fedora.img
+   ```
+
+   
