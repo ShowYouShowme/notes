@@ -43,6 +43,9 @@
    
    # 过滤POST请求
    http.request.method == "POST"
+   
+   # 过滤指定域名
+    http.host == www.feifeishijie.com
    ```
 
 5. and连接

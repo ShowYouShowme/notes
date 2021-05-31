@@ -3333,49 +3333,41 @@ func main()  {
 
          ```go
    package main
+         // import 里增加 _ "net/http/pprof" 即可
+            import (
+            	"fmt"
+            	"net/http"
+            	_ "net/http/pprof"
+            )
          
-         ```
-      
-      // import 里增加 _ "net/http/pprof" 即可
-         import (
-         	"fmt"
-         	"net/http"
-         	_ "net/http/pprof"
-         )
-      
-         func GetFibonacciSerie(n int) []int {
-         	ret := make([]int, 2, n)
-         	ret[0] = 1
-         	ret[1] = 1
-         	for i := 2; i < n; i++ {
-         		ret = append(ret, ret[i-2]+ret[i-1])
-         	}
-         	return ret
-         }
-      
-         func createFBS(w http.ResponseWriter, r *http.Request) {
-         	var fbs []int
-         	for i := 0; i < 1000000; i++ {
-         		fbs = GetFibonacciSerie(50)
-         	}
-         	w.Write([]byte(fmt.Sprintf("%v", fbs)))
-      
-         }
-      
-         func main() {
-         	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-         		w.Write([]byte("Welcome!"))
-         	})
-         	http.HandleFunc("/Fibonacci", createFBS)
-      
-         	http.ListenAndServe(":8080", nil)
-         }
-      
-         ```
-      
+            func GetFibonacciSerie(n int) []int {
+            	ret := make([]int, 2, n)
+            	ret[0] = 1
+            	ret[1] = 1
+            	for i := 2; i < n; i++ {
+            		ret = append(ret, ret[i-2]+ret[i-1])
+            	}
+            	return ret
+            }
          
-      
+            func createFBS(w http.ResponseWriter, r *http.Request) {
+            	var fbs []int
+            	for i := 0; i < 1000000; i++ {
+            		fbs = GetFibonacciSerie(50)
+            	}
+            	w.Write([]byte(fmt.Sprintf("%v", fbs)))
+         
+            }
+         
+            func main() {
+            	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+            		w.Write([]byte("Welcome!"))
+            	})
+            	http.HandleFunc("/Fibonacci", createFBS)
+             http.ListenAndServe(":8080", nil)
+            }
          ```
+      
    
 
 ## 15.2 性能调优示例

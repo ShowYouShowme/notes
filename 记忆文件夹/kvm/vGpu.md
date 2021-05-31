@@ -83,3 +83,87 @@ ninja install
 
 
 
+
+
+# 第三章 安装Tesla T4 显卡驱动
+
+1. 下载显卡驱动
+
+   ```shell
+   https://www.nvidia.cn/Download/index.aspx?lang=cn
+   ```
+
+2. 屏蔽系统自带显卡驱动`nouveau`
+
+   ```shell
+   vim /lib/modprobe.d/dist-blacklist.conf
+   
+   # 注释
+   #blacklist nvidiafb
+   
+   # 增加以下两行
+   blacklist nouveau
+   options nouveau modeset=0
+   ```
+
+3. 重建`initramfs image`
+
+   ```shell
+   mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
+   dracut /boot/initramfs-$(uname -r).img $(uname -r)
+   ```
+
+4. 修改运行级别
+
+   ```shell
+   systemctl set-default multi-user.target
+   ```
+
+5. 重启，用root登录
+
+   ```shell
+   reboot
+   ```
+
+6. 查看 nouveau 是否已经禁用
+
+   ```shell
+   # 没有信息则已经禁用
+   lsmod | grep nouveau
+   ```
+
+7. 安装驱动
+
+   ```shell
+   # 安装依赖
+   yum install -y libglvnd-devel
+   
+   # 安装驱动
+   ./NVIDIA-Linux-x86_64-460.73.01.run  --kernel-source-path=/root/linux-5.8 -k $(uname -r)
+   
+   # 错误 --> 据说 BIOS中禁用Security BOOT选项即可,我当时重启再装一次就好了
+    Unable to load the 'nvidia-drm' kernel module
+    
+    
+   # 重启 驱动装好后要重启才能生效,因为重启会加载模块
+   reboot
+   ```
+
+8. 查看显卡驱动是否成功安装
+
+   ```shell
+   nvidia-smi
+   
+   lshw -c video
+   ```
+
+9. 卸载驱动
+
+   ```shell
+   ./NVIDIA-Linux-x86_64-460.73.01.run --uninstall
+   ```
+
+   
+
+
+

@@ -99,4 +99,8 @@ CentOS-7-x86_64-Minimal-1810.iso
    systemctl restart NetworkManager
    ```
 
-   
+
+
+
+# 推荐安装centos8桌面版本，修改启动级别可以不启动界面
+
