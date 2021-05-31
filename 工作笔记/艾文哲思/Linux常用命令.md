@@ -71,6 +71,28 @@
 
    
 
+# windows查看端口占用
+
+```shell
+# 查看指定端口被谁占用
+netstat -aon|findstr "8081"
+
+
+  TCP    172.18.80.183:6396     172.18.80.183:8888     ESTABLISHED     27068
+  TCP    172.18.80.183:8888     0.0.0.0:0              LISTENING       12052   # 这个
+  TCP    172.18.80.183:8888     172.18.80.183:6396     ESTABLISHED     12052
+  
+
+# 查看指定PID 的进程
+tasklist|findstr "12052"
+
+
+# 强行杀死进程
+taskkill /T /F /PID 12052  
+```
+
+
+
 
 
 # alias
@@ -866,15 +888,23 @@ yum安装时会显示安装的Repository
   >    # 可以替代telnet
   >    nc -zv 192.168.3.79 22
   >    ```
-  >    
+  >
   > 6. 替代telnet 连接服务
   >
   >    ```shell
   >    # 输入时,按下回车数据才会发送;Telnet 按下任意键都会发送数据
   >    nc ${host} ${port}
   >    ```
+  >    
+  > 7. 连接unix 域套接字
+  >
+  >    ```shell
+  >    nc -U ./sample-socket
+  >    ```
   >
   >    
+  >
+  > 
   >
   > 
 
@@ -1815,5 +1845,90 @@ vim /etc/fstab
    shift + e
    ```
 
+
+
+
+
+
+# 源码编译软件
+
+1. 建议安装在/usr目录，这样可以直接搜索到include和so和bin文件（比如protobuf，openssl，libevent之类）
+2. 安装在自定义路径,可以直接删除整个软件，方便删除
+
+
+
+
+
+
+
+# 代理配置
+
+
+
+## http代理
+
+1. squid（性能好，推荐）
+
+   ```shell
+   # 支持connect 方法
+   yum install squid
    
+   # 启动服务
+   systemctl start squid
+   
+   # 设置服务开机启动
+   systemctl enable squid
+   
+   # 配置文件 一般不需要配置
+   /etc/squid/squid.conf
+   
+   
+   # 配置监听本地地址[可选]
+   sed -i "s/3128/127.0.0.1:8888/g" /etc/squid/squid.conf
+   ```
+
+   
+
+2. nginx(性能好，推荐)
+
+   ```shell
+   # nginx 性能特别高
+   
+   $ wget http://nginx.org/download/nginx-1.9.2.tar.gz
+   $ tar -xzvf nginx-1.9.2.tar.gz
+   $ cd nginx-1.9.2/
+   $ patch -p1 < /path/to/ngx_http_proxy_connect_module/patch/proxy_connect.patch
+   $ ./configure --add-module=/path/to/ngx_http_proxy_connect_module
+   $ make && make install
+   
+   
+   # 配置文件
+    server {
+        listen                         3128;
+   
+        # dns resolver used by forward proxying
+        resolver                       8.8.8.8;
+   
+        # forward proxy for CONNECT request
+        proxy_connect;
+        proxy_connect_allow            443 563;
+        proxy_connect_connect_timeout  10s;
+        proxy_connect_read_timeout     10s;
+        proxy_connect_send_timeout     10s;
+   
+        # forward proxy for non-CONNECT request
+        location / {
+            proxy_pass http://$host;
+            proxy_set_header Host $host;
+        }
+    }
+   ```
+
+   
+
+3. tinyproxy（性能差，不推荐）
+
+
+
+## socket5代理
 
