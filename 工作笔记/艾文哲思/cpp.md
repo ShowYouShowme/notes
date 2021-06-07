@@ -1374,3 +1374,119 @@ virtual tars::Int32 log2db(const DaqiGame::TLog2DBReq& tLog2DBReq, DaqiGame::TLo
 2. 不接入或很少接入第三方SDK（C++接入第三方SDK很麻烦，可以嵌入python，让python来接入第三方SDK）
 3. 开发只使用标准库的东西，第三方sdk，部署用到动态库可能会有问题；而且很多第三方库质量差
 4. 混合lua或者python，用脚本写业务，提高开发效率；部分性能要求较高的接口用C++实现
+
+
+
+
+
+# 多返回值
+
+1. 使用引用
+
+   ```cpp
+   #include <iostream>
+   using namespace std;
+   int func(const string& in, string& out1, string& out2) {
+       if (in.size() == 0)
+           return 0;
+       out1 = "hello";
+       out2 = "world";
+       return 1;
+   }
+   
+   int main() {
+       string out1, out2;
+       int status = func("hi", out1, out2);
+       if (status) {
+           cout << out1 << endl;
+           cout << out2 << endl;
+       }
+       return 0;
+   }
+   ```
+
+2. 使用tuple
+
+   ```c++
+   #include <iostream>
+   #include <tuple>
+   using namespace std;
+   
+   tuple<bool, string, string> func(const string& in) {
+       if (in.size() == 0)
+           return make_tuple(false, "", "");
+       return make_tuple(true, "hello", "world");
+   }
+   
+   int main() {
+       if (auto [status, out1, out2] = func("hi"); status) {
+           cout << out1 << endl;
+           cout << out2 << endl;
+       }
+       return 0;
+   }
+   ```
+
+3. 使用pair
+
+   ```shell
+   #include <iostream>
+   using namespace std;
+   struct Out {
+       string out1 { "" };
+       string out2 { "" };
+   };
+   
+   pair<bool, Out> func(const string& in) {
+       Out o;
+       if (in.size() == 0)
+           return { false, o };
+       o.out1 = "hello";
+       o.out2 = "world";
+       return { true, o };
+   }
+   
+   int main() {
+       if (auto [status, o] = func("hi"); status) {
+           cout << o.out1 << endl;
+           cout << o.out2 << endl;
+       }
+       return 0;
+   }
+   ```
+
+4. std::optional
+
+   ```c++
+   // 函数执行成功才有返回值
+   
+   #include <iostream>
+   #include <optional>
+   using namespace std;
+   struct Out {
+       string out1 { "" };
+       string out2 { "" };
+   };
+   
+   optional<Out> func(const string& in) {
+       Out o;
+       if (in.size() == 0)
+           return nullopt;
+       o.out1 = "hello";
+       o.out2 = "world";
+       return { o };
+   }
+   
+   int main() {
+       if (auto ret = func("hi"); ret.has_value()) {
+           cout << ret->out1 << endl;
+           cout << ret->out2 << endl;
+       }
+       return 0;
+   }
+   ```
+
+   
+
+
+

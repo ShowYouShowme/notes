@@ -80,3 +80,82 @@ cmake --help
    ```
 
    
+
+
+
+# 第二章 编写CMake文件
+
+
+
+## 2.1 例子
+
+1. 基本项目
+
+   ```cmake
+   cmake_minimum_required(VERSION 3.10)
+   
+   # set the project name
+   project(Tutorial)
+   
+   # add the executable
+   add_executable(Tutorial example.c)
+   
+   # 增加动态链接库
+   target_link_libraries(Tutorial PUBLIC pthread)
+   
+   # 第三方SDK 统一安装在/usr路径下,因此下面两个命令用不到
+   ##############################################
+   
+   # 添加头文件目录
+   # INCLUDE_DIRECTORIES
+   
+   # 添加库文件目录
+   # LINK_DIRECTORIES
+   ```
+
+
+
+## 2.2 常用命令
+
+ 1. set
+
+    ```
+    设置变量的值。用unset()取消变量的值
+    
+    set(<variable> <value>... [PARENT_SCOPE])
+    ```
+
+ 2. add_subdirectory
+
+    ```shell
+    将子目录添加到编译系统中，调用后cmake会自动进入该目录搜索CMakeLists.txt并进行编译
+    
+    add_subdirectory(source_dir [binary_dir] [EXCLUDE_FROM_ALL])
+    ```
+
+ 3. aux_source_directory
+
+    ```shell
+    查找目录下的所有源文件，并保存到一个变量中。如果所有的源文件都在同一目录下且数量较多，那么使用这一命令会省去一个一个添加源文件的麻烦
+    
+    aux_source_directory(<dir> <variable>)
+    ```
+
+ 4. INCLUDE_DIRECTORIES
+
+    ```shell
+    添加头文件目录
+    ```
+
+ 5. LINK_DIRECTORIES
+
+    ```shell
+    添加库文件目录
+    ```
+
+ 6. target_link_libraries
+
+    ```shell
+    添加动态库
+    target_link_libraries(Tutorial PUBLIC pthread)
+    ```

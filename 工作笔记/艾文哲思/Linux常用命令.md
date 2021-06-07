@@ -1932,3 +1932,59 @@ vim /etc/fstab
 
 ## socket5代理
 
+
+
+
+
+# 续行符
+
+1. 符号："\\"当命令过长时使用
+
+2. 例子
+
+   ```shell
+   # ls \
+   > -lh   # 此时按下回车即可
+   
+   drwxrwxr-x.  4 root root 4.0K Apr 29 06:57 hiredis-1.0.0
+   -rw-r--r--.  1 root root  96K May 28  2021 hiredis-1.0.0.tar.gz
+   drwx------. 15 nash nash 4.0K Apr 28 04:12 nash
+   drwxr-xr-x.  2 root root  12K May 28  2021 shared_dir
+   -rw-r--r--.  1 root root  444 May  4 11:16 test.js
+   ```
+
+
+
+# 用户管理
+
+
+
+## 添加用户
+
+```shell
+adduser ${user}
+```
+
+
+
+## 修改密码
+
+```shell
+passwd ${user}
+```
+
+
+
+# 赋予root权限
+
+```shell
+
+vim /etc/passwd
+
+#用户名:密码:UID:GID:描述信息:主目录:默认shell
+nash:x:1002:1002:nash:/home/nash:/bin/bash
+
+# 修改为如下
+nash:x:0:0:nash:/home/nash:/bin/bash
+```
+

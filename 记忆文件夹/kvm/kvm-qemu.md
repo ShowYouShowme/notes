@@ -309,6 +309,10 @@ yum install bridge-utils -y
 
    ```shell
    qemu-system-x86_64 -m 2048 -enable-kvm fedora.img
-   ```
+   
 
+   # 启动虚拟机,同时暴露端口给spice client
+   /mnt/server/opt/qemu/build/bin/qemu-system-x86_64 -m 4096 -enable-kvm /mnt/images/5ffdf526b0321206714888c7_518df33b-684d-4457-a3f0-4e7f99c8f441.qcow2 -spice port=5902,image-compression=off,playback-compression=off,disable-ticketing
+   ```
+   
    
