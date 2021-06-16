@@ -154,4 +154,106 @@ cd ./boost_1_70_0
    }
    ```
 
+4. 构建json
+
+   ```c++
+   // 这是推荐的做法
+   int main()
+   {
+   	std::string name		= "nash";
+   	std::string private_ip	= "172.18.80.183";
+   	
+   	
+   	boost::json::object args;
+   	args["private_ip"]	= private_ip;
+   	args["name"]		= name;
+   	
+   	boost::json::array persons;
+   	for (int i = 1; i < 5; i++) {
+   		boost::json::object p;
+   		p["age"] = i;
+   		p["salary"] = i * 10;
+   		persons.push_back(p);
+   	}
+   	
+   	boost::json::object obj;
+   	obj["cmd"]	= "vm_restart";
+   	obj["args"] = args;
+   	obj["person"] = persons;
+   	
+   	std::string message = boost::json::serialize(obj);
+   	std::cout << message << std::endl;
+   	return 0;
+   }
+   ```
+
    
+
+
+
+# 第三章 日志
+
+1. 示例代码
+
+   ```c++
+   // 告诉BOOST 动态链接
+   // 链接的动态库 pthread boost_log_setup boost_log
+   #define BOOST_LOG_DYN_LINK
+   #include <boost/log/core.hpp>
+   #include <boost/log/trivial.hpp>
+   #include <boost/log/expressions.hpp>
+   
+   void init()
+   {
+   	boost::log::core::get()->set_filter
+   	(
+   	    boost::log::trivial::severity >= boost::log::trivial::info
+   	);
+   }
+   
+   int main(int, char*[])
+   {
+   	init();
+   	BOOST_LOG_TRIVIAL(trace) << "A trace severity message";
+   	BOOST_LOG_TRIVIAL(debug) << "A debug severity message";
+   	BOOST_LOG_TRIVIAL(info) << "An informational severity message";
+   	BOOST_LOG_TRIVIAL(warning) << "A warning severity message";
+   	BOOST_LOG_TRIVIAL(error) << "An error severity message";
+   	BOOST_LOG_TRIVIAL(fatal) << "A fatal severity message";
+   
+   	return 0;
+   }
+   ```
+
+
+
+# 第四章  Lock-free
+
+
+
+## 4.1 无锁队列
+
+
+
+### 4.1.1 queue
+
+***
+
+
+
+
+
+### 4.1.2 spsc_queue
+
+***
+
+
+
+
+
+## 4.2 无锁栈
+
+
+
+### 4.2.1 stack
+
