@@ -438,6 +438,10 @@ git submodule update
 #在文件 ~/.gitconfig 添加：
 [credential]                                                                    
     helper = store
+    
+    
+# 或者 输入以下命令
+git config --global credential.helper store
 ```
 
 

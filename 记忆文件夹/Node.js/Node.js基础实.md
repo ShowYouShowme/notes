@@ -1619,10 +1619,19 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
          await __settimeout(2000);
          console.log("after 2 s!");
      }
+     
+  // 最简单的方法
+     async function t1(){
+      console.log("begin...")
+         await new Promise((resolve, reject)=>{
+             setTimeout(resolve,2000)
+         })
+         console.log("after 2 seconds")
+     }
      ```
-
+   
    + 示例二
-
+   
      ```javascript
      // 函数声明: keys(pattern: string, cb?: Callback<string[]>): R;
      function __keys(pattern : string):Promise<string[]>{

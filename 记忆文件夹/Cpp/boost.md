@@ -224,6 +224,125 @@ cd ./boost_1_70_0
    	return 0;
    }
    ```
+   
+2. 封装
+
+   ```cpp
+   // LogHelper.h
+   
+   #pragma once
+   #define BOOST_LOG_DYN_LINK
+   #include <boost/format.hpp>
+   #include <iostream>
+   
+   #include <boost/log/core.hpp>
+   #include <boost/log/trivial.hpp>
+   #include <boost/log/expressions.hpp>
+   #include <boost/serialization/singleton.hpp>
+   
+   // 单例
+   class LogHelper : public boost::serialization::singleton<LogHelper>
+   {
+   public:
+   	LogHelper();
+   	~LogHelper();
+   
+   	void trace(const std::string& input);
+   	void debug(const std::string& input);
+   	void info(const std::string& input);
+   	void warning(const std::string& input);
+   	void error(const std::string& input);
+   	void fatal(const std::string& input);
+   	
+   	void init()
+   	{
+   		namespace logging = boost::log;
+   		logging::core::get()->set_filter
+   		(
+   		    logging::trivial::severity >= logging::trivial::trace
+   		);
+   	}
+   };
+   
+   
+   #define LOG_TRACE	LogHelper::get_mutable_instance().trace
+   #define LOG_DEBUG	LogHelper::get_mutable_instance().debug
+   #define LOG_INFO	LogHelper::get_mutable_instance().info
+   #define LOG_WARNING LogHelper::get_mutable_instance().warning
+   #define LOG_ERROR	LogHelper::get_mutable_instance().error
+   #define LOG_FATAL	LogHelper::get_mutable_instance().fatal
+   
+   ```
+
+   ```cpp
+   // LogHelper.cpp
+   
+   #include "LogHelper.h"
+   
+   LogHelper::LogHelper() {
+   	this->init();
+   }
+   LogHelper::~LogHelper() {
+   }
+   
+   void LogHelper::trace(const std::string& input)
+   {
+   	BOOST_LOG_TRIVIAL(trace) << input;
+   }
+   void LogHelper::debug(const std::string& input)
+   {
+   	BOOST_LOG_TRIVIAL(debug) << input;
+   }
+   void LogHelper::info(const std::string& input) 
+   {
+   	BOOST_LOG_TRIVIAL(info) << input;
+   }
+   void LogHelper::warning(const std::string& input)
+   {
+   	BOOST_LOG_TRIVIAL(warning) << input;
+   }
+   void LogHelper::error(const std::string& input)
+   {
+   	BOOST_LOG_TRIVIAL(error) << input;
+   }
+   void LogHelper::fatal(const std::string& input)
+   {
+   	BOOST_LOG_TRIVIAL(fatal) << input;
+   }
+   ```
+
+   ```cpp
+   // main.cpp
+   
+   #include <boost/lexical_cast.hpp>
+   #include <iostream>
+   #include <string>
+   #include <boost/config.hpp>
+   #include <boost/current_function.hpp>
+   
+   #include "LogHelper.h"
+   int main()
+   {
+   	// 行号
+   	std::string lineNum = BOOST_STRINGIZE(__LINE__);
+   	std::cout << lineNum << std::endl;
+   	
+   	// 函数名
+   	std::string str = BOOST_CURRENT_FUNCTION;
+   	std::cout << "cur func : " << str << std::endl;
+   	
+   	//[函数名:行号] 内容(使用boost::format 来格式化即可)
+   	LOG_TRACE("this is trace msg");
+   	LOG_DEBUG("this is debug msg");
+   	LOG_INFO("this is info msg");
+   	LOG_WARNING("this is warning msg");
+   	LOG_ERROR("this is error msg");
+   	LOG_FATAL("this is fata msg");
+   	return 0;
+   }
+   ```
+
+   
 
 
 
@@ -257,3 +376,14 @@ cd ./boost_1_70_0
 
 ### 4.2.1 stack
 
+
+
+
+
+
+
+# 第五章 部署
+
+1. 使用docker
+2. 使用动态库，确保不能同时存在多个版本
+3. 确保运行时的动态库和开发的版本一致
