@@ -1844,6 +1844,39 @@ vim /etc/fstab
    ```shell
    shift + e
    ```
+   
+5. 查看指定进程
+
+   ```shell
+   top -p ${pid}
+   ```
+
+6. 查看指定多个进程
+
+   ```shell
+    top -p ${pid1},${pid2}
+   ```
+
+7. 监控指定进程
+
+   ```shell
+   top -p 3595782  -b -n 1 -d 3 > kvm.txt
+   
+   # -b: batch模式，可以重定向到文件中
+   
+   # -n 1: 一共取1次top数据
+   
+   # -d 3: 每次top时间间隔是3秒钟
+   ```
+
+8. 获取某个进程数据
+
+   ```shell
+   # c++ 可以执行此命令来获取标准输出 得到CPU 使用率
+   top -p 3462371  -n 1
+   ```
+
+   
 
 
 
@@ -1988,3 +2021,53 @@ nash:x:1002:1002:nash:/home/nash:/bin/bash
 nash:x:0:0:nash:/home/nash:/bin/bash
 ```
 
+
+
+
+
+# 环境变量
+
+1. 用指定环境变量启动程序
+
+   ```shell
+   myName=Nash ./a.out
+   ```
+
+
+
+# 查看命令帮助信息
+
+```shell
+killall --help
+
+或者
+
+killall -h
+```
+
+
+
+
+
+# 守护进程
+
+1. 命令：daemonize
+
+2. 作用：关闭终端后进程依然运行，用来替换nohup cmd & 和 screen
+
+3. 参数
+
+   ```shell
+   -a             Append to, instead of overwriting, output files. Ignored 
+                  unless -e and/or -o are specified.
+   -c <dir>       Set daemon's working directory to <dir>.
+   -e <stderr>    Send daemon's stderr to file <stderr>, instead of /dev/null.
+   -E var=value   Pass environment setting to daemon. May appear multiple times.
+   -o <stdout>    Send daemon's stdout to file <stdout>, instead of /dev/null.
+   -p <pidfile>   Save PID to <pidfile>.
+   -u <user>      Run daemon as user <user>. Requires invocation as root.
+   -l <lockfile>  Single-instance checking using lockfile <lockfile>.
+   -v             Issue verbose messages to stdout while daemonizing.
+   ```
+
+   

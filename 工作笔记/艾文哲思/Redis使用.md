@@ -109,4 +109,34 @@ appendonly yes
    redis-cli -p 7111 FLUSHALL
    ```
 
+3. 订阅全部频道
+
+   ```shell
+   PSUBSCRIBE *
+   ```
+
+4. 退订全部频道
+
+   ```shell
+   PUNSUBSCRIBE *
+   ```
+
+5. 订阅给定的一个或多个频道
+
+   ```shell
+   SUBSCRIBE channel [channel ...]
+   ```
+
+6. 退订给定的一个或多个频道
+
+   ```shell
+   UNSUBSCRIBE channel [channel ...]
+   ```
+
+7. 查看帮助信息
+
+   ```shell
+   redis -h
+   ```
+
    

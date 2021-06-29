@@ -53,30 +53,33 @@ void mapInsert(T& m, const typename T::key_type& key, const typename T::mapped_t
 }
 ```
 
-# 获取日期
+
+
+# 获取日期和时间戳
 
 ```cpp
-static std::string DatetimeToString(time_t time)
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <string>
+#include <iostream>
+#include <boost/format.hpp>
+#include <chrono>
+#include <stdint.h>
+using namespace std;
+
+// 打印当前时间
+std::string getDate()
 {
-	tm *tm_ = localtime(&time);                // 将time_t格式转换为tm结构体
-	int year, month, day;// 定义时间的各个int临时变量。
-	year = tm_->tm_year + 1900;                // 临时变量，年，由于tm结构体存储的是从1900年开始的时间，所以临时变量int为tm_year加上1900。
-	month = tm_->tm_mon + 1;                   // 临时变量，月，由于tm结构体的月份存储范围为0-11，所以临时变量int为tm_mon加上1。
-	day = tm_->tm_mday;                        // 临时变量，日。
+	auto time = boost::posix_time::second_clock::local_time();
+	std::string strPosixTime = boost::posix_time::to_iso_extended_string(time);
+	return strPosixTime;
+}
 
-	int hour = tm_->tm_hour;
-	int minute = tm_->tm_min;
-	int second = tm_->tm_sec;
-
-	std::ostringstream os;
-	os << year << "-"  
-	   << std::setw(2) << std::setfill('0') << month << "-"  
-	   << std::setw(2) << std::setfill('0') << day << " "
-	   << std::setw(2) << std::setfill('0') << hour << ":"  
-	   << std::setw(2) << std::setfill('0') << minute << ":"  
-	   << std::setw(2) << std::setfill('0') << second;
-	std::string date = os.str();
-	return date;                                // 返回转换日期时间后的string变量。
+// 获取当前时间戳--毫秒表示
+int64_t getNow()
+{
+	std::chrono::system_clock::duration d = std::chrono::system_clock::now().time_since_epoch();
+	std::chrono::milliseconds mil = std::chrono::duration_cast<std::chrono::milliseconds>(d);
+	return mil.count();
 }
 ```
 
@@ -255,46 +258,6 @@ int main()
 
 
 
-# 占位符替换字符串
-
-```c++
-namespace
-{
-	// 占位符替换,类似Python
-	//Usage :	auto t = formatString("INSERT INTO {0} WHERE `id` = {1}, `value` = {0}, `name` = {2}", toStringVec(Vec, 111, 999, "wzc"));
-	std::string formatString(std::string target, const std::vector<std::string>& subs) {
-		for (size_t i = 0; i < subs.size(); ++i) {
-			std::string placeholders = "{" + std::to_string(i) + "}";
-			const std::string& sub = subs.at(i);
-			size_t pos = target.find(placeholders);
-			size_t placeholders_len = placeholders.length();
-			while (pos != std::string::npos) {
-				target.replace(pos, placeholders_len, sub);
-				pos = target.find(placeholders);
-			}
-		}
-		return target;
-	}
-
-    // 丢弃全局变量,线程安全
-	template<typename T>
-	std::vector<std::string>& toStringVec(std::vector<std::string>& subsVec, T t) {
-		ostringstream os;
-		os << t;
-		subsVec.push_back(os.str());
-		return subsVec;
-	}
-	template<typename T, typename... Args>
-	std::vector<std::string> toStringVec(std::vector<std::string>& subsVec, T head, Args... args) {
-		ostringstream os;
-		os << head;
-		subsVec.push_back(os.str());
-		return toStringVec(subsVec, args...);
-	}
-}
-```
-
-
 
 
 # JSON
@@ -437,8 +400,7 @@ int main()
 # 去除变量未使用的警告
 
 ```c++
-int a = 127;
-(void)a; // 去除警告
+[[maybe_unused]]
 ```
 
 # 智能指针包装对象
@@ -1492,6 +1454,86 @@ virtual tars::Int32 log2db(const DaqiGame::TLog2DBReq& tLog2DBReq, DaqiGame::TLo
 # BOOST
 
 这是C++ 开发必须要使用的SDK
+
+
+
+
+
+
+
+# 错误码
+
+说明：很多函数返回两个值，其中一个是错误码，类似golang
+
+示例代码
+
+```cpp
+#include <iostream>
+#include <system_error>
+enum class ErrorType
+{
+	LOGIC_ERROR      = 1,
+	INVALID_ARGUMENT = 2,
+	RUNTIME_ERROR    = 3 
+};
+int main(int argc, char *argv[])
+{
+	std::error_code ec = std::error_code((int)ErrorType::INVALID_ARGUMENT, std::generic_category());
+	std::cout << ec.category().name() << " \n"
+	<< ec.value() << std::endl;
+	
+	std::error_code ec2;
+	std::cout << ec2.category().name() << " \n"
+	<< ec2.value() << std::endl;
+	return 0;
+}
+```
+
+
+
+
+
+# 安全类型转换
+
+```cpp
+// boost::lexical_cast 转换失败会抛出异常
+
+#include <boost/lexical_cast.hpp>
+#include <iostream>
+#include <string>
+int main()
+{
+	std::string saraly = "1238456";
+	int d = 0;
+	bool doSuccess = boost::conversion::try_lexical_convert(saraly, d);
+	if (doSuccess) {
+		std::cout << "d = " << d << std::endl;
+	}
+	else {
+		std::cout << "convert failed" << std::endl;
+	}
+		
+	return 0;
+}
+```
+
+
+
+
+
+# Linux 动态库多个版本冲突
+
+1. 尽量使用docker 部署服务
+
+2. 检查是否同时存在多个版本
+
+   ```shell
+   
+   # 可以写一个脚本来检查
+   ldconfig -v | grep ${so_name}
+   ```
+
+   
 
 
 
