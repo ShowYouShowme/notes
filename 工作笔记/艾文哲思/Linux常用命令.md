@@ -1963,7 +1963,7 @@ vim /etc/fstab
 
 
 
-## socket5代理
+## socks5代理
 
 
 
@@ -2068,6 +2068,31 @@ killall -h
    -u <user>      Run daemon as user <user>. Requires invocation as root.
    -l <lockfile>  Single-instance checking using lockfile <lockfile>.
    -v             Issue verbose messages to stdout while daemonizing.
+   ```
+
+
+
+
+# ps
+
+1. 查看全部进程信息
+
+   ```shell
+   ps -ef
+   ```
+
+2. 查看指定进程信息
+
+   ```shell
+   ps -p ${pid} -f
+   ```
+
+3. 根据进程名查看信息
+
+   ```shell
+   ps -C ${procName} -f
+   
+   ps -C lock-free -f
    ```
 
    

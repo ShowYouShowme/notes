@@ -190,4 +190,14 @@ g++ main.cpp  -o main -I ../Person/ -L ../Person -l Person
    make -j1
    ```
 
-   
+
+
+
+# 动态库符号查找
+
+```shell
+nm -D ${soName} | grep ${symbol}
+
+nm -D libboost_stacktrace_addr2line.so.1.75.0 | grep dladdr
+```
+
