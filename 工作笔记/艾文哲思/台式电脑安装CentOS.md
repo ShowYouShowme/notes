@@ -64,15 +64,13 @@ CentOS-7-x86_64-Minimal-1810.iso
    用xshell远程连接
    ```
 
-5. 配置阿里源
+5. 配置网易源
 
    ```shell
-   # 阿里云有个域名无法解析,直接删掉即可
-   # mirrors.cloud.aliyuncs.com 搜索cloud,命中的行都删除
    yum install wget net-tools -y
    # 备份
    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
-   wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+   wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.163.com/.help/CentOS7-Base-163.repo
    yum makecache
    ```
 
