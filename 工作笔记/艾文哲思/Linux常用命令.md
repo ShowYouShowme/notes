@@ -222,6 +222,8 @@ scp [命令参数] [源路径] [目的路径]
 1. 将本地文件复制到远程[发布和部署时用到]
 
    ```shell
+   # 如果公钥copy过去了,用户名不需要指定(root@ 可以省略)
+   
    scp -r /home/administrator/ root@192.168.6.129:/etc/squid
    ```
 
@@ -240,13 +242,7 @@ scp [命令参数] [源路径] [目的路径]
    # 生成公钥和私钥
    ssh-keygen -t rsa -P ""
    # 拷贝公钥到远程主机
-   scp ~/.ssh/id_rsa.pub root@10.10.10.61:/root/.ssh
-   # 登录远程主机，将公钥id_rsa.pub输入到authorized_keys文件中
-   cd ~/.ssh
-   cat id_rsa.pub >> authorized_keys 
-   
-   # 秘钥文件权限全部设置为600
-   id_rsa、id_rsa.pub和authorized_keys
+   ssh-copy-id -i ~/.ssh/id_rsa.pub slzg@192.168.0.10
    ```
    
 4. 指定端口`-P`
@@ -406,7 +402,6 @@ yum install tree -y
      ```
    
      
-   
    
    
    
@@ -853,7 +848,7 @@ yum安装时会显示安装的Repository
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >
+  >      
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -877,7 +872,7 @@ yum安装时会显示安装的Repository
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >
+  >      
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -915,7 +910,9 @@ yum安装时会显示安装的Repository
 + 示例
 
   ```shell
-  chown ${user} ${file}
+  chown ${user}[:${group}] ${file}
+  
+  chown -R nfsnobody:nfsnobody /data/share/
   ```
 
 
@@ -958,7 +955,6 @@ yum安装时会显示安装的Repository
   # 删除找到的文件
   rm -f `find / -name "libcurl*"`
   ```
-  
 
 
 
@@ -2053,7 +2049,7 @@ killall -h
 
 1. 命令：daemonize
 
-2. 作用：关闭终端后进程依然运行，用来替换nohup cmd & 和 screen
+2. 作用：关闭终端后进程依然运行，用来替换nohup cmd & 和 screen；并且可以将控制台输出重定向
 
 3. 参数
 
@@ -2069,6 +2065,14 @@ killall -h
    -l <lockfile>  Single-instance checking using lockfile <lockfile>.
    -v             Issue verbose messages to stdout while daemonizing.
    ```
+   
+4. 示例
+
+   ```shell
+   daemonize -a -e  watch-dog.err -o watch-dog.out -p watch-dog.pid -c `pwd` /usr/bin/python3 /home/slzg/watch-dog/main.py /home/slzg/test 
+   ```
+
+   
 
 
 
@@ -2096,3 +2100,35 @@ killall -h
    ```
 
    
+
+# lsblk
+
+作用：查看所有可用块设备的信息
+
+
+
+示例
+
+```shell
+lsblk
+
+NAME   MAJ:MIN rm   SIZE RO type mountpoint
+sda      8:0    0 232.9G  0 disk 
+├─sda1   8:1    0  46.6G  0 part /
+├─sda2   8:2    0     1K  0 part 
+├─sda5   8:5    0   190M  0 part /boot
+├─sda6   8:6    0   3.7G  0 part [SWAP]
+├─sda7   8:7    0  93.1G  0 part /data
+└─sda8   8:8    0  89.2G  0 part /personal
+sr0     11:0    1  1024M  0 rom
+
+# type
+disk: 磁盘
+
+part: 分区
+```
+
+
+
+
+
