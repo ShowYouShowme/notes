@@ -523,21 +523,6 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
 
 
 
-# 保存yum下载的包
-
-```shell
-1:修改 /etc/yum.conf 配置文件将keepcache=0 改为keepcache=1
-2:下载的包放在路径:/var/cache/yum/x86_64/${centOS版本}/${Repository}/packages 
-
-====================
-yum安装时会显示安装的Repository
-开发机上Repository有：
-1:base
-2:epel
-3:extras
-4:updates
-```
-
 
 
 # 解决RPM包依赖问题
@@ -551,77 +536,6 @@ yum安装时会显示安装的Repository
    ```
 
    
-
-
-
-# 搭建本地yum仓库
-
-1. 安装createrepo
-
-   ```shell
-   yum -y install createrepo
-   ```
-
-2. 进入本地rpm包目录
-
-   ```shell
-   cd /root/packages/gcc
-   ```
-
-3. 构建yum仓库
-
-   ```shell
-   createrepo  ./
-   ```
-
-4. 如果添加或者删除了个人的rpm包，不用重新create，只需--update就可以了
-
-   ```shell
-   createrepo --update  ./
-   ```
-
-5. 编辑yum源repo文件
-
-   ```shell
-   vim /etc/yum.repos.d/local.repo
-   
-   # 文件内容
-   [localrepo]
-   name=localrepo
-   baseurl=file:///root/packages/gcc
-   gpgcheck=0
-   enabled=1
-   gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-   ```
-
-6. 备份系统yum源配置文件,只留下local.repo
-
-   ```shell
-   cd /etc/yum.repos.d/
-   mkdir ~/repos_bak
-   cp ./* ~/repos_bak/
-   rm -f /etc/yum.repos.d/CentOS*
-   ```
-
-7. 更新yum源
-
-   ```shell
-   # 清除资源
-   yum clean all
-   
-   # 建立yum资源缓存
-   yum makecache
-   ```
-
-   
-
-8. 安装软件包时指定yum源名称
-
-   ```shell
-   yum install ${packageName} --enablerepo=${yumRepo}
-   ```
-
-
 
 
 
@@ -848,7 +762,7 @@ yum安装时会显示安装的Repository
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >      
+  >         
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -872,7 +786,7 @@ yum安装时会显示安装的Repository
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >      
+  >         
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1216,6 +1130,10 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
 
 2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
 
+   ```shell
+   ssh-copy-id -i ~/.ssh/id_rsa.pub slzg@192.168.0.10
+   ```
+
 3. 登陆
 
    ```shell
@@ -1255,7 +1173,7 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
 1. 执行服务器上的shell脚本
 
    ```shell
-   ssh  -p 12008 root@dna3.viewdao.com bash /root/remote.sh
+   ssh  -p 12008 root@dna3.viewdao.com "bash /root/remote.sh"
    ```
 
 2. 执行本地脚本
@@ -1267,6 +1185,15 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
    # 执行本地脚本,并且传入参数
    ssh  -p 12008 root@dna3.viewdao.com "bash -s " < local.sh 66778
    ```
+   
+3. 命令远程机器执行命令
+
+   ```shell
+   # 先把公钥copy 过去
+   ssh 192.168.0.1 "ls -l"
+   ```
+
+   
 
 
 
@@ -1281,8 +1208,6 @@ ssh-copy-id -p 22 root@192.168.1.2
 
 
 
-
-##8 
 
 # 查看文件夹大小
 
