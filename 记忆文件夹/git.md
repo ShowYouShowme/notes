@@ -446,6 +446,15 @@ git config --global credential.helper store
 
 
 
+# 配置邮箱和用户名
+
+```shell
+git config --global user.email "wzc_0618@126.com"
+git config --global user.name "wzc"
+```
+
+
+
 
 
 # 多分支开发模式
