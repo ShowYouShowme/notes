@@ -1,18 +1,26 @@
-# 常见问题
+#  第一章 常见问题
 
 1. mac系统下git 终端显示中文乱码
 
    ```shell
    git config --global core.quotepath false
    ```
+   
+2. 安装目录
+
+   ```shell
+   Win下安装于默认目录，否则可能会有bug
+   ```
+
+   
 
 
 
-# 常用操作
+# 第二章 常用操作
 
 ***
 
-## 1 检查状态
+## 2.1 检查状态
 
 ```shell
 git status
@@ -20,7 +28,7 @@ git status
 
 
 
-## 2 克隆版库
+## 2.2 克隆版库
 
 ```shell
 git clone https://github.com/ShowYouShowme/notes.git
@@ -28,7 +36,7 @@ git clone https://github.com/ShowYouShowme/notes.git
 
 
 
-## 3 注册修改
+## 2.3 注册修改
 
 ```shell
 
@@ -38,7 +46,7 @@ git add ${file}
 
 
 
-## 4 差异比较
+## 2.4 差异比较
 
 ```shell
 # 对比所有文件
@@ -50,7 +58,7 @@ git diff app.py
 
 
 
-## 5 提交
+## 2.5 提交
 
 ```shell
 git add ${file}
@@ -62,7 +70,7 @@ git commit -m "${comment}"
 
 
 
-## 6 上载修改
+## 2.6 上载修改
 
 + 命令
 
@@ -90,7 +98,7 @@ git commit -m "${comment}"
   ```
 
   
-## 7 获取数据
+## 2.7 获取数据
 
 1. 只获取数据
 
@@ -154,7 +162,7 @@ git commit -m "${comment}"
 
 
 
-## 8 分支
+## 2.8 分支
 
 1. 合并分支
 
@@ -250,7 +258,7 @@ git commit -m "${comment}"
 
 
 
-## 9 commit
+## 2.9 commit
 
 1. 丢弃提交
 
@@ -268,7 +276,7 @@ git commit -m "${comment}"
 
      
 
-## 10 日志
+## 2.10 日志
 
 ```shell
 # 命令一
@@ -286,15 +294,7 @@ git log origin/master
 
 
 
-
-
-## 11 差异对比
-
-
-
-
-
-## 12 储藏
+## 2.11 储藏
 
 ```shell
 # 储藏修改
@@ -320,7 +320,7 @@ git stash -p # 根据提示输入，"y"表示储藏，"n"表示不储藏
 
 
 
-## 13 丢弃文件修改
+## 2.12 丢弃文件修改
 
 ***
 
@@ -331,7 +331,7 @@ git checkout -- main.cpp
 
 
 
-## 14 创建版本库
+## 2.13 创建版本库
 
 ***
 
@@ -350,7 +350,7 @@ git checkout -- main.cpp
 
 
 
-## 15 变基
+## 2.14 变基
 
 ***
 
@@ -358,7 +358,7 @@ git checkout -- main.cpp
 
 
 
-## 16 tag
+## 2.15 tag
 
 1. 查看tag
 
@@ -388,7 +388,7 @@ git checkout -- main.cpp
 
 
 
-## 17 子模块
+## 2.16 子模块
 
 ```shell
 # 初始化本地配置文件
@@ -401,7 +401,14 @@ git submodule update
 
 
 
-# git配置代理
+
+# 第三章 管理
+
+***
+
+
+
+## 3.1 git配置代理
 
 1. 使用命令
 
@@ -430,7 +437,7 @@ git submodule update
 
 
 
-# 保存账号密码
+## 3.2 保存账号密码
 
 ***
 
@@ -446,7 +453,7 @@ git config --global credential.helper store
 
 
 
-# 配置邮箱和用户名
+## 3.3 配置邮箱和用户名
 
 ```shell
 git config --global user.email "wzc_0618@126.com"
@@ -457,7 +464,7 @@ git config --global user.name "wzc"
 
 
 
-# 多分支开发模式
+# 第四章 多分支开发模式
 
 ***
 
