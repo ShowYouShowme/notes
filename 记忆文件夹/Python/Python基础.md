@@ -1087,3 +1087,1198 @@ import  myModule
 
 myModule.print_me()
 ```
+
+
+
+# 第十章 语法规范
+
+## 10.1 优雅的定义
+
+1. 终端里import this
+2. [PEP 8](https://www.python.org/dev/peps/pep-0008/)
+
+
+
+## 10.2 代码格式化工具
+
+1. autopep8
+
+   + 安装 pip3 install autopep8 --proxy http://127.0.0.1:8090
+   + 配置
+   ![](C:\Users\nash\Desktop\Python\img\pep8_configure.png)
+
+   + 使用
+   ![](C:\Users\nash\Desktop\Python\img\pep8_use.png)
+
+2. Pycharm自带格式化工具
+
+
+
+# 第十一章 面向对象编程
+
+## 类与实例
+
+```python
+class Player:
+    def __init__(self, name, hp):#构造函数
+        self.__name = name #私有成员变量
+        self.__hp = hp
+
+    def print_role(self):
+        print("%s %s" %(self.__name, self.__hp))
+
+user1 = Player("tom", 100)#不需要写new
+user1.print_role()
+```
+
+
+
+## 类的继承
+
+```python
+# 子类构造函数不会自动调用父类构造函数
+class Shape:
+    def __init__(self):
+        print("construct Shape")
+        return
+
+    def cal_area(self):
+        return
+class Rectangle(Shape):#继承
+    def __init__(self,width,height):
+        print("construct Rectangle")
+        self.__width = width
+        self.__height = height
+
+    def cal_area(self):
+        return self.__height * self.__width
+
+class Circle(Shape):
+    def __init__(self,radius):
+        super().__init__()
+        print("construct Circle")
+        self.__radius = radius
+
+    def cal_area(self):
+        return 3.14 * self.__radius * self.__radius
+
+r1 = Rectangle(3,5)
+print(r1.cal_area())
+print("+" * 15)
+c1 = Circle(5)
+print(c1.cal_area())
+
+#类型判断
+print(type(r1))
+print(isinstance(r1, Rectangle))
+```
+
+
+
+## 自定义with语句
+
+```python
+class TestWith:
+    def __enter__(self):
+        print("run")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("exit")
+
+with TestWith():
+    print("Test is running!")
+```
+
+```python
+class TestWith:
+    def __enter__(self):
+        print("run")
+
+    #@param:exc_type 异常类型
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb is None:# None 相当于NULL
+            print("正常结束")
+        else:
+            print("has error:%s" %exc_tb)
+        return True #返回True表示异常不往外抛出
+with TestWith():
+    print("Test is running!")
+    raise NameError("TestNameError")
+```
+
+
+
+# 第十二章 多线程编程
+
+## 12.1 多线程编程的定义
+
+```python
+import threading
+import time
+from threading import current_thread
+def myThread(arg1, arg2):
+    print(current_thread().getName(),'start')
+    print("%s %s" %(arg1, arg2))
+    time.sleep(1)
+    print(current_thread().getName(),'end')
+for i in range(1,6):
+    t1 = threading.Thread(target=myThread, args=(i,i+1)) #创建线程
+    t1.start()#启动线程
+
+print(current_thread().getName(),'end')
+```
+
+```python
+import threading
+from threading import current_thread
+
+class MyThread(threading.Thread):
+    def run(self):#start内部调用该函数
+        print(current_thread().getName(),'start')
+        self._target()
+        print(current_thread().getName(),'end')
+
+def handler():
+    print('call Handler')
+
+t1 = MyThread(target=handler)
+t1.start()
+t1.join()#等待t1结束
+print(current_thread().getName(),'end')
+```
+
+
+
+## 12.2 经典的生产者和消费者问题
+
+```python
+from threading import Thread,current_thread
+import time
+import random
+from queue import Queue
+
+queue = Queue(5)#队列满会阻塞,加锁操作已经在Queue里面封装
+
+class ProducerThread(Thread):
+    def run(self):
+        name = current_thread().getName()
+        nums = range(100)
+        global queue
+        while True:
+            num = random.choice(nums)
+            queue.put(num)
+            print("生产者 %s 生成了数据 %s" %(name, num))
+            t = random.randint(1,3)
+            time.sleep(t)
+            print("生产者 %s 睡眠了 %s 秒" %(name,t))
+
+
+class ConsumerThread(Thread):
+    def run(self):
+        name = current_thread().getName()
+        global queue
+        while True:
+            num = queue.get()
+            queue.task_done()
+            print("消费者 %s 消耗了数据 %s" %(name,num))
+            t = random.randint(1,5)
+            time.sleep(t)
+            print("消费者 %s 睡眠了 %s 秒" %(name, t))
+
+
+p1 = ProducerThread(name="p1")
+p1.start()
+p2 = ProducerThread(name="p2")
+p2.start()
+p3 = ProducerThread(name="p3")
+p3.start()
+
+c1 = ConsumerThread(name="c1")
+c1.start()
+c2 = ConsumerThread(name="c2")
+c2.start()
+```
+
+
+
+# 第十三章 标准库
+
+## 13.1 标准库的定义
++ [标准库参考文档](https://docs.python.org/3/library/index.html)
++ 常用库
+  1. Text Processing Services
+  2. Data Types
+  3. Generic Operating System Services
+  4. 网络部分处理
+  5. 开发工具与调试工具
+## 13.2 正则表达式
+
++ 正则表达式库re
+
+  ```python
+  import re
+  
+  pattern = re.compile("ca*t")
+  print(pattern.match("caaaat"))
+  ```
+
++ 元字符
+
+  1. **.** 匹配任意单个字符(不包括换行符'\n')
+  2. **^** 以指定内容开头
+  3. **$ **以指定内容结尾
+  4. ***** 匹配0到多次
+  5. **?** 匹配0或1次
+  6. **+ **匹配1次或多次
+  7. **{m[,n]}**
+     + **{m}** 匹配m次
+     + **{m,n}** 匹配m到n次
+  8. **[]** 匹配括号里的某个字符
+  9. **|** 字符选择左边或右边,常与()一起使用
+  10. **\d** 匹配数字 [0-9]
+  11. **\D** 匹配非数字
+  12. **\s** 匹配空白
+  13. **()** 分组,提取变量
+  14. **^$** 匹配空行
+  15. **.\*?** 不使用贪婪模式 匹配html的成对标签
+
++ 分组功能
+
+  ```python
+  import re
+  
+  pattern = re.compile("c.t")
+  print(pattern.match("c\nt"))#.不能匹配'\n'
+  ```
+
+  ```python
+  import re
+  
+  pattern = re.compile(r"(\d+)-(\d+)-(\d+)")
+  print(pattern.match("2018-05-10").groups())
+  
+  print(r"x\nx") #反斜杠不转义,正常"\\"表示"\"
+  ```
+
++ match与search对比
+
+  1. match是完全匹配整个字符串
+
+  2. search只要匹配字符串的一部分
+
+  3. 代码演示
+
+     ```python
+     import re
+     
+     pattern = re.compile(r"(\d+)-(\d+)-(\d+)")
+     # print(pattern.match("aa2018-05-10bb").groups()) #此处抛出异常
+     
+     print(pattern.search("aa2018-05-10bb").groups())
+     ```
+
++ sub函数 字符串替换substitute
+
+  ```python
+  import re
+  
+  phone = "123-456-789 #这是电话号码"
+  p2 = re.sub(r'#.*$','',phone)
+  print(p2)
+  print("-" * 15)
+  p3 = re.sub(r'\D','',p2)
+  print(p3)
+  ```
+
++ findall 查找全部匹配结果
+
+## 13.3 日期和时间
+
++ 相关模块
+
+  1. time
+  2. datetime
+
++ 示例代码
+
+  ```python
+  import time
+  
+  print(time.time())#获取秒数
+  print(time.localtime())#获取年月日信息
+  print(time.strftime('%Y-%m-%d %H:%M:%S'))
+  ```
+
+  ```python
+  import datetime
+  
+  # 获取10分钟后的时间
+  print(datetime.datetime.now())
+  new_time_delta = datetime.timedelta(minutes=10)
+  print(datetime.datetime.now() + new_time_delta)
+  
+  #获取间隔指定日期指定时长的新日期
+  one_day = datetime.datetime(2008,5,27)
+  day_delta =datetime.timedelta(days=10)
+  print(one_day+day_delta)
+  ```
+
+## 13.4 数学
+
++ 相关模块
+
+  1. math
+  2. random
+
++ 示例代码
+
+  ```python
+  import random
+  
+  print(random.randint(1,3))
+  
+  print(random.choice(['aa','bb','dd']))
+  ```
+
+## 13.5 文件和目录
+
++ 使用命令行对文件和文件夹操作
+
+  1. ls
+  2. pwd
+  3. cd 绝对路径|相对路径
+  4. mkdir
+     + mkdir -p /tmp/a/b/c/d (自动创建不存在的目录)
+
++ 文件和目录操作库
+
+  1. 相关库
+
+     + os.path
+     + pathlib
+
+  2. 示例代码
+
+     ```python
+     import os
+     
+     print(os.path.abspath("."))
+     print(os.path.exists('test.py'))#判断文件是否存在
+     print(os.path.isfile('sanguo.txt'))
+     print(os.path.isdir('weapon.txt'))
+     #路径拼接
+     print(os.path.join('/tmp/dir','name.txt'))
+     ```
+
+     ```python
+     import pathlib
+     #获取路径
+     p = pathlib.Path('.')
+     print(p.resolve())
+     
+     q = pathlib.Path("./img/a/b/c")
+     pathlib.Path.mkdir(q,parents=True)#上层目录不存在自动创建
+     ```
+
+
+
+
+# 第十四章  机器学习
+
+## 14.1 处理步骤
+
+1. 数据采集
+2. 数据预处理
+3. 数据清洗
+4. 建模和测试
+
+## 14.2 NumPy
+
++ 作用：数据预处理
++ 安装：pip3 install numpy
+
+
+
+## 14.3 NumPy的数组与数据类型
+
+```python
+import numpy
+arr1 = numpy.array([2,3,4])
+print(arr1)
+print(arr1.dtype)#打印数据类型
+
+arr2 = numpy.array([1.2,3.4,5.6])
+print(arr2)
+print(arr2.dtype)
+
+print(arr1 + arr2)
+```
+
+
+
+## 14.4 NumPy数组和标量的计算
+
+```python
+import numpy
+arr1 = numpy.array([2,3,4])
+print(arr1 * 15)#矩阵与标量计算
+
+#二维矩阵
+data = [[1,2,3],[4,5,6]]
+arr3 = numpy.array(data)
+print(arr3)
+print(arr3.dtype)
+
+#其它方法
+print(numpy.zeros(5))#一维矩阵
+print(numpy.zeros((3,5)))#二维矩阵
+print(numpy.ones((4,6)))
+print(numpy.empty(3))#置空
+```
+
+
+
+## 14.5 NumPy数组的索引和切片
+
+```python
+import numpy
+
+arr = numpy.arange(10)
+print(arr[5])
+print(arr[0:3])#获取切片
+arr[0:3] = 99 #赋值
+print(arr)
+
+arr_slice = arr[3:].copy()#获取副本
+print(arr_slice)
+arr_slice[:] = 998
+print(arr_slice)
+```
+
+
+
+## 14.6 pandas安装与Series结构
+
+
+
+
+
+# 第十五章 爬虫
+
+## 15.1 网页数据的采集与urlib库
+
+### 15.1.1 网络库介绍
+
++ urlib库      http协议常用库，系统标准库
+
++ request库 http协议常用库，第三方库
+
++ BeautifulSoup库 xml格式处理库
+
+  ```python
+  from urllib import request
+  
+  url = "http://www.baidu.com"
+  response = request.urlopen(url,timeout=1)
+  print(response.read().decode("utf-8"))
+  ```
+
+
+
+### 15.1.2 urlib库的使用
+
+#### 15.1.2.1 Get与Post
+
++ 简单介绍Get与Post方法
+
++ 代码演示
+
+  ```python
+  from urllib import parse
+  from urllib import request
+  #先设置操作系统http、https、ftp代理服务器
+  data = bytes(parse.urlencode({"word":"hello"}), encoding="utf8")
+  response = request.urlopen("http://httpbin.org/post", data=data, timeout=10)
+  print(response.read().decode("utf8"))
+  ```
+  
+  ```python
+  import urllib
+  from urllib import request
+  import socket
+  #先设置操作系统http、https、ftp代理服务器
+  try:
+      req = request.urlopen("http://httpbin.org/get?a=888&b=999", timeout=5)
+      print(req.read().decode("utf8"))
+  except urllib.error.URLError as e:
+      if isinstance(e.reason, socket.timeout):
+          print("TIME OUT")
+  ```
+  
+  ```python
+  # 用json格式发请求
+  from urllib import request
+  import json
+  
+  # 请求体数据
+  request_data = {
+      "serial": True,
+      "items": [{"server_id": 41, "command": "restart"}]
+  }
+  
+  headers = {
+      "content-type": "application/json"
+  }
+  
+  req = request.Request(url="http://10.10.10.168:3000/pages/server/api/add_task",
+                        headers=headers,
+                        data=json.dumps(request_data).encode("utf-8"))
+  
+  reps = request.urlopen(req).read().decode("utf-8")
+  ```
+  
+  
+
+#### 15.1.2.2 HTTP头部信息模拟
+
+```python
+from urllib import request
+from urllib import parse
+
+#构造http头部信息
+url = "http://httpbin.org/post"
+headers = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Encoding": "gzip, deflate, sdch",
+    "Accept-Language": "zh-CN,zh;q=0.8",
+    "Connection": "close",
+    "Cookie": "_gauges_unique_hour=1; _gauges_unique_day=1; _gauges_unique_month=1; _gauges_unique_year=1; _gauges_unique=1",
+    "Referer": "http://httpbin.org/",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36 LBBROWSER"
+}
+
+data = bytes(parse.urlencode({"word":"helloHttp8457"}),encoding="utf8")
+req = request.Request(url=url,data=data,headers=headers,method="POST")
+response = request.urlopen(req,timeout=10)
+print(response.read().decode("utf8"))
+```
+
+
+
+## 15.2 requests库的基本使用
+
++ 安装 *pip3 install requests --proxy http://127.0.0.1:8090*
+
++ 使用第三方包
+	+ 直接用项目中的pip安装
+	+ 用系统的pip安装，在pycharm中进行设置
+		1. 文件-->默认设置-->项目解释器，添加系统解释器
+		2. 文件-->设置-->项目解释器  设置python解释器为系统解释器
+
++ 代码示例
+	```python
+	import requests
+	
+	url = "http://httpbin.org/get"
+	data = {"key":"value","abc":"xyz"}
+	
+	response = requests.get(url,data)
+	print(response.text)
+	print("*" * 20)
+	#post 请求
+	url = "http://httpbin.org/post"
+	data = {"key":"value","abc":"xyz"}
+	response = requests.post(url,data)
+	print(response.json())
+	```
+	
++ 结合正则表达式爬取图片链接
+
+```python
+import requests
+import re
+
+url = 'http://www.cnu.cc/discoveryPage/hot-人像'
+content = requests.get(url).text
+
+pattern = re.compile(r'<img src="(.*?)".*?alt="(.*?)">',re.S)
+result = re.findall(pattern, content)
+for elem in result:
+    uri,name = elem
+    pos = str(uri).find("?")
+    uri = uri[0:pos]
+    pattern = re.compile(r".*\.(.*)")
+    postfix = re.findall(pattern, uri)[0]
+    content = requests.get(uri).content
+    name = re.sub("[\"”“ ]","",name)
+    try:
+        f = open("img/" + name + "." + postfix,"wb")
+        f.write(content)
+        f.close()
+    except Exception as e:
+        print(e)
+        print("%s.%s 下载失败" %(name,postfix))
+print("图片下载完成")
+```
+
+
+
+## 15.3 BeautifulSoup
+
+### 15.3.1 安装和基本用法
+
++ 安装
+	1. pip3 install bs4 --proxy http://127.0.0.1:8090
+	2. pip3 install lxml --proxy http://127.0.0.1:8090
++ 使用
+	1. 基本功能
+		+  格式化 *soup.prettify()*
+		+  获取标签
+		   +  根据标签名获取
+		   +  根据id获取
+		+  获取标签里面的内容
+		+  获取标签属性
+		+  获取全部满足指定条件的标签
+	2. 示例代码
+	```python
+	from bs4 import BeautifulSoup
+	
+	html_doc = """
+	<html><head><title>The Dormouse's story</title></head>
+	<body>
+	<p class="title"><b>The Dormouse's story</b></p>
+	
+	<p class="story">Once upon a time there were three little sisters; and their names were
+	<a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>,
+	<a href="http://example.com/lacie" class="
+	sister" id="link2">Lacie</a> and
+	<a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>;
+	and they lived at the bottom of a well.</p>
+	
+	<p class="story">...</p>
+	"""
+	
+	soup = BeautifulSoup(html_doc, "lxml")
+	print(soup.prettify())#格式化
+	
+	print(soup.title)#获取title标签
+	print(soup.title.string)#获取title标签里面的内容
+	#找到所有的a标签
+	print(soup.find_all("a"))
+	print(soup.a["href"])#获取标签的属性
+	print(soup.find(id="link3"))#通过id获取标签
+	```
+
+### 15.3.2 使用爬虫爬取新闻网站
+
++ 下载网页源码至html文件里，也可以用***requests.get***获取网页源码
++ 源码
+```python
+from bs4 import BeautifulSoup
+
+url = "https://www.infoq.cn/"
+f = open("src.html","r",encoding="utf-8")
+root_path = "https://www.infoq.cn/"
+html = f.read()
+soup = BeautifulSoup(html,"lxml")
+title_hrefs = soup.find_all("div", class_="list-item image-position-right")
+for title_href in title_hrefs:
+    title = title_href.find("a",class_="com-article-title")
+    print("标题：%s 链接:%s" %(title.string, root_path + title.get("href")))
+```
+### 15.3.3 获取图片链接并下载图片
+```python
+from bs4 import  BeautifulSoup
+import requests
+import os
+import shutil
+
+#1: 下载图片
+#2: 实现翻页
+#3: 利用多线程
+headers = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "zh-CN,zh;q=0.8",
+    "Connection": "close",
+    "Cookie": "_gauges_unique_hour=1; _gauges_unique_day=1; _gauges_unique_month=1; _gauges_unique_year=1; _gauges_unique=1",
+    "Referer": "http://www.infoq.com",
+    "Upgrade-Insecure-Requests": "1",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36 LBBROWSER"
+}
+
+def download_img(url,path):
+    response = requests.get(url,stream=True)
+    if response.status_code == 200:
+        with open(path,"wb") as f:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, f)
+def download_all_img(url):
+    response = requests.get(url,headers=headers)
+    soup = BeautifulSoup(response.text,"lxml")
+    for pic_href in soup.find_all("div", class_="container pc"):
+        for pic in pic_href.find_all("img"):
+            img_url = pic.get("src")
+            pos = str(img_url).find('?')
+            img_url = img_url[0:pos]
+            # print(img_url)
+            dir = os.path.abspath("./img")
+            file_name = os.path.basename(img_url)
+            img_path = os.path.join(dir,file_name)
+            print("开始下载 %s" %img_url)
+            download_img(img_url,img_path)
+
+
+url = "http://www.cnu.cc/discoveryPage/hot-人像?page="
+for i in range(1,6):
+    print("第 %d 页" %i)
+    download_all_img(url + str(i))
+```
+
+
+
+
+
+
+
+## 15.4 文件上传
+
+1. http头部
+
+   ```shell
+   Content-Type: multipart/form-data; boundary=${bound}
+   ```
+
+2. 示例代码
+
+   ```python
+   import os, random, sys, requests
+   from requests_toolbelt.multipart.encoder import MultipartEncoder
+   
+   url = 'http://10.10.10.23:8081/file_upload'
+   headers = {
+       'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0',
+       'Referer': url
+       }
+   
+   file = './cros.html'
+   # image 是表单的字段名
+   multipart_encoder = MultipartEncoder(
+       fields={
+           'image': (os.path.basename(file) , open(file, 'rb'), 'application/octet-stream')
+           #file为路径
+           },
+           boundary='-----------------------------' + str(random.randint(1e28, 1e29 - 1))
+       )
+   
+   headers['Content-Type'] = multipart_encoder.content_type
+   #请求头必须包含一个特殊的头信息，类似于Content-Type: multipart/form-data; boundary=${bound}
+   
+   r = requests.post(url, data=multipart_encoder, headers=headers)
+   print(r.text)
+   ```
+
+   ```html
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <title>文件上传演示</title>
+   </head>
+   <body>
+   <h3>文件上传:</h3>
+   选择一个文件上传:<br/>
+   <form action="file_upload" method="post" enctype="multipart/form-data">
+       <input type="file" name="image" size="50">
+       <br/>
+       <input type="submit" value="文件上传">
+   </form>
+   </body>
+   </html>
+   ```
+
+   ```javascript
+   import express = require("express");
+   import fs = require("fs");
+   import bodyParser = require("body-parser");
+   import multer = require("multer");
+   
+   
+   
+   let app : express.Application = express();
+   app.use(express.static('public'));
+   app.use(bodyParser.urlencoded({extended : false}));
+   app.use(multer({dest:'/tmp'}).array('image'));
+   
+   app.get("/", (req: express.Request, res : express.Response):void=>{
+       let path : string = __dirname + "/" +"form.html"
+       res.sendFile(path);
+   });
+   
+   app.post('/file_upload', (req : express.Request, res : express.Response):void=>{
+       let files   : Express.Multer.File[] = req.files as Express.Multer.File[];
+       let file    : Express.Multer.File   = files[0];
+       console.log(file);
+   
+       let des_file : string = __dirname + "/" + file.originalname;
+       fs.readFile(file.path, (err, data):void=>{
+           fs.writeFile(des_file, data, (err):void=>{
+               let response : any = null;
+               if (err){
+                   console.error(err);
+               } else{
+                   response = {
+                       message:'File uploaded successfully',
+                       filename:file.originalname
+                   }
+               }
+               console.log(response);
+               res.end(JSON.stringify(response));
+           })
+       })
+   
+   });
+   
+   let server = app.listen(8081);
+   ```
+
+   
+
+# 第十六章 类型注解
+
+## 16.1 变量注解
+
+```python
+a: int = 2
+```
+
+
+
+## 16.2 函数注解
+
+```python
+def add(a : int, b : int) -> int:
+    return a + b
+```
+
+
+
+## 16.3 集合类型注解
+
+```python
+from typing import List, Tuple, Dict
+
+names: List[str] = ['Germey', 'Guido']
+version: Tuple[int, bool, str] = (3, True, 'Nash')
+operations: Dict[str, bool] = {'show': False, 'sort': True}
+```
+
+
+
+## 16.4 无返回值
+
+```python
+from typing import NoReturn
+
+def help_info() -> NoReturn:
+    print("Hello")
+```
+
+
+
+## 16.5 返回任意类型
+
+```python
+from typing import List, Tuple, Dict,NoReturn,Any
+
+# Any 是任意类型
+def get_info(param : int) -> Any:
+    if param == 3 :
+        return "GET method"
+    else:
+        return 128
+
+def main():
+    a : str = get_info(3)
+    print(a)
+    b : int = get_info(12)
+    print(b)
+    print("=============")
+```
+
+
+
+## 16.6 兼容多种类型
+
+```python
+from typing import TypeVar
+
+height = 1.75
+Height = TypeVar('Height', int, float, None) # int|float|None
+def get_height() -> Height:
+ return height
+```
+
+
+
+## 16.7 Union
+
+```python
+# Union[X, Y] 代表要么是 X 类型，要么是 Y 类型 类似Typescript的"|"
+def process(fn: Union[str, Callable]):
+ if isinstance(fn, str):
+  # str2fn and process
+  pass
+ elif isinstance(fn, Callable):
+  fn()
+```
+
+
+
+## 16.8 定义新类型
+
+```python
+# 类型C++的Typedef
+from typing import NewType
+Person = NewType('Person', Tuple[str, int, float])
+person = Person(('Mike', 22, 1.75))
+```
+
+
+
+## 16.9 函数类型
+
+```python
+from typing import Callable
+def date(year: int, month: int, day: int) -> str:
+ return f'{year}-{month}-{day}'
+ 
+ # 调用此函数返回一个函数,函数的参数是int,int,int 函数返回值是str
+def get_date_fn() -> Callable[[int, int, int], str]:
+ return date
+```
+
+
+
+## 16.10 Optional
+
+```python
+# Optional[int]表明参数可以是int或者None
+def judge(result: bool) -> Optional[str]:
+ if result: return 'Error Occurred'
+```
+
+
+
+## 16.11 Generator
+
+```python
+# 生成器类型 === 暂时用不到
+```
+
+
+
+
+
+# 第十七章 操作系统
+
+## 17.1 执行shell命令
+
+```python
+import subprocess
+import os
+
+def log_info(cmd : str):
+    msg : str = "\033[32m======>{0}".format(cmd)
+    print(msg)
+    print("\033[0m")
+
+def log_error(cmd : str):
+    msg : str = "\033[31m{0}=======> failed!".format(cmd)
+    print(msg)
+    print("\033[0m")
+
+def exec_shell_cmd(cmd : str):
+    child = subprocess.Popen(cmd, shell=True)
+    child.wait()
+    if child.returncode != 0:
+        log_error(cmd)
+        raise NameError("occur error!")
+```
+
+
+
+# 第十八章 日期和时间
+
+# 18.1 日期时间
+
+## 1 相关类
+
+1. date
+
+   > 日期对象，常用属性有year，month和day
+
+2. time
+
+   > 时间对象
+
+3. datetime
+
+   > 日期时间对象，常用属性对象有hour，minute，second和microsecond
+
+4. timedelta
+
+   > 两个时间点间的时间间隔
+
+5. tzinfo
+
+   > 时区信息对象
+
+
+
+## 2 date类
+
+1. 构造
+
+   ```python
+   d = datetime.date(year=2020, month=10, day=25)
+   ```
+
+2. 常用方法
+
+   > + 比较大小
+   >
+   >   ```shell
+   >   # 等于
+   >   a.__eq__(b)
+   >
+   >   # 大于等于
+   >   a.__ge__(b)
+   >
+   >   # 大于
+   >   a.__gt__(b)
+   >
+   >   # 小于等于
+   >   a.__le__(b)
+   >
+   >   # 小于
+   >   a.__lt__(b)
+   >
+   >   # 不等于
+   >   a.__ne__(b)
+   >   ```
+   >
+   > + <font color="deep pink">获取两个日期相差多少天</font>
+   >
+   >   ```python
+   >   d1 - d2
+   >   ```
+   >
+   > + 标准化日期
+   >
+   > + <font color="deep pink">其它方法</font>
+   >
+   >   > 1. **timetuple**
+   >   >
+   >   >    ```shell
+   >   >    # 返回一个类型为time.struct_time的数组
+   >   >    ```
+   >   >
+   >   > 2. **fromtimestamp**
+   >   >
+   >   >    ```shell
+   >   >     # 根据给定的时间戮，返回一个date对象
+   >   >    ```
+   >   >
+   >   > 3. **today**
+   >   >
+   >   >    ```shell
+   >   >    # 返回当前日期
+   >   >    ```
+   >
+   > + 日期字符串输出
+
+
+
+## 3 time类
+
+
+
+
+
+
+
+## 4 datetime类
+
+1. 示例
+
+   ```python
+   # 字符串转为datetime param:202003161155
+   def to_datetime(param):
+       d = datetime.datetime.strptime(param, '%Y%m%d%H%M')
+       return d
+   
+   # datetime转为时间戳
+   def to_timestamp(param):
+       return int(time.mktime(param.timetuple()))
+   ```
+
+   ```python
+   # 将iso格式的字符串转换为datetime
+   d1 = datetime.datetime.fromisoformat('2020-04-28T04:03:10')
+   d2 = datetime.datetime.fromisoformat('2020-04-28T04:03:25')
+   # 计算两个日期间隔的秒数
+   t = (d2 - d1).seconds
+   ```
+   
+   
+
+
+
+# 18.2 常见问题
+
+## 1 获取昨天的日期
+
+```python
+def get_yesterday():
+    timestamp   : int           = time.time()
+    today       : datetime.date = datetime.date.fromtimestamp(timestamp)
+    yesterday   : datetime.date = datetime.date.fromtimestamp(timestamp - 24 * 60 * 60)
+    return yesterday.isoformat()
+```
+
+
+
+
+
+# 第十九章 调试
+
+
+
+## 19.1 pdb 命令列表
+
+| 命令                    | 简写                | 作用                   |
+| ----------------------- | ------------------- | ---------------------- |
+| break                   | b                   | 设置断点               |
+| continue                | c                   | 继续执行               |
+| list                    | l                   | 查看当前行代码段       |
+| **step**                | **s**               | **进入函数**           |
+| return                  | r                   | 从当前函数返回         |
+| quit                    | q                   | 终止并退出             |
+| **next**                | **n**               | **执行下一行**         |
+| **print**               | **p**               | **打印变量值**         |
+| help                    | h                   | 帮助信息               |
+| args                    | a                   | 查看传入参数           |
+| break                   | b                   | 显示所有断点           |
+| break ${lineno}         | b ${lineno}         | 在指定行设置断点       |
+| break ${file}:${lineno} | b ${file}:${lineno} | 在指定文件的行设置断点 |
+| clear ${num}            |                     | 删除指定断点           |
+| bt                      |                     | 查看函数调用堆栈       |
+
+
+
+## 19.2 调试命令
+
+```shell
+python3 -m pdb some.py
+```
