@@ -2125,7 +2125,7 @@ def exec_shell_cmd(cmd : str):
 
 # 18.1 日期时间
 
-## 1 相关类
+## 18.1.1  相关类
 
 1. date
 
@@ -2149,7 +2149,7 @@ def exec_shell_cmd(cmd : str):
 
 
 
-## 2 date类
+## 18.1.2 date类
 
 1. 构造
 
@@ -2213,7 +2213,7 @@ def exec_shell_cmd(cmd : str):
 
 
 
-## 3 time类
+## 18.1.3 time类
 
 
 
@@ -2221,7 +2221,7 @@ def exec_shell_cmd(cmd : str):
 
 
 
-## 4 datetime类
+## 18.1.4 datetime类
 
 1. 示例
 
@@ -2250,7 +2250,7 @@ def exec_shell_cmd(cmd : str):
 
 # 18.2 常见问题
 
-## 1 获取昨天的日期
+## 18.2.1 获取昨天的日期
 
 ```python
 def get_yesterday():
@@ -2295,3 +2295,602 @@ def get_yesterday():
 ```shell
 python3 -m pdb some.py
 ```
+
+
+
+
+
+# 第二十章 包和依赖管理
+
+
+
+## 20.1 包管理器
+
+***
+
+
+
+### 20.1.1 安装
+
+```shell
+# step1
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+
+# step2
+python3 ./get-pip.py
+
+# Ubuntu 18.04 安装方案
+sudo apt-get install python3-pip
+
+sudo -H pip3 install -U pip # 升级pip 到最新版本
+```
+
+
+
+### 20.1.2 使用阿里云镜像
+
+1. 临时使用
+
+   ```shell
+   pip install -i https://mirrors.aliyun.com/pypi/simple/ ${package}
+   ```
+
+2. 默认使用
+
+   ```shell
+   pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+   ```
+
+3. 查看设置结果
+
+   ```shell
+   pip config list
+   ```
+
+4. 取消设置
+
+   ```shell
+   pip config unset global.index-url
+   ```
+
+
+
+# 第二十一章 日志系统
+
+
+
+## 21.1 基本用法
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s:%(lineno)d  - %(message)s')
+
+
+def test():
+    logging.info("Start print log")
+    logging.debug("Do something")
+    logging.warning("Something maybe fail.")
+    logging.info("Finish")
+
+
+if __name__ == "__main__":
+    test()
+```
+
+
+
+
+
+
+
+# 第二十二章 MySQL
+
+
+
+## 22.1 基本操作
+
+***
+
+```python
+import  pymysql
+def _exec_sql(sql : str):
+    conn = pymysql.connect(host="192.168.0.79", port=8001, user="root", password="vsvIxMVS5c4VBFoh", database="test")
+    cursor = conn.cursor()
+    try:
+        cursor.execute(sql)
+        conn.commit()
+        results = cursor.fetchall()
+        conn.close()
+        return results
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        conn.close()
+```
+
+
+
+## 22.2 超时设置
+
+***
+1. 超时种类
+
+   + 连接超时
+   + 查询超时(类似requests的读取超时)
+
+2. 导致超时的API
+
+   + pymysql.connect：可能会连接超时，`connect_timeout`设置
+   + 查询超时：`read_timeout`就是设置下面三个API的
+     + cursor.execute()
+     + conn.commit()
+     + conn.rollback()
+
+3. 例子
+
+   ```python
+   import pymysql
+   
+   
+   
+   def main():
+       # 连接超时时间为connect_timeout
+       conn = pymysql.connect(host='10.10.10.89', port=3306, user='root',
+                              password='tars2015', database='test',
+                              connect_timeout = 5,
+                              read_timeout = 2) # 读取超时[cursor.execute(), conn.commit(),conn.rollback() ]
+       cursor = conn.cursor() # 本地
+       try:
+           for i in range(666, 766):
+               sql: str = 'INSERT INTO tb_money(`money`) VALUE({})'.format(i)
+               cursor.execute(sql) # 需要网络,超时时间为read_timeout
+               if i == 670:
+                   raise NameError('error at index 670')
+           conn.commit() # 提交事务, 需要网络,超时时间为read_timeout
+           results = cursor.fetchall() # 本地
+           conn.close() # 本地
+           return results
+       except Exception as e:
+           conn.rollback() # 事务回滚,需要网络,超时事件为read_timeout
+           print(e)
+           conn.close()
+           raise e
+       print('finished')
+   
+   if __name__ == '__main__':
+       main()
+   ```
+
+   
+
+
+
+## 22.3 事务处理
+
+***
+
+1. 每次执行一条sql语句
+
+   ```python
+   # 每次插入一条记录 t2 - t1 : 10.614759922027588
+   import pymysql
+   import time
+   
+   
+   def main():
+       # 连接超时时间为connect_timeout
+       conn = pymysql.connect(host='10.10.10.89', port=3306, user='root',
+                              password='tars2015', database='test',
+                              connect_timeout = 5,
+                              read_timeout = 2)
+       cursor = conn.cursor()
+       try:
+           t1 = time.time()
+           for i in range(1, 10000):
+               sql: str = 'INSERT INTO tb_money(`money`) VALUE({})'.format(i)
+               cursor.execute(sql)
+           	   conn.commit() # 注意这里,每条sql语句提交一次
+           results = cursor.fetchall()
+           conn.close()
+           t2 = time.time()
+           print('t2 - t1 : {}'.format(t2 - t1))
+           return results
+       except Exception as e:
+           conn.rollback()
+           print(e)
+           conn.close()
+           raise e
+       print('finished')
+   
+   if __name__ == '__main__':
+       main()
+   ```
+
+   
+
+2. 多条sql语句放到一个事务来执行
+
+   ```python
+   # 使用事务插入1w条记录 t2 - t1 : 2.9334681034088135
+   import pymysql
+   import time
+   
+   
+   def main():
+       # 连接超时时间为connect_timeout
+       conn = pymysql.connect(host='10.10.10.89', port=3306, user='root',
+                              password='tars2015', database='test',
+                              connect_timeout = 5,
+                              read_timeout = 2)
+       cursor = conn.cursor()
+       try:
+           t1 = time.time()
+           for i in range(1, 10000):
+               sql: str = 'INSERT INTO tb_money(`money`) VALUE({})'.format(i)
+               cursor.execute(sql)
+           conn.commit() # 一次性提交
+           results = cursor.fetchall()
+           conn.close()
+           t2 = time.time()
+           print('t2 - t1 : {}'.format(t2 - t1))
+           return results
+       except Exception as e:
+           conn.rollback()
+           print(e)
+           conn.close()
+           raise e
+       print('finished')
+   
+   if __name__ == '__main__':
+       main()
+   ```
+
+
+
+
+## 22.4 SQL 注入
+
+```python
+import pymysql
+
+user = "helln' -- skdjfskdf"
+pwd = "234"
+
+# 1.连接
+conn = pymysql.connect(host='192.168.0.2', port=3306, user='root', password='tars2015', db='slzg', charset='utf8')
+# 2.创建游标
+cursor = conn.cursor()
+sql = "select * from userinfo where username=%s and password=%s"
+print('sql语句:', sql)
+
+result = cursor.execute(sql, [user, pwd])  # 处理SQL 注入的问题,SQL 不要直接用字符串拼接
+print('返回记录数:', result)                # 增加、删除、修改的时候必须commit,否则不生效
+
+# 关闭连接，游标和连接都要关闭
+cursor.close()
+conn.close()
+if result:
+    print('登陆成功')
+else:
+    print('登录失败')
+```
+
+
+
+
+
+# 第二十三章 Redis
+
+
+
+## 23.1 基本用法
+
+```python
+#删除指定key
+import redis
+from typing import List, Tuple, Dict
+
+conn = redis.Redis(host='10.10.10.168', port=7111)
+
+
+keys : List[str] = conn.keys("1:100:*")
+
+for key in keys:
+    conn.delete(key)
+print(keys)
+```
+
+
+
+# 第二十四章 Requests
+
+## 24.1 连接超时
+
+****
+
+1. 对应tcp的connect函数调用
+
+2. 例子
+
+   ```python
+   import time
+   import requests
+   
+   url = 'http://www.google.com.hk'
+   
+   print(time.strftime('%Y-%m-%d %H:%M:%S'))
+   try:
+       html = requests.get(url, timeout=5).text # 设置连接超时为5s,默认是21s
+       print('success')
+   except requests.exceptions.RequestException as e:
+       print(e)
+   
+   print(time.strftime('%Y-%m-%d %H:%M:%S'))
+   ```
+
+   
+
+
+
+## 24.2 读取超时
+
+***
+
+1. **读取超时如果不设置，程序将一直处于等待状态，无法响应**
+
+2. 设置方式
+
+   + connect 和 read 共用一个timeout
+
+     ```python
+     r = requests.get('https://github.com', timeout=5)
+     ```
+
+   + connect 和 read 分别用自己的timeout
+
+     ```python
+     r = requests.get('https://github.com', timeout=(3.05, 27))
+     ```
+
+3. 代码示例
+
+   + 不设置超时，一直等待
+   
+     ```python
+     import time
+     import requests
+     
+     
+     # FLASK 搭建的http服务,该接口sleep 123456 秒
+     url = 'http://127.0.0.1:8101/api/gather/tx'
+     print(time.strftime('%Y-%m-%d %H:%M:%S'))
+     
+     try:
+         html = requests.get(url).text  # 会一直阻塞等待
+         print('success')
+     except requests.exceptions.RequestException as e:
+         print(e)
+     
+     print(time.strftime('%Y-%m-%d %H:%M:%S'))
+     ```
+   
+   + 设置超时
+   
+     ```python
+     import time
+     import requests
+     
+     
+     # FLASK 搭建的http服务,该接口sleep 123456 秒
+     url = 'http://127.0.0.1:8101/api/gather/tx'
+     print(time.strftime('%Y-%m-%d %H:%M:%S'))
+     
+     try:
+         html = requests.get(url,timeout=(5, 15)).text
+         print('success')
+     except requests.exceptions.RequestException as e:
+         print(e)
+     
+     print(time.strftime('%Y-%m-%d %H:%M:%S'))
+     ```
+   
+     
+## 24.3 超时重试
+
+***
+
+   1. 例子
+   
+      ```python
+      import time
+      import requests
+      from requests.adapters import HTTPAdapter
+      
+      s = requests.Session()
+      s.mount('http://', HTTPAdapter(max_retries=3))
+      s.mount('https://', HTTPAdapter(max_retries=3))
+      
+      print(time.strftime('%Y-%m-%d %H:%M:%S'))
+      try:
+          r = s.get('http://www.google.com.hk', timeout=5)
+          return r.text
+      except requests.exceptions.RequestException as e:
+          print(e)
+      print(time.strftime('%Y-%m-%d %H:%M:%S'))
+      ```
+   
+      
+   
+   2. 分析
+   
+      > `max_retries` 为最大重试次数，重试3次，加上最初的一次请求，一共是4次，所以上述代码运行耗时是20秒而不是15秒
+
+
+
+# 第二十五章 json
+
+
+
+## 25.1 相关API
+
+```shell
+json.loads()  	#将json转换为dict
+json.dumps()	#将dict转换为json
+
+# 文件与JSON
+json.load() 	#将json文件转换为dict
+json.dump() 	#将dict转换为json文件 person.jon
+```
+
+
+
+## 25.2  dict转换为json
+
+```python
+import json
+person = {
+  'name': 'jack',
+  'age': 15,
+  'email': 'jack@litets.com'
+}
+print('dict：', person)
+person_json = json.dumps(person) # 转换为json
+print('json：', person_json)
+```
+
+
+
+## 25.3 json转换为dict
+
+```python
+import json
+person_dict = json.loads('{"name": "jack", "age": 15, "email": "jack@litets.com"}')
+print('person dict:', person_dict)
+```
+
+
+
+## 25.4 对象转换为json
+
+```python
+import json
+class Person:
+  def __init__(self, name, age, email):
+    self.name = name
+    self.age = age
+    self.email = email
+person = Person('tom', 38, 'tom@litets.com')
+person_json = json.dumps(person.__dict__)
+print('person json:', person_json)
+```
+
+
+
+## 25.5 json转换为对象
+
+```python
+import json
+class Person:
+  def __init__(self, name, age, email):
+    self.name = name
+    self.age = age
+    self.email = email
+def convert2json(dict_json):
+  return Person(dict_json['name'], dict_json['age'], dict_json['email'])
+person = json.loads('{"name": "tom", "age": 38, "email": "tom@litets.com"}', object_hook=convert2json)
+print('person:', person)
+```
+
+
+
+## 25.6 dict转换为json文件
+
+```python
+import
+person = {"name": "tom", "age": 38, "email": "tom@litets.com"}
+with open('person.json', 'w') as f:
+  json.dump(person, f)
+```
+
+
+
+## 25.7 json文件转换为dict
+
+```python
+import json
+with open('person.json', 'r') as f:
+  print(json.load(f))
+```
+
+# 
+
+# 第二十六章 其它问题
+
+
+
+## 26.1 循环引用
+
+***
+
+1. 将导入语句放到函数或者类的内部
+
+2. 组织代码
+
+   ```shell
+   # 可以将代码合并到一起
+   
+   # 可以把一部分import提取到第三个文件中
+   ```
+
+
+
+
+## 26.2 排序
+
+***
+
++ 简单list排序
+
+  ```python
+      # l.sort() 直接排序数组
+      l = [1, 6, -1,0]
+      l.sort()
+      print(l)
+  ```
+
+  ```python
+      # sorted : 返回排序后的数组,原来的数组不变
+      l = [1, 6, -1,0]
+      l1 = sorted(l)
+      print(l)
+  ```
+
+  
+
++ list内嵌dict的排序
+
+  ```python
+      l = [
+          {
+              "age" : 20,
+              "salary" : 57,
+          },
+          {
+              "age" : 40,
+              "salary" : 15,
+          },
+          {
+              "age" : 12,
+              "salary" : 0,
+          },
+          {
+              "age" : 2,
+              "salary" : -1
+          }
+      ]
+  
+      l.sort( key=lambda k : k["age"],reverse=True)
+      print(l)
+  ```
+
+  
