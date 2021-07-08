@@ -133,4 +133,33 @@
        main()
    ```
 
-   
+
+
+
+# SQL 注入
+
+```python
+import pymysql
+
+user = "helln' -- skdjfskdf"
+pwd = "234"
+
+# 1.连接
+conn = pymysql.connect(host='192.168.0.2', port=3306, user='root', password='tars2015', db='slzg', charset='utf8')
+# 2.创建游标
+cursor = conn.cursor()
+sql = "select * from userinfo where username=%s and password=%s"
+print('sql语句:', sql)
+
+result = cursor.execute(sql, [user, pwd])  # 处理SQL 注入的问题,SQL 不要直接用字符串拼接
+print('返回记录数:', result)                # 增加、删除、修改的时候必须commit,否则不生效
+
+# 关闭连接，游标和连接都要关闭
+cursor.close()
+conn.close()
+if result:
+    print('登陆成功')
+else:
+    print('登录失败')
+```
+

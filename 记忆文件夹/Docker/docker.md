@@ -223,7 +223,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >    
+   >       
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -285,6 +285,28 @@ top
 
 
 
+## 2.12 启动停止容器
+
+```shell
+docker stop ${containerID}
+```
+
+
+
+## 2.13 启动容器
+
+```shell
+# 启动被stop的容器
+docker start ${containerID}
+
+# 或者
+docker restart ${containerID}
+```
+
+
+
+
+
 # 第三章 常用官方镜像
 
 ## 3.1 MySQL
@@ -308,7 +330,6 @@ top
    >   ```shell
    >   docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
    >   ```
-   >
 
 
 

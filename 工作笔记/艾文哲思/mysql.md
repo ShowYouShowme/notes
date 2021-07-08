@@ -235,7 +235,7 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
    
    # 常见错误 : 文件/tmp/mysql.sock 在unix domain socket连接时使用,用TCP连接即可
    # Can't connect to local MySQL server through socket '/tmp/mysql.sock'
-
+   
    # 查看账号权限时,同时存在localhost和127.0.0.1,次二者不一样
    ```
    
@@ -469,6 +469,9 @@ docker run --name myadmin -d -e PMA_HOST=${mysqlHost} -e PMA_PORT=${mysqlPort} -
 
 ```shell
 mac 上面使用有bug
+
+# 防止自动断开
+编辑链接 --> 高级 --> 保持连接间隔 --> 30s
 ```
 
 
@@ -570,4 +573,27 @@ mysql 自带的客户端
    performance_schema.events_statements_current找到其sid, kill 掉该session. 也可以 kill 掉DDL所在的session
    ```
 
-   
+
+
+
+# 统计相关
+
+```mysql
+# 获取当前日期和时间
+SELECT NOW();
+
+SELECT CURDATE(); # 获取当前日期
+
+SELECT CURTIME(); # 返回当前时间
+
+SELECT * FROM plot_statistics WHERE DATE(log_time) = "2021-07-07";  # 统计某一天
+
+
+SELECT * FROM plot_statistics WHERE DATE(log_time) = CURDATE();  # 统计当天
+
+select * from plot_statistics where date(log_time) = date_sub(CURDATE()  ,interval 1 day); # 统计前一天
+
+
+select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # 统计昨天和今天的
+```
+
