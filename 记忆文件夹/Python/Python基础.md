@@ -1360,6 +1360,19 @@ c2.start()
   print(r"x\nx") #反斜杠不转义,正常"\\"表示"\"
   ```
 
+  ```python
+  import re
+  
+  p = re.compile(r'(\d+)-(\d+)-(\d+)')
+  print(p.match('2018-05-10').group(2))
+  print(p.match('2018-05-10').groups())
+  
+  year,month,day= p.match("2018-05-10").groups()
+  print("year:%s month:%s day:%s" %(year,month,day))
+  ```
+
+  
+
 + match与search对比
 
   1. match是完全匹配整个字符串
@@ -1729,8 +1742,8 @@ print("图片下载完成")
 ### 15.3.1 安装和基本用法
 
 + 安装
-	1. pip3 install bs4 --proxy http://127.0.0.1:8090
-	2. pip3 install lxml --proxy http://127.0.0.1:8090
+	1. pip3 install bs4 
+	2. pip3 install lxml 
 + 使用
 	1. 基本功能
 		+  格式化 *soup.prettify()*
