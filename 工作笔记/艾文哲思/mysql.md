@@ -597,3 +597,44 @@ select * from plot_statistics where date(log_time) = date_sub(CURDATE()  ,interv
 select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # 统计昨天和今天的
 ```
 
+
+
+# 时区
+
+
+
+## 查看时区
+
+***
+
+```shell
+show variables like "%time_zone%";
+```
+
+
+
+## 设置时区
+
+```shell
+#配置文件路径/etc/mysql/mysql.conf.d/mysqld.cnf
+[mysqld] 
+default-time-zone='+08:00'
+```
+
+
+
+## 临时修改时区
+
+```shell
+set time_zone = '+8:00';
+set global time_zone='+08:00';
+```
+
+
+
+## 时区转换函数
+
+```shell
+CONVERT_TZ
+```
+

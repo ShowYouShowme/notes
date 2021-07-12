@@ -116,6 +116,19 @@
      
      ```
 
+## 1.3 第一个程序
+
+***
+
+```python
+def main():
+	print("Hello World!")
+
+    
+if __name__ == "__main__":
+    main()
+```
+
 
 
 
@@ -729,6 +742,24 @@ if __name__ == "__main__":
     except Exception as e:
         logging.exception(e)
         print("---")
+```
+
+```python
+#重新抛出异常
+#使用raise后面不加参数
+def exec_sql(sql : str, data):
+    try:
+        raise NameError("this is error")
+        return results
+    except Exception as e:
+        #重新抛出异常
+        raise
+
+if __name__ == "__main__":
+    try:
+        result = exec_sql("select * from userinfo ", None)
+    except Exception as e:
+        logging.exception(e)
 ```
 
 
@@ -2393,11 +2424,11 @@ if __name__ == "__main__":
 
 ```python
 import  pymysql
-def _exec_sql(sql : str):
+def _exec_sql(sql : str, data):
     conn = pymysql.connect(host="192.168.0.79", port=8001, user="root", password="vsvIxMVS5c4VBFoh", database="test")
     cursor = conn.cursor()
     try:
-        cursor.execute(sql)
+        cursor.execute(sql, data) #防止sql注入
         conn.commit()
         results = cursor.fetchall()
         conn.close()
