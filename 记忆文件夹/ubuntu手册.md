@@ -81,4 +81,110 @@
 
       
 
+
+# Ubuntu 20
+
+
+
+## 配置阿里源
+
+### 方法一
+
+```shell
+# vim /etc/apt/source.list
+deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
+```
+
+
+
+### 方法二
+
+```shell
+# ubuntu desktop 推荐此方法
+软件和更新 --> 下载自 --> 选择阿里源
+```
+
+
+
+## 升级系统
+
+```shell
+# ubuntu 升级系统后会变稳定,减少崩溃几率
+duso apt full-upgrade
+```
+
+
+
+## 常见问题
+
+***
+
+1. chrome会导致系统崩溃：建议使用firefox
+2. ubuntu crash 时，找出导致crash的软件，不使用即可
+
+
+
+
+
+## 常见操作
+
+***
+
+1. 进入虚拟终端
+
+   ```shell
+   Ctrl + Alt + F1 : 图形化登陆界面
+   
+   Ctrl + Alt + F2 : 当前图形化界面
+   
+   Ctrl + Alt + F3-F6 : 命令行虚拟终端
+   
+   Ctrl + Alt + F7-F12 : 另外的虚拟终端，没有任何程序执行
+   ```
+
+2. 重启
+
+   ```shell
+   reboot 
+   # 或者
+   shutdown -r 
+   ```
+
+3. deb bao anzhuang
+
+   ```shell
+   sudo dpkg -i ${package}
+   
+   # ruguo queshao yilai 
+   sudo apt-get -f install # buxuyao zai zhixing dpkg le,yijing zhuanghaole 
+   ```
+
+4. 安装搜狗输入法
+
+   ```shell
+   apt-get install fcitx 	# 安装输入法系统
+   sudo curl -sL 'https://keyserver.ubuntu.com/pks/lookup?&op=get&search=0x73BC8FBCF5DE40C6ADFCFFFA9C949F2093F565FF' | sudo apt-key add
+   sudo apt-add-repository 'deb http://archive.ubuntukylin.com/ukui focal main'
+   sudo apt upgrade
+   sudo apt install sogouimebs
+   sogouIme-configtool 	# 输入法配置
+   
+   # 重启电脑，用Ctrl + Space 切换输入法， 右上角有搜狗的图标
+   ```
+
+   
+
    
