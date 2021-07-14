@@ -414,8 +414,8 @@ git submodule update
 
    ```shell
    #http代理：
-   git config --global http.proxy http://127.0.0.1:10800
-   git config --global https.proxy https://127.0.0.1:10800
+   git config --global http.proxy http://127.0.0.1:8090
+   git config --global https.proxy https://127.0.0.1:8090
    ```
    
 2. 编辑文件
@@ -423,9 +423,9 @@ git submodule update
    ```shell
    #在文件 ~/.gitconfig 添加：
    [http]
-   proxy = http://127.0.0.1:10800
+   proxy = http://127.0.0.1:8090
    [https]
-   proxy = https://127.0.0.1:10800
+   proxy = https://127.0.0.1:8090
    ```
 
 3. 取消代理
