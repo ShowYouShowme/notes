@@ -259,130 +259,11 @@ int main()
 
 
 
-
 # JSON
 
-## map打印为JSON
+***
 
-```c++
-template<typename T>
-std::string mToString(const T& param)
-{
-	ostringstream os;
-	os << param;
-	return os.str();
-}
-
-template<>
-std::string mToString<std::string>(const std::string& param)
-{
-	ostringstream os;
-	os << "\"" << param << "\"";
-	return os.str();
-}
-template<typename Key, typename Value>
-std::string mToString(const map<Key, Value>& param)
-{
-	ostringstream os;
-	os << "{";
-	size_t len = param.size();
-	size_t idx = 0;
-	for (auto& elem : param) {
-		os << "\"" << elem.first << "\":" << mToString(elem.second);
-		if (idx != len - 1) {
-			os << ",";
-		}
-		idx += 1;
-	}
-	os << "}";
-	return os.str();
-}
-```
-
-
-
-## Vector转换为JSON
-
-```c++
-template<typename Value>
-std::string VectorToString(const Value& param)
-{
-	ostringstream os;
-	os << param;
-	return os.str();
-}
-
-template<>
-std::string VectorToString<std::string>(const std::string& param)
-{
-	ostringstream os;
-	os << "\"" << param << "\"";
-	return os.str();
-}
-
-template<typename Value>
-std::string VectorToString(const std::vector<Value>& param)
-{
-	ostringstream os;
-	os << "[";
-	size_t len = param.size();
-	size_t idx = 0;
-	for (auto& elem : param) {
-		os << VectorToString(elem);
-		if (idx != len - 1) {
-			os << ",";
-		}
-		idx += 1;
-	}
-	os << "]";
-	return os.str();
-}
-
-struct Company
-{
-	std::string address;
-	int			phone;
-};
-
-template<>
-std::string VectorToString<Company>(const Company& param)
-{
-	ostringstream os;
-	os << "{";
-	os << "\"" << "address" << "\":";
-	os << param.address << ",";
-	os << "\"" << "phone" << "\":";
-	os << param.phone;
-	os << "}";
-	return os.str();
-}
-```
-
-测试代码
-
-```c++
-int main()
-{
-
-	std::vector<int> v1 = { 1, 2, 3, 4, 5, 6, 7 };
-	auto s1 = VectorToString(v1);
-	std:vector<std::string> v2 = { "11","222","555","990" };
-	auto s2 = VectorToString(v2);
-	std::vector<Company> v3 = {
-		{
-			"北京中关村", 8619223
-		},
-		{
-			"深圳南山科技园", 129334
-		},
-		{
-			"深圳坂田", 8888434
-		}
-	};
-	auto ss = VectorToString(v3);
-	return 0;
-}
-```
+> 使用Boost的json组件
 
 
 
@@ -705,24 +586,6 @@ int main()
   # 例子  删除已经存在的libcurl库
   rm -f `find / -name "libcurl*"`
   ```
-
-
-
-# 常用dll
-
-+ ld-linux.so
-
-  > 加载动态链接库
-
-+ libstdc++.so
-
-  > gcc中C++的动态库
-
-+ libc.so
-
-  > Linux下标准的C库，Linux系统中最底层的API，几乎其它任何的运行库都要依赖它。逐渐被glibc取代
-
-
 
 # 建议
 
