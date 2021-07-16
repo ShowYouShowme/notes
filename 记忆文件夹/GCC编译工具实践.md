@@ -1,4 +1,4 @@
-# GCC介绍
+# 第一章 GCC介绍
 
 + 名称：GNU Compiler Collection
 + 管理与维护：GNU项目
@@ -8,7 +8,7 @@
   3. 汇编
   4. 链接：找不到符号
 
-# GCC参数讲解
+# 第二章 GCC参数讲解
 
 + 基本使用格式 
 
@@ -30,7 +30,7 @@
 
   
 
-# GCC编译多文件
+# 第三章 GCC编译多文件
 
 1. 创建目录test和Person
 
@@ -72,54 +72,64 @@
 
    
 
-# GCC静态编译
-
-1. 安装依赖
-
-   ```shell
-   yum install libstdc++-static
-   yum install glibc-static
-   ```
-
-2. 示例
-
-   ```shell
-   g++ main.cpp -o main
-   ldd main #查看可执行文件依赖的库
-   
-   #静态编译
-   g++ main.cpp -o main_static -static
-   ldd main_static
-   
-   # 生成静态库
-   ar r libtest.a a.o b.o c.o
-   
-   
-   ## 生成静态库并静态编译链接
-   
-   ## step1:生成静态库
-   g++ -c hello.cpp   # 生成目标文件
-   ar r libhello.a hello.o # 目标文件打包为.a静态库文件
-   
-   ## step2:编译时连接静态库
-   ### 方法1：
-   g++ test.cpp -lhello -L. -static -o test
-   ### 方法2：
-   g++ test.cpp libhello.a -L. -o test_1
-   
-   
-   # 注意:g++ 4.8.5 CentOS7中,可以直接使用-l${libName} -L${libPath} 来链接
-   # 如果存在so,则链接so,否则链接.a;即此指令可以链接动态库和静态库
-   ```
+# 第四章 GCC静态编译
 
 
 
-# 注意
+## 4.1 安装依赖
+
+***
+
+```shell
+yum install libstdc++-static
+yum install glibc-static
+```
+
+
+
+## 4.2 示例
+
+***
+
+```shell
+g++ main.cpp -o main
+ldd main #查看可执行文件依赖的库
+
+#静态编译
+g++ main.cpp -o main_static -static
+ldd main_static
+
+# 生成静态库
+ar r libtest.a a.o b.o c.o
+
+
+## 生成静态库并静态编译链接
+
+## step1:生成静态库
+g++ -c hello.cpp   # 生成目标文件
+ar r libhello.a hello.o # 目标文件打包为.a静态库文件
+
+## step2:编译时连接静态库
+### 方法1：
+g++ test.cpp -lhello -L. -static -o test
+### 方法2：
+g++ test.cpp libhello.a -L. -o test_1
+
+
+# 注意:g++ 4.8.5 CentOS7中,可以直接使用-l${libName} -L${libPath} 来链接
+# 如果存在so,则链接so,否则链接.a;即此指令可以链接动态库和静态库
+```
+
+
+
+## 4.3 注意
+
+***
 
 1. -l${soName}动态库链接的是lib${soName}.so,不是lib${soName}.so.1之类的
 2. -l${aName}静态库链接的是lib${soName}.a,不是lib${soName}.a.1之类的
 
-# GCC动态库编译和调用
+# 第五章 GCC动态库编译和调用
 
 ```shell
 #生成动态库
@@ -153,8 +163,13 @@ g++ main.cpp  -o main -I ../Person/ -L ../Person -l Person
 
 
 
+# 第六章  其它
 
-# 其它选项
+
+
+## 6.1 选项
+
+***
 
 + -Wno-deprecated ：不要警告使用已弃用的功能
 + -Wall：使用警告
@@ -162,18 +177,16 @@ g++ main.cpp  -o main -I ../Person/ -L ../Person -l Person
 
 
 
-# 相关命令
+## 6.2 相关命令
+
+***
 
 + nm：查看可执行文件中的符号信息
 + strip：去掉可执行文件中的符号信息，减小文件体积
 
 
 
-
-
-
-
-# make 相关
+## 6.3 make 相关
 
 ***
 
@@ -193,7 +206,7 @@ g++ main.cpp  -o main -I ../Person/ -L ../Person -l Person
 
 
 
-# 动态库符号查找
+## 6.4 动态库符号查找
 
 ```shell
 nm -D ${soName} | grep ${symbol}
@@ -201,3 +214,65 @@ nm -D ${soName} | grep ${symbol}
 nm -D libboost_stacktrace_addr2line.so.1.75.0 | grep dladdr
 ```
 
+
+
+
+
+# 第七章 升级
+
+
+
+## 7.1 使用devtoolset升级
+
+***
+
+### 1.1 升级到7.3
+
+```shell
+yum -y install centos-release-scl
+yum -y install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+
+# scl命令启用只是临时的，退出shell或重启就会恢复原系统gcc版本
+scl enable devtoolset-7 bash
+
+# 长期使用
+echo "source /opt/rh/devtoolset-7/enable" >>/etc/profile
+```
+
+
+
+### 1.2 升级到8.3
+
+```shell
+yum -y install centos-release-scl
+yum -y install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
+# scl命令启用只是临时的，退出shell或重启就会恢复原系统gcc版本
+scl enable devtoolset-7 bash
+
+# 长期使用
+echo "source /opt/rh/devtoolset-8/enable" >>/etc/profile
+```
+
+
+
+### 1.3 升级到9.3
+
+```shell
+yum -y install centos-release-scl
+yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+# scl命令启用只是临时的，退出shell或重启就会恢复原系统gcc版本
+scl enable devtoolset-9 bash
+
+# 长期使用
+echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+```
+
+
+
+
+
+## 7.2 使用Docker
+
+***
+
+C++ 的server 部署在Docker 里面可以确保环境一致，避免很多问题。这是非常推荐的做法。
