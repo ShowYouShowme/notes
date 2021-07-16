@@ -174,3 +174,67 @@ chia plots check -n [num checks] -l -g [substring]
 
 
 
+## 2.8 查看公私钥
+
+```shell
+chia keys show #只显示公钥
+
+chia keys show --show-mnemonic-seed #连助记词一起显示
+```
+
+
+
+
+
+# 第三章 chia-plotter
+
+
+
+## 3.1 安装
+
+***
+
+```shell
+#Ubuntu 20.04
+sudo apt install -y libsodium-dev cmake g++ git build-essential
+#Checkout the source and install
+git clone https://github.com/madMAx43v3r/chia-plotter.git 
+cd chia-plotter
+
+git submodule update --init
+./make_devel.sh
+./build/chia_plot --help
+```
+
+
+
+## 3.2 P图
+
+***
+
+```shell
+# P图命令
+./chia_plot \
+-n -1 \
+-r {CPU核数} \
+-u 7 \
+-t {SSD缓存目录} \
+-2 {SSD缓存或内存盘目录} \
+-d {Plot文件存放位置} \
+-p {矿池公钥} \
+-f {农夫公钥}
+```
+
+```shell
+# 示例
+/home/slzg/chia-plotter/build/chia_plot -n -1 -r 8 -u 128 -b 30000 \ 
+-t /home/slzg/ssd/tmp/ \
+-d /home/slzg/ssd/plot/ \
+-p b4c4e0364464a06a78579ad14ea3bab207671f5ba491fd83b2b136cf82677820b9b37515c68b140c72c94a46f6c679c1 \
+-f b7a5f31efd753681c5866969400a9806173c7ef2c04406086b00b3c2c0fe8cf00dea8677bc2e30c578ca963f6705350b
+```
+
+
+
+
+
