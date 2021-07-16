@@ -762,7 +762,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >         
+  >            
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -786,7 +786,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >         
+  >            
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1906,6 +1906,8 @@ vim /etc/fstab
    drwxr-xr-x.  2 root root  12K May 28  2021 shared_dir
    -rw-r--r--.  1 root root  444 May  4 11:16 test.js
    ```
+   
+3. 注意：命令很长时，一般先在文本编辑器里面写好，再粘贴到terminal里面，此时续行符后面只能带换行
 
 
 
