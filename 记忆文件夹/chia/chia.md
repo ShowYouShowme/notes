@@ -184,6 +184,18 @@ chia keys show --show-mnemonic-seed #连助记词一起显示
 
 
 
+## 2.9 日志
+
+***
+
+1. 日志路径
+
+   ```shell
+   /home/nash/.chia/mainnet/log
+   ```
+
+   
+
 
 
 # 第三章 chia-plotter
@@ -235,6 +247,91 @@ git submodule update --init
 ```
 
 
+
+
+
+# 第四章 多节点部署
+
+
+
+## 4.1  复制证书文件
+
+***
+
+```shell
+cd ~/.chia/mainnet/config/ssl
+tar -zcvf ca.tar.gz ./ca/*
+scp ./ca.tar.gz slzg@192.168.0.10:/home/slzg
+```
+
+
+
+## 4.2 修改全节点的日志等级
+
+***
+
+```shell
+#~/.chia/mainnet/config/config.yaml
+log_level: INFO
+
+#或者执行命令
+chia configure --log-level DEBUG
+
+#重启服务
+chia start -r farmer
+```
+
+
+
+## 4.3 启动全节点
+
+***
+
+```shell
+chia start farmer
+
+#查看日志,观察收割机是否已经连上
+tail -f debug.log | grep 192.168.0.10
+
+#断开收割机后收到看到如下日志
+2021-07-16T18:39:49.089 farmer farmer_server              : INFO     Connection closed: 192.168.0.10, node id: 303c69afc4521dbef380bb2eba2efbc53005e46d6a883b7edf36973ef6d8641e
+2021-07-16T18:39:49.090 farmer chia.farmer.farmer         : INFO     peer disconnected {'host': '192.168.0.10', 'port': 8448}
+
+#或者用如下命令
+chia farm summary
+```
+
+
+
+## 4.4  初始化收割机
+
+***
+
+```shell
+chia init -c  ~/ca
+```
+
+
+
+## 4.5 设置farmer的地址
+
+```shell
+harvester:
+  chia_ssl_ca:
+    crt: config/ssl/ca/chia_ca.crt
+    key: config/ssl/ca/chia_ca.key
+  farmer_peer:
+    host: Main.Machine.IP#修改这里
+    port: 8447
+```
+
+
+
+## 4.6 启动收割机
+
+```shell
+chia start harvester
+```
 
 
 

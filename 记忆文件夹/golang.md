@@ -1658,7 +1658,13 @@ func Square(input int)int  {
    }
    ```
 
-   
+
+### 8.1.4 使用
+
+***
+
+1. 使用gopath创建项目时，所有代码放在目录$GOPATH/src下
+2. 用goland创建项目时，项目类型选择go
 
 
 
@@ -1718,6 +1724,7 @@ func Square(input int)int  {
 
    ```shell
    go env -w GO111MODULE=on
+   #记得用go env 查看其值
    ```
 
 3. 编辑
@@ -1744,7 +1751,7 @@ func Square(input int)int  {
    go clean --modcache
    ```
 
-   
+7. 使用goland创建项目时，项目类型选择Go modules
 
 ### 8.2.5 使用项目内的包
 
@@ -1754,6 +1761,36 @@ func Square(input int)int  {
 
    ```shell
    go env -w GO111MODULE=on
+   
+   #查看是否开启
+   go env
+   
+   ##以下是结果
+   GO111MODULE="on"#注意这里为on
+   GOARCH="amd64"
+   GOBIN="/home/nash/go/bin"
+   GOCACHE="/home/nash/.cache/go-build"
+   GOENV="/home/nash/.config/go/env"
+   GOEXE=""
+   GOFLAGS=""
+   GOHOSTARCH="amd64"
+   GOHOSTOS="linux"
+   GOINSECURE=""
+   GOMODCACHE="/home/nash/go/pkg/mod"
+   GONOPROXY=""
+   GONOSUMDB=""
+   #未开启go mod
+   GO111MODULE="" # 注意这里为空
+   GOARCH="amd64"
+   GOBIN="/home/nash/go/bin"
+   GOCACHE="/home/nash/.cache/go-build"
+   GOENV="/home/nash/.config/go/env"
+   GOEXE=""
+   GOFLAGS=""
+   GOHOSTARCH="amd64"
+   GOHOSTOS="linux"
+   GOINSECURE=""
+   
    ```
 
 2. 初始化项目
@@ -1814,12 +1851,18 @@ func Square(input int)int  {
    go build .
    
    # 不要这样编译,如果有多个文件都是package main,会报错
-go build main.go 
+   go build main.go 
    ```
    
-   
 
 
+
+## 8.3 GOPATH与go mod对比
+
+***
+
+1. 使用GOPATH 时，所有代码必须放在$GOPATH/src目录下
+2. 使用go mod则无此要求，记得使用go env 查看GO111MODULE是否为on
 
 
 
@@ -3332,7 +3375,7 @@ func main()  {
       3. 代码
 
          ```go
-   package main
+         package main
          // import 里增加 _ "net/http/pprof" 即可
             import (
             	"fmt"
@@ -3367,8 +3410,6 @@ func main()  {
              http.ListenAndServe(":8080", nil)
             }
          ```
-      
-   
 
 ## 15.2 性能调优示例
 
@@ -3991,7 +4032,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >   
+   >     
    >   # 2-- 检查进程是否存在
    >   ```
    >
