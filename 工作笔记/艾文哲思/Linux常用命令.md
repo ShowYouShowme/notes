@@ -762,7 +762,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >            
+  >                  
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -786,7 +786,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >            
+  >                  
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1751,13 +1751,13 @@ vim /etc/fstab
 2. 按CPU使用率排序
 
    ```shell
-   shift + p
+   P  [daxie]
    ```
 
 3. 按内存使用排序
 
    ```shell
-   shift + m
+   M [daxie]
    ```
 
 4. 存储单位修改
@@ -2056,6 +2056,41 @@ part: 分区
 ```
 
 
+
+# 产生大文件
+
+***
+
+```shell
+#产生20G的文件
+dd if=/dev/zero of=file bs=1M count=20000
+```
+
+
+
+# 挂载
+
+***
+
+
+
+## 内存挂载为文件
+
+***
+
+```shell
+sudo mount tmpfs /path/to/data -t tmpfs -o size=100G
+```
+
+
+
+## 取消挂载
+
+***
+
+```shell
+sudo umount /dev/hda2
+```
 
 
 

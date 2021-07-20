@@ -281,3 +281,56 @@ duso apt full-upgrade
    ```
 
    
+
+
+
+# 第四章 gnome-shell
+
+
+
+## 4.1 重启gnome-shell
+
+gnome-shell用一段时间就会卡死，需要重启
+
+***
+
+1. 方法一
+
+   ```shell
+   ALT + F2
+   输入r，然后按下回车
+   ```
+
+2. 方法二
+
+   ```shell
+   killall -3 gnome-shell
+   ```
+
+3. 方法三
+
+   ```shell
+   #会导致全部gui程序关闭,不推荐
+   /etc/init.d/gdm3 restart
+   ```
+   
+
+
+
+# 第五章 init命令
+
+***
+
+```shell
+#需要用root权限
+0：关机
+1：救援模式，重置密码进入
+2：不带网络的多用户模式
+3：字符终端多用户  #常用
+4：未使用
+5：图形模式      #常用
+6：重启
+```
+
+
+
