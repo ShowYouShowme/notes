@@ -226,22 +226,26 @@ eth.getBlock(xxx)          # 根据区块号查看区块信息，xxx为区块号
 
 1. 每个节点使用同样配置文件初始化创世纪节点
 
-2. 启动一个节点
+2. 启动一个节点，每个节点的networkid 必须一致
 
    ```shell
-   geth --datadir data2 --networkid 1024 --ipcdisable --port 3002 --rpcport 9000 console
+   ./geth --datadir data2 --networkid 1024 --ipcdisable --port 3002 --rpcport 9000 console
    ```
 
 3. 获取节点Enoded url
 
    ```shell
-   admin.nodeInfo.enode
+   #第一种方式
+   admin.nodeInfo.enode #获取的数据要修改
+   
+   #第二种方式 节点启动时有以下信息
+   INFO [07-22|17:22:46.014] Started P2P networking                   self=enode://c0a48e233e3f04309be23df05ce31fc4a1454e63468c231d90038447f9cccff361076ac487f759780c6b2ca077ef0fb6da543ee5ce7949337e472541bce2524b@127.0.0.1:3002
    ```
 
 4. 启动第二个节点
 
    ```shell
-   geth --datadir data3 --networkid 1024 --ipcdisable --port 3003 --rpcport 9001 console
+   ./geth --datadir data3 --networkid 1024 --ipcdisable --port 3003 --rpcport 9001 console
    ```
 
 5. 在第二个节点里添加第一个节点
