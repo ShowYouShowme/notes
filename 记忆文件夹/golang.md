@@ -6,14 +6,28 @@
 
 1. 下载安装包安装
 
+   ```shell
+   wget https://golang.google.cn/dl/go1.16.6.linux-amd64.tar.gz
+   tar -zxvf go1.16.6.linux-amd64.tar.gz
+   mv go /usr/local
+   ```
+
+   
+
 2. 设置环境变量
 
    ```shell
-   # GOLANG 的安装目录
-   export GOROOT=/usr/local/go
+   export GOROOT=/usr/local/go              		#安装目录。
+   export GOPATH=$HOME/go     						#工作环境
+   export GOBIN=$GOPATH/bin           				#可执行文件存放
+   export PATH=$GOPATH:$GOBIN:$GOROOT/bin:$PATH    #添加PATH路径ls
+   ```
    
-   # go.exe的目录
-   export PATH=$PATH:$GOROOT/bin
+3. 开启go mod并配置代理
+
+   ```shell
+   go env -w GO111MODULE=on
+   go env -w GOPROXY="https://goproxy.io,direct"
    ```
 
    
@@ -1853,7 +1867,6 @@ func Square(input int)int  {
    # 不要这样编译,如果有多个文件都是package main,会报错
    go build main.go 
    ```
-   
 
 
 
@@ -4032,7 +4045,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >     
+   >       
    >   # 2-- 检查进程是否存在
    >   ```
    >

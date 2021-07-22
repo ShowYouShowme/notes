@@ -762,7 +762,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                  
+  >                        
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -786,7 +786,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                  
+  >                        
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2090,6 +2090,23 @@ sudo mount tmpfs /path/to/data -t tmpfs -o size=100G
 
 ```shell
 sudo umount /dev/hda2
+```
+
+
+
+
+
+# Linux释放缓存
+
+***
+
+```shell
+#将缓存写入文件
+sync
+#释放缓存
+echo 1 > /proc/sys/vm/drop_caches
+#由操作系统管理内存
+echo 0 > /proc/sys/vm/drop_caches
 ```
 
 

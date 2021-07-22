@@ -12,7 +12,10 @@
    Win下安装于默认目录，否则可能会有bug，比如代码无法push到GitHub
    ```
 
-   
+3. 使用GitHub开源项目二次开发时，遵守以下原则
+
+   + 不要使用release版本，要直接git clone 代码
+   + 不要使用master分支，要手动切换到指定tag
 
 
 
