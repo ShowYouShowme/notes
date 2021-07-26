@@ -132,6 +132,7 @@ duso apt full-upgrade
 1. chrome会导致系统崩溃：建议使用firefox
 2. ubuntu crash 时，找出导致crash的软件，不使用即可
 3. vscode 从官网下载deb包安装，商店里面安装的无法输入中文
+4. 关闭qemu后，系统变得非常稳定了
 
 
 
@@ -313,7 +314,6 @@ gnome-shell用一段时间就会卡死，需要重启
    #会导致全部gui程序关闭,不推荐
    /etc/init.d/gdm3 restart
    ```
-   
 
 
 
@@ -334,3 +334,43 @@ gnome-shell用一段时间就会卡死，需要重启
 
 
 
+
+
+# 第六章 常用命令
+
+***
+
+
+
+## 6.1 APT
+
+***
+
+1. 查看已安装的软件
+
+   ```shell
+   apt list --installed
+   ```
+
+2. apt 和 apt-get对比
+
+   |     apt 命令     |      取代的命令      |           命令的功能           |
+   | :--------------: | :------------------: | :----------------------------: |
+   |   apt install    |   apt-get install    |           安装软件包           |
+   |    apt remove    |    apt-get remove    |           移除软件包           |
+   |    apt purge     |    apt-get purge     |      移除软件包及配置文件      |
+   |    apt update    |    apt-get update    |         刷新存储库索引         |
+   |   apt upgrade    |   apt-get upgrade    |     升级所有可升级的软件包     |
+   |  apt autoremove  |  apt-get autoremove  |       自动删除不需要的包       |
+   | apt full-upgrade | apt-get dist-upgrade | 在升级软件包时自动处理依赖关系 |
+   |    apt search    |   apt-cache search   |          搜索应用程序          |
+   |     apt show     |    apt-cache show    |           显示装细节           |
+
+3. apt自己的命令
+
+   |   新的apt命令    |              命令的功能              |
+   | :--------------: | :----------------------------------: |
+   |     apt list     | 列出包含条件的包（已安装，可升级等） |
+   | apt edit-sources |              编辑源列表              |
+
+4. 建议使用apt替代apt-get

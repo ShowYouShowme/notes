@@ -611,13 +611,13 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
    + 下载并用指定名称存储
 
      ```shell
-     curl -o thatpage.html http://www.netscape.com/
+     curl -o thatpage.html http://www.netscape.com/ -L -v
      ```
 
    + 下载文件并用远程文件名存储
 
      ```shell
-     curl -O http://www.netscape.com/index.html
+     curl -O http://www.netscape.com/index.html -L -v
      ```
 
 4. 使用代理
@@ -762,7 +762,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                        
+  >                           
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -786,7 +786,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                        
+  >                           
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
