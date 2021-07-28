@@ -41,11 +41,40 @@ git clone https://github.com/ShowYouShowme/notes.git
 
 ## 2.3 注册修改
 
-```shell
+***
 
-# 用小乌龟commit时,要先在文件前打勾,这就是打勾对应的命令行
-git add ${file}
-```
+1. 添加单个文件
+
+   ```shell
+   # 用小乌龟commit时,要先在文件前打勾,这就是打勾对应的命令行
+   git add ${file}
+   ```
+
+   
+
+2. 添加多个文件
+
+   ```shell
+   git add ${file1} ${file2} ${file3}
+   ```
+
+3. 添加指定目录下的文件
+
+   ```shell
+   git config/* 	#config以及config下所有文件
+   
+   git home/*.php 	#home目录下所有的php文件
+   ```
+
+4. 添加所有文件
+
+   ```shell
+   git add .
+   
+   git add --all
+   ```
+
+   
 
 
 
@@ -402,6 +431,28 @@ git submodule update
 ```
 
 
+
+## 2.17 忽略不想提交的文件
+
+***
+
+1. 项目根目录创建文件`.gitignore`
+
+2. 编辑配置文件内容
+
+   ```shell
+   node_modules/
+   package.json
+   package-lock.json
+   views/
+   .idea/
+   ether.js
+   go.mod
+   go.sum
+   init.sql
+   ```
+
+   
 
 
 

@@ -638,3 +638,90 @@ set global time_zone='+08:00';
 CONVERT_TZ
 ```
 
+
+
+
+
+# 常用SQL语句
+
+***
+
+1. 清空表
+
+   ```mysql
+   TRUNCATE TABLE tb_student_course;
+   ```
+
+2. 查询
+
+   ```mysql
+   SELECT * FROM tb_student_course;
+   ```
+
+3. 插入数据
+
+   ```mysql
+   INSERT INTO tb_courses \
+             (course_id,course_name,course_grade,course_info) \
+       	  VALUES(1,'Network',3,'Computer Network');
+   ```
+
+4. 修改数据
+
+   ```mysql
+   UPDATE tb_courses_new \
+       SET course_name='DB',course_grade=3.5 \
+       WHERE course_id=2;
+   ```
+
+5. 删除数据
+
+   ```mysql
+   -- 删除全部数据
+   DELETE FROM tb_courses_new;
+   
+   -- 删除指定数据
+   DELETE FROM tb_courses
+       WHERE course_id=4;
+   ```
+
+6. 创建表
+
+   ```mysql
+   CREATE TABLE tb_courses \
+       ( \
+       course_id INT NOT NULL AUTO_INCREMENT, \
+       course_name CHAR(40) NOT NULL,\
+       course_grade FLOAT NOT NULL,\
+       course_info CHAR(100) NULL,\
+       PRIMARY KEY(course_id)\
+       );
+   ```
+
+7. 创建数据库
+
+   ```mysql
+   CREATE DATABASE test_db;
+   ```
+
+8. 查看数据库
+
+   ```mysql
+   SHOW DATABASES;
+   ```
+
+9. 选择数据库
+
+   ```mysql
+   USE test_db;
+   ```
+
+   
+
+10. 查看表
+
+    ```mysql
+    SHOW TABLES;
+    ```
+
+    
