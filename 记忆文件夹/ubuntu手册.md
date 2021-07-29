@@ -130,9 +130,20 @@ duso apt full-upgrade
 ***
 
 1. chrome会导致系统崩溃：建议使用firefox
+
 2. ubuntu crash 时，找出导致crash的软件，不使用即可
+
 3. vscode 从官网下载deb包安装，商店里面安装的无法输入中文
+
 4. 关闭qemu后，系统变得非常稳定了
+
+5. 鼠标可以移动，但点击失效且键盘失效
+
+   ```shell
+   全程按住Alt, 然后按下 Print ,再依据次序按下reisub
+   ```
+
+   
 
 
 

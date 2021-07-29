@@ -724,4 +724,138 @@ CONVERT_TZ
     SHOW TABLES;
     ```
 
+11. 查看表结构
+
+    ```mysql
+    DESC tb_courses;
+    ```
+
+12. 查看表结构和注释
+
+    ```mysql
+    select table_schema,table_name,column_name,column_type,column_key,is_nullable,column_default,column_comment,character_set_name
     
+    from information_schema.columns where table_schema='库名' and table_name='表名';
+    ```
+
+13. 普通索引
+
+    ```mysql
+    mysql> CREATE TABLE tb_stu_info
+        -> (
+        -> id INT NOT NULL,
+        -> name CHAR(45) DEFAULT NULL,
+        -> dept_id INT DEFAULT NULL,
+        -> age INT DEFAULT NULL,
+        -> height INT DEFAULT NULL,
+        -> INDEX(height)
+        -> );
+    ```
+
+    
+
+14. 唯一索引
+
+    ```mysql
+    mysql> CREATE TABLE tb_stu_info2
+        -> (
+        -> id INT NOT NULL,
+        -> name CHAR(45) DEFAULT NULL,
+        -> dept_id INT DEFAULT NULL,
+        -> age INT DEFAULT NULL,
+        -> height INT DEFAULT NULL,
+        -> UNIQUE INDEX(height)
+        -> );
+    ```
+
+15. 约束
+
+    > 1. 主键约束
+    >
+    >    ```mysql
+    >    mysql> CREATE TABLE tb_emp3
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(25),
+    >        -> deptId INT(11),
+    >        -> salary FLOAT
+    >        -> );
+    >    ```
+    >
+    >    
+    >
+    > 2. 外键约束
+    >
+    >    ```mysql
+    >    mysql> CREATE TABLE tb_dept1
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(22) NOT NULL,
+    >        -> location VARCHAR(50)
+    >        -> );
+    >        
+    >        
+    >        mysql> CREATE TABLE tb_emp6
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(25),
+    >        -> deptId INT(11),
+    >        -> salary FLOAT,
+    >        -> CONSTRAINT fk_emp_dept1
+    >        -> FOREIGN KEY(deptId) REFERENCES tb_dept1(id)
+    >        -> );
+    >    ```
+    >
+    >    
+    >
+    > 3. 唯一约束
+    >
+    >    ```mysql
+    >    mysql> CREATE TABLE tb_dept2
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(22) UNIQUE,
+    >        -> location VARCHAR(50)
+    >        -> );
+    >    ```
+    >
+    >    
+    >
+    > 4. 检查约束
+    >
+    >    ```mysql
+    >    mysql> CREATE TABLE tb_emp7
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(25),
+    >        -> deptId INT(11),
+    >        -> salary FLOAT,
+    >        -> CHECK(salary>0 AND salary<100),
+    >        -> FOREIGN KEY(deptId) REFERENCES tb_dept1(id)
+    >        -> );
+    >
+    > 5. 非空约束
+    >
+    >    ```mysql
+    >    mysql> CREATE TABLE tb_dept4
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(22) NOT NULL,
+    >        -> location VARCHAR(50)
+    >        -> );
+    >    ```
+    >
+    >    
+    >
+    > 6. 默认值约束
+    >
+    >    ```mysql
+    >    mysql> CREATE TABLE tb_dept3
+    >        -> (
+    >        -> id INT(11) PRIMARY KEY,
+    >        -> name VARCHAR(22),
+    >        -> location VARCHAR(50) DEFAULT 'Beijing'
+    >        -> );
+    >    ```
+    >
+    >    
