@@ -1,8 +1,12 @@
-# 制作证书
+# 第一章 制作证书
+
+***
 
 
 
-## 步骤
+## 1.1 步骤
+
+***
 
 ```shell
 # 产生rsa私钥
@@ -27,7 +31,9 @@ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
 
 
-## 证书格式
+## 1.2 证书格式
+
+***
 
 1. PEM 格式
 
@@ -46,7 +52,10 @@ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
    > openssl x509 -noout -text -informder  -in server.der
 
 
-## 产生rsa秘钥
+
+## 1.3 产生rsa秘钥
+
+***
 
 + 产生私钥
 
@@ -77,7 +86,9 @@ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
 
 
-# 非对称加密的原理
+# 第二章 非对称加密的原理
+
+***
 
 + 保证发送的内容已经加密
 
@@ -100,3 +111,75 @@ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
   > 2. 私钥
   >    + 解密用公钥加密后的数据
   >    + 制作签名，签名可以用公钥来校验
+
+
+
+# 第三章  签名和验证
+
+***
+
+
+
+## 3.1 生成数据文件，私钥和公钥
+
+***
+
+```shell
+#Create a file containing all lower case alphabets
+$ echo abcdefghijklmnopqrstuvwxyz > myfile.txt
+ 
+#Generate 512 bit Private key
+$ openssl genrsa -out myprivate.pem 512
+ 
+#Separate the public part from the Private key file.
+$ openssl rsa -in myprivate.pem -pubout > mypublic.pem
+ 
+#Cat the contents of private key
+$ cat myprivate.pem
+ 
+-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBAMv7Reawnxr0DfYN3IZbb5ih/XJGeLWDv7WuhTlie//c2TDXw/mW
+914VFyoBfxQxAezSj8YpuADiTwqDZl13wKMCAwEAAQJAYaTrFT8/KpvhgwOnqPlk
+NmB0/psVdW6X+tSMGag3S4cFid3nLkN384N6tZ+na1VWNkLy32Ndpxo6pQq4NSAb
+YQIhAPNlJsV+Snpg+JftgviV5+jOKY03bx29GsZF+umN6hD/AiEA1ouXAO2mVGRk
+BuoGXe3o/d5AOXj41vTB8D6IUGu8bF0CIQC6zah7LRmGYYSKPk0l8w+hmxFDBAex
+IGE7SZxwwm2iCwIhAInnDbe2CbyjDrx2/oKvopxTmDqY7HHWvzX6K8pthZ6tAiAw
+w+DJoSx81QQpD8gY/BXjovadVtVROALaFFvdmN64sw==
+-----END RSA PRIVATE KEY-----
+```
+
+
+
+
+
+## 3.2 签名
+
+***
+
+```shell
+# Sign the file using sha1 digest and PKCS1 padding scheme
+$ openssl dgst -sha1 -sign myprivate.pem -out sha1.sign myfile.txt
+ 
+# Dump the signature file
+$ hexdump sha1.sign
+ 
+0000000 91 39 be 98 f1 6c f5 3d 22 da 63 cb 55 9b b0 6a
+0000010 93 33 8d a6 a3 44 e2 8a 42 85 c2 da 33 fa cb 70
+0000020 80 d2 6e 7a 09 48 37 79 a0 16 ee bc 20 76 02 fc
+0000030 3f 90 49 2c 2f 2f b8 14 3f 0f e3 0f d8 55 59 3d0000040
+```
+
+
+
+
+
+## 3.3 验证
+
+***
+
+```shell
+# Verify the signature of file
+$ openssl dgst -sha1 -verify mypublic.pem -signature sha1.sign myfile.txt
+Verified OK
+```
+

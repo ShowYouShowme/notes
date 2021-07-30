@@ -511,15 +511,7 @@ rz -y ${fileName}
 
 
 
-# 下载软件包及其依赖
-
-```shell
-# 安装下载工具
-yum -y install yum-utils
-
-#下载依赖包
-yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
-```
+# 
 
 
 
@@ -762,7 +754,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                           
+  >                              
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -786,7 +778,7 @@ yumdownloader --resolve ${packageName} --destdir=${DESTDIR}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                           
+  >                              
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1221,8 +1213,69 @@ du -sh ./protobuf/
 
 # rsync
 
-> 文件同步工具
+***
 
+
+
+## 选项和功能
+
+***
+
+| OPTION选项        | 功能                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| -a                | 这是归档模式，表示以递归方式传输文件，并保持所有属性，它等同于-r、-l、-p、-t、-g、-o、-D 选项。-a 选项后面可以跟一个  --no-OPTION，表示关闭 -r、-l、-p、-t、-g、-o、-D 中的某一个，比如-a --no-l 等同于  -r、-p、-t、-g、-o、-D 选项。 |
+| -r                | 表示以递归模式处理子目录，它主要是针对目录来说的，如果单独传一个文件不需要加 -r 选项，但是传输目录时必须加。 |
+| -v                | 表示打印一些信息，比如文件列表、文件数量等。                 |
+| -l                | 表示保留软连接。                                             |
+| -L                | 表示像对待常规文件一样处理软连接。如果是 SRC 中有软连接文件，则加上该选项后，将会把软连接指向的目标文件复制到 DEST。 |
+| -p                | 表示保持文件权限。                                           |
+| -o                | 表示保持文件属主信息。                                       |
+| -g                | 表示保持文件属组信息。                                       |
+| -D                | 表示保持设备文件信息。                                       |
+| -t                | 表示保持文件时间信息。                                       |
+| --delete          | 表示删除 DEST 中 SRC 没有的文件。                            |
+| --exclude=PATTERN | 表示指定排除不需要传输的文件，等号后面跟文件名，可以是通配符模式（如 *.txt）。 |
+| --progress        | 表示在同步的过程中可以看到同步的过程状态，比如统计要同步的文件数量、 同步的文件传输速度等。 |
+| -u                | 表示把 DEST 中比 SRC 还新的文件排除掉，不会覆盖。            |
+| -z                | 加上该选项，将会在传输过程中压缩。                           |
+
+记住最常用的几个即可，比如 -a、-v、-z、--delete 和 --exclude
+
+
+
+## 示例
+
+***
+
+1. test1备份到test2
+
+   ```shell
+   rsync -av test1/ test2/
+   ```
+
+2. test1备份到test2，且删除test2中test1不存在的文件
+
+   ```shell
+   rsync -av --delete test1/ test2/
+   ```
+
+3. 拷贝本地机器内容到远程机器
+
+   ```shell
+   rsync -av /home/coremail/ 192.168.11.12:/home/coremail/
+   ```
+
+4. 远程机器内容拷贝到本地
+
+   ```shell
+   rsync -av 192.168.11.11:/home/coremail/ /home/coremail/
+   ```
+
+5. 显示远程机器的文件列表
+
+   ```shell
+   rsync -v rsync://192.168.11.11/data
+   ```
 
 
 
@@ -2110,4 +2163,126 @@ echo 0 > /proc/sys/vm/drop_caches
 ```
 
 
+
+
+
+# fdisk
+
+***
+
+
+
+功能：显示或者操作磁盘分区表
+
+
+
+常用命令：
+
+```shell
+sudo fdisk -l
+```
+
+
+
+
+
+# dd
+
+***
+
+ 作用：把文件/设备的内容 按字节复制到 另一个文件/设备
+
+
+
+## 磁盘备份
+
+```shell
+dd if=/dev/sda of=/root/sda.img
+```
+
+
+
+## 磁盘恢复
+
+```shell
+dd if=/root/sda.img of=/dev/sdb
+```
+
+
+
+## 把一块磁盘内容复制到另外一块
+
+```shell
+#sda --> sdc
+dd if=/dev/sda of=/dev/sdc
+```
+
+
+
+## 备份时压缩
+
+```shell
+dd if=/dev/sda | gzip > /root/sda.img.gz
+
+#用bzip2算法
+dd if=/dev/sda | bzip2 > disk.img.bz2
+bzip2 -dc /root/sda.img.gz | dd of=/dev/sdc
+```
+
+
+
+## 备份磁盘分区
+
+```shell
+dd if=/dev/sda2 of=/root/sda_part1.img
+```
+
+
+
+## 备份内存
+
+```shell
+dd if=/dev/mem of=/root/mem.img
+```
+
+
+
+## 备份mbr
+
+```shell
+dd if=/dev/sda of=/root/sda_mbr.img count=1 bs=512
+
+#恢复
+dd if=/root/sda_mbr.img of=/dev/sda
+```
+
+
+
+## 特殊设备
+
+***
+
+1. /dev/null：任何写入它的数据都会被无情抛弃
+2. /dev/zero：可以产生连续不断的 null 的流（二进制的零流），用于向设备或文件写入 null 数据，一般用它来对设备或文件进行初始化
+3. /dev/urandom：生成理论意义上的随机数
+
+
+
+```shell
+#向磁盘上写一个大文件, 来看写性能
+[root@roclinux ~]# dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
+ 
+#从磁盘上读取一个大文件, 来看读性能
+[root@roclinux ~]# dd if=/root/1Gb.file bs=64k | dd of=/dev/null
+
+
+#配合 time 命令，可以看出不同的块大小数据的写入时间，从而可以测算出到底块大小为多少时可以实现最佳的写入性能
+[root@roclinux ~]# time dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=2048 count=500000 of=/root/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=4096 count=250000 of=/root/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=8192 count=125000 of=/root/1Gb.file
+
+#使用 /dev/urandom 这个随机数生成器来产生随机数据，写到磁盘上，以确保将磁盘原始数据完全覆盖掉
+[root@roclinux ~]# dd if=/dev/urandom of=/dev/sda
+```
 

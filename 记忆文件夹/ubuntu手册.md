@@ -385,3 +385,74 @@ gnome-shell用一段时间就会卡死，需要重启
    | apt edit-sources |              编辑源列表              |
 
 4. 建议使用apt替代apt-get
+
+
+
+## 6.2 制作u盘启动盘
+
+***
+
+
+
+### 6.3.1 使用dd命令制作
+
+***
+
+1. 查看u盘设备
+
+   ```shell
+   lsblk
+   
+   sda           8:0    1  28.9G  0 disk 
+   └─sda4        8:4    1  28.9G  0 part /media/nash/Ubuntu 20.0 #sda4是u盘sda的分区
+   nvme0n1     259:0    0   477G  0 disk 
+   ├─nvme0n1p1 259:1    0   512M  0 part /boot/efi
+   └─nvme0n1p2 259:2    0 476.4G  0 part /
+   
+   #或者
+   sudo fdisk -l
+   ```
+
+2. 卸载u盘
+
+   ```shell
+   sudo umount /dev/sda
+   ```
+
+3. 使用dd命令写入数据
+
+   ```shell
+   sudo dd if=./ubuntu-20.04.2.0-desktop-amd64.iso of=/dev/sda
+   
+   #制作完成提示信息
+   记录了5619584+0 的读入
+   记录了5619584+0 的写出
+   2877227008字节（2.9 GB，2.7 GiB）已复制，323.943 s，8.9 MB/s
+   ```
+
+
+
+
+### 6.3.2 使用启动盘创建器制作
+
+***
+
+1. 开始-->所有程序-->启动盘创建器
+2. 选择系统镜像（仅仅支持debian系列的系统）
+3. 选择u盘
+4. 点击制作启动盘
+
+
+
+## 6.3 切换到管理员
+
+***
+
+```shell
+sudo su
+```
+
+
+
+
+
