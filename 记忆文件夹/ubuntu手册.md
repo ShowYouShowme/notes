@@ -386,6 +386,14 @@ gnome-shell用一段时间就会卡死，需要重启
 
 4. 建议使用apt替代apt-get
 
+5. 安装本地deb包
+
+   ```shell
+   sudo apt install -y ./teamviewer_amd64.deb
+   ```
+
+   
+
 
 
 ## 6.2 制作u盘启动盘
