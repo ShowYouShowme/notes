@@ -143,7 +143,7 @@ duso apt full-upgrade
    全程按住Alt, 然后按下 Print ,再依据次序按下reisub
    ```
 
-   
+6. vscode好像会导致系统崩溃
 
 
 

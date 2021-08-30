@@ -74,6 +74,12 @@ git clone https://github.com/ShowYouShowme/notes.git
    git add --all
    ```
 
+5. 取消注册
+
+   ```shell
+   git reset
+   ```
+
    
 
 
@@ -86,6 +92,9 @@ git diff HEAD
 
 # 对比单个文件
 git diff app.py
+
+# 简写
+git diff
 ```
 
 

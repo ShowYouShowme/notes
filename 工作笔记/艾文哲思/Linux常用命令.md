@@ -308,6 +308,12 @@ scp [命令参数] [源路径] [目的路径]
    tail -n 200 redis-server.log
    ```
 
+2. 从第五行开始打印到末尾
+
+   ```shell
+   tail -n +5 redis-server.log
+   ```
+
    
 
 
@@ -754,7 +760,7 @@ rz -y ${fileName}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                              
+  >                                                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -778,7 +784,7 @@ rz -y ${fileName}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                              
+  >                                                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2137,6 +2143,24 @@ sudo mount tmpfs /path/to/data -t tmpfs -o size=100G
 
 
 
+## 内存挂载为目录
+
+```shell
+mount -t tmpfs -o size=1024m tmpfs /mnt/ram
+```
+
+
+
+## 系统自带内存目录
+
+```shell
+/dev/shm
+```
+
+
+
+
+
 ## 取消挂载
 
 ***
@@ -2270,19 +2294,90 @@ dd if=/root/sda_mbr.img of=/dev/sda
 
 ```shell
 #向磁盘上写一个大文件, 来看写性能
-[root@roclinux ~]# dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
+[root@roclinux ~]# dd if=/dev/zero bs=1024 count=1048576 of=/dev/shm/1Gb.file
  
 #从磁盘上读取一个大文件, 来看读性能
-[root@roclinux ~]# dd if=/root/1Gb.file bs=64k | dd of=/dev/null
+[root@roclinux ~]# dd if=/dev/shm/1Gb.file bs=64k | dd of=/dev/null
 
 
 #配合 time 命令，可以看出不同的块大小数据的写入时间，从而可以测算出到底块大小为多少时可以实现最佳的写入性能
-[root@roclinux ~]# time dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
-[root@roclinux ~]# time dd if=/dev/zero bs=2048 count=500000 of=/root/1Gb.file
-[root@roclinux ~]# time dd if=/dev/zero bs=4096 count=250000 of=/root/1Gb.file
-[root@roclinux ~]# time dd if=/dev/zero bs=8192 count=125000 of=/root/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=1024 count=1000000 of=/dev/shm/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=2048 count=500000 of=/dev/shm/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=4096 count=250000 of=/dev/shm/1Gb.file
+[root@roclinux ~]# time dd if=/dev/zero bs=8192 count=125000 of=/dev/shm/1Gb.file
 
 #使用 /dev/urandom 这个随机数生成器来产生随机数据，写到磁盘上，以确保将磁盘原始数据完全覆盖掉
 [root@roclinux ~]# dd if=/dev/urandom of=/dev/sda
 ```
+
+
+
+
+
+# 显卡
+
+***
+
+1. 查看显卡信息
+
+   ```shell
+   nvidia-smi
+   ```
+
+2. 安装
+
+
+
+
+
+# cpu查看
+
+***
+
+```shell
+lscpu
+```
+
+
+
+
+
+# head
+
+***
+
+1. 打印文件前几行
+
+   ```shell
+   #打印前六行
+   head -6 readme.txt
+   ```
+
+
+
+# hexdump
+
+***
+
+1. 以16进制和相应的ASCII字符显示文件里的字符
+
+   ```shell
+   hexdump -C test.txt 
+   ```
+
+2. 只格式化前n个字符
+
+   ```shell
+   hexdump -C -n 5 test.txt 
+   ```
+
+3. 跳过前面n个字符
+
+   ```shell
+   hexdump -C -s 5 test.txt 
+   ```
+   
+   
+   
+   
 
