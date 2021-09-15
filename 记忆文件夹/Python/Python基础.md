@@ -2150,6 +2150,57 @@ def exec_shell_cmd(cmd : str):
         raise NameError("occur error!")
 ```
 
+```python
+#监控指定进程使用的内存
+# 监控指定进程使用的内存 把这部分代码加入到笔记当中
+import logging
+import subprocess
+import time
+
+process_name = "lotus-bench"
+
+
+def get_cmd_output(cmd):
+    logging.info(">>>>>get_cmd_output")
+    pi = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    raw_data = bytes(pi.stdout.read())
+    cmd_output = raw_data.decode()  # bytes 转换为string
+    logging.debug("cmd {0} output {1}".format(cmd, cmd_output))
+    logging.info("<<<<<get_cmd_output")
+    return cmd_output
+
+
+def main():
+    mem_file = open("mem.txt", "w", encoding="utf8")
+    mem_file.write("[")
+    index_file = open("index.txt", "w", encoding="utf8")
+    index_file.write("[")
+    index = 1
+    while True:
+        output = get_cmd_output("ps -C {} -f".format(process_name))
+        entry = output.split('\n')[: -1]
+        if len(entry) != 2:
+            logging.error("can not find process {}".format(process_name))
+            exit(-1)
+        items = entry[-1].split()
+        pid = int(items[1])
+
+        output = get_cmd_output("cat /proc/{}/status | grep RSS".format(pid))
+        entry = output.split()
+        VmRSS = int(entry[1])
+        print("[{},{}]".format(index, VmRSS))
+        mem_file.write("{},".format(VmRSS))
+        mem_file.flush()
+        index_file.write("{},".format(index))
+        index_file.flush()
+        time.sleep(1)
+        index += 1
+
+
+if __name__ == "__main__":
+    main()
+```
+
 
 
 # 第十八章 日期和时间

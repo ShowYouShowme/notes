@@ -760,7 +760,7 @@ rz -y ${fileName}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                   
+  >                                                               
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -784,7 +784,7 @@ rz -y ${fileName}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                   
+  >                                                               
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2379,5 +2379,82 @@ lscpu
    
    
    
+   
+
+# sha256sum
+
+***
+
+1. 作用：用sha256算法计算hash
+
+2. 示例
+
+   ```shell
+   #不输入换行
+   echo -n "hello_world" > file
+   
+   #计算hash
+   sha256sum file
+   
+   
+   #校验hash
+   sha256sum file > file.sha256 #生成hash
+   sha256sum -c file.sha256     #校验hash
+   ```
+
+
+
+# apt 使用代理
+
+```shell
+# 使用-o 选项执行代理的地址
+sudo apt install virtualbox  -y -o Acquire::http::proxy="http://127.0.0.1:8090/"
+```
+
+
+
+# vim
+
+***
+
+1. 打开目录
+
+   ```shell
+   # 方法一
+   vim .
+   
+   # 方法二
+   :Ex
+   ```
+
+2. 执行命令
+
+   ```shell
+   #方法一
+   :!${cmd}
+   
+   #方法二
+   :shell 然后执行想要的命令,最后exit回到vim
+   ```
+
+3. 修改目录
+
+   ```shell
+   :cd /home/nash
+   ```
+
+4. 快速进入目录
+
+   ```shell
+   # step-1
+   vim . 然后选择目录进入
+   
+   # step-2
+   :cd ${target_dir} #目录在界面可以看到
+   
+   # step-3
+   :shell 就直接到目的目录了,执行完命令再exit退回来即可
+   ```
+
    
 
