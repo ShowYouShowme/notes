@@ -314,6 +314,12 @@ scp [命令参数] [源路径] [目的路径]
    tail -n +5 redis-server.log
    ```
 
+3. docker 删除全部镜像
+
+   ```shell
+   docker rmi $(docker images | tail -n +2 | awk '{print $3}')
+   ```
+
    
 
 
@@ -760,7 +766,7 @@ rz -y ${fileName}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                               
+  >                                                                  
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -784,7 +790,7 @@ rz -y ${fileName}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                               
+  >                                                                  
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
