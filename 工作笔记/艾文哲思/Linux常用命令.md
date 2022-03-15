@@ -766,7 +766,7 @@ rz -y ${fileName}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                  
+  >                                                                     
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -790,7 +790,7 @@ rz -y ${fileName}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                  
+  >                                                                     
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -918,6 +918,8 @@ rz -y ${fileName}
 
 # firewall
 
+firewall是iptables的封装，推荐使用它替代iptables
+
 1. 查看全部放行的端口
 
    ```shell
@@ -966,7 +968,33 @@ rz -y ${fileName}
    systemctl status firewalld
    ```
 
-   
+8. 端口转发
+
+   + 本机内部转发
+
+     ```shell
+     firewall-cmd --add-forward-port=port=7777:proto=tcp:toport=8888
+     ```
+
+   + 转发到其他机器
+
+     ```shell
+     firewall-cmd --add-forward-port=port=9000:proto=tcp:toport=8000:toaddr=192.168.1.102
+     ```
+
+9. 允许指定ip的全部流量
+
+   ```shell
+   firewall-cmd --zone=public --add-source=192.168.172.32 
+   ```
+
+10. 开启nat
+
+    ```shell
+    firewall-cmd --permanent --zone=public --add-masquerade
+    ```
+
+    
 
 
 
@@ -2342,6 +2370,18 @@ dd if=/root/sda_mbr.img of=/dev/sda
 
 ```shell
 lscpu
+```
+
+
+
+# 关机，重启
+
+```shell
+poweroff # 关机
+
+reboot # 重启
+
+shutdown -h now # 关机，推荐上面那个
 ```
 
 
