@@ -1402,6 +1402,9 @@ du -sh ./protobuf/
      #UDP转发
      iptables -t nat -A PREROUTING -p udp --dport [端口号] -j DNAT --to-destination [目标IP]:[端口号]
      iptables -t nat -A POSTROUTING -p udp -d [目标IP] --dport [端口号] -j SNAT --to-source [本地服务器IP]
+     
+     iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 192.168.1.1:53
+     iptables -t nat -A POSTROUTING -p udp -d 192.168.1.1 --dport 53 -j SNAT --to-source 192.168.1.159
      ```
 
    + 多端口转发
@@ -1427,9 +1430,23 @@ du -sh ./protobuf/
      systemctl enable iptables
     ```
 
+11. nat转发，充当路由器角色
+
+    ```shell
+    #需要开启内核转发
+    iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -j SNAT --to-source 192.168.1.159
+    
+    ## 如果公网ip不固定， 下面的做法应该总是第一选择
+    iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -j MASQUERADE
+    
+    # dns查询数据包转发，这样内网可以设置dns server为nat服务器
+    iptables -t nat -A PREROUTING -p udp --dport 53 -j DNAT --to-destination 192.168.1.1:53
+    iptables -t nat -A POSTROUTING -p udp -d 192.168.1.1 --dport 53 -j SNAT --to-source 192.168.1.159
+    ```
+
     
 
-11. 常见使用案例
+12. 常见使用案例
 
     + 模拟网线突然被掐断的情况[TCP连接,网络被掐断,而双方都不知道]
 
