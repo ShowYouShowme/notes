@@ -766,7 +766,7 @@ rz -y ${fileName}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                     
+  >                                                                        
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -790,7 +790,7 @@ rz -y ${fileName}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                     
+  >                                                                        
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1333,29 +1333,105 @@ du -sh ./protobuf/
 
 4. 只允许指定目的地的流量出去
 
-5. 显示规则
+5. **开启内核转发**
 
    ```shell
-   iptables -nL --line-number
+   # 跨主机端口转发必须开启
+   # 本机转发不需要
+   vim /etc/sysctl.conf
+   net.ipv4.ip_forward = 1
+   
+   sysctl -p
    ```
 
-6. 删除规则
+   
+
+6. 显示规则
+
+   ```shell
+   iptables -nL --line-number -t nat
+   
+   # nat表和input 之类的不是一个，所以要显式指出
+   
+   # 或者
+   iptables -t nat -L -n
+   ```
+
+7. 删除规则
 
    ```shell
    # 删除FORWARD链的第二条规则
    iptables -D FORWARD 2
+   
+   
+   # 删除PREROUTING的规则，POSTROUTING类似
+   iptables -t nat -D PREROUTING 1
+   iptables -t nat -D POSTROUTING 1
+   
+   # 删除全部规则
+   iptables -t nat -F
+   iptables -F
    ```
 
-7. 只允许指定IP访问某个端口
+8. 只允许指定IP访问某个端口
 
    ```shell
    iptables -A INPUT -p tcp --dport 22 -s 47.106.120.244 -j ACCEPT
    iptables -A INPUT -p tcp --dport 22 -j DROP
    ```
 
-8. 常见使用案例
+9. 端口转发
 
-   + 模拟网线突然被掐断的情况[TCP连接,网络被掐断,而双方都不知道]
+   + 本机转发
+
+     ```shell
+     # 把发送到8000端口的流量转发到80
+     iptables -t nat -A PREROUTING -s 192.168.1.0/24 -p tcp --dport 8000 -j REDIRECT --to 80
+     ```
+
+   + 跨主机转发[必须开启内核转发]
+
+     ```shell
+     #TCP转发
+     iptables -t nat -A PREROUTING -p tcp --dport [端口号] -j DNAT --to-destination [目标IP]:[端口号]
+     iptables -t nat -A POSTROUTING -p tcp -d [目标IP] --dport [端口号] -j SNAT --to-source [本地服务器IP]
+     
+     iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.1.102:9090
+     iptables -t nat -A POSTROUTING -p tcp -d 192.168.1.102 --dport 9090 -j SNAT --to-source 192.168.1.159
+     
+     #UDP转发
+     iptables -t nat -A PREROUTING -p udp --dport [端口号] -j DNAT --to-destination [目标IP]:[端口号]
+     iptables -t nat -A POSTROUTING -p udp -d [目标IP] --dport [端口号] -j SNAT --to-source [本地服务器IP]
+     ```
+
+   + 多端口转发
+
+     ```shell
+     #将本地服务器的50000~65535转发至目标IP为1.1.1.1的50000~65535端口
+     -A PREROUTING -p tcp -m tcp --dport 50000:65535 -j DNAT --to-destination 1.1.1.1
+     -A PREROUTING -p udp -m udp --dport 50000:65535 -j DNAT --to-destination 1.1.1.1
+     -A POSTROUTING -d 1.1.1.1/32 -p tcp -m tcp --dport 50000:65535 -j SNAT --to-source [本地服务器IP]
+     -A POSTROUTING -d 1.1.1.1/32 -p udp -m udp --dport 50000:65535 -j SNAT --to-source [本地服务器IP]
+     ```
+
+10. 保存规则
+
+    ```shell
+    # 安装服务
+    yum install iptables-services -y
+    
+    # 保存
+     service iptables save
+     
+     # 设置服务开机启动
+     systemctl enable iptables
+    ```
+
+    
+
+11. 常见使用案例
+
+    + 模拟网线突然被掐断的情况[TCP连接,网络被掐断,而双方都不知道]
 
 
 
@@ -2502,5 +2578,14 @@ sudo apt install virtualbox  -y -o Acquire::http::proxy="http://127.0.0.1:8090/"
    :shell 就直接到目的目录了,执行完命令再exit退回来即可
    ```
 
-   
+
+
+
+
+
+# centos7安装第三方仓库
+
+```shell
+yum install -y epel-release
+```
 
