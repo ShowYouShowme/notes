@@ -59,6 +59,14 @@ func main()  {
    ```shell
    go build ${file_name}
    ```
+   
+3. 静态编译
+
+   ```shell
+   CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' .
+   ```
+
+   
 
 
 
@@ -4045,7 +4053,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >       
+   >         
    >   # 2-- 检查进程是否存在
    >   ```
    >

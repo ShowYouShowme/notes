@@ -766,7 +766,7 @@ rz -y ${fileName}
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                        
+  >                                                                              
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -790,7 +790,7 @@ rz -y ${fileName}
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                        
+  >                                                                              
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2606,3 +2606,41 @@ sudo apt install virtualbox  -y -o Acquire::http::proxy="http://127.0.0.1:8090/"
 yum install -y epel-release
 ```
 
+
+
+# Rsyslog
+
+Rsyslog可以简单的理解为syslog的超集，系统日志工具。类似Logstash、ElasticSearch、Kibana
+
+
+
+## 作用
+
+1. 把不同节点的日志收集到一台节点上
+2. 同一节点，systemctl管理的服务的日志收集到一个文件夹下，方便查看
+
+
+
+# 分界符
+
+以<<EOF开始，EOF结束
+
+1. 多行内容输入文件，当你需要输入多行内容到配置文件就有用了
+
+   ```shell
+   cat <<EOF >>name.txt
+   this is your name
+   second day!
+   EOF
+   ```
+
+   
+
+2. 多行内容输出到控制台
+
+   ```shell
+   cat <<EOF
+   echo "hello"
+   echo " world"
+   EOF
+   ```
