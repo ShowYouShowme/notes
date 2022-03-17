@@ -852,9 +852,17 @@ rz -y ${fileName}
   >    ```shell
   >    nmap -sP 10.10.10.1/24
   >    ```
+  >    
+  > 3. 扫描指定端口
+  >
+  >    ```shell
+  >    time nmap -p 1234 47.112.251.164
+  >    ```
   >
   >    
-
+  >
+  > 
+  
   
 
 
@@ -1349,12 +1357,16 @@ du -sh ./protobuf/
 6. 显示规则
 
    ```shell
+   # 列出nat规则
    iptables -nL --line-number -t nat
    
    # nat表和input 之类的不是一个，所以要显式指出
    
    # 或者
    iptables -t nat -L -n
+   
+   # 列出规则, 非nat
+   iptables -Ln
    ```
 
 7. 删除规则
@@ -1446,9 +1458,24 @@ du -sh ./protobuf/
     iptables -t nat -A POSTROUTING -p udp -d 192.168.1.1 --dport 53 -j SNAT --to-source 192.168.1.159
     ```
 
-    
+12. 丢弃数据包
 
-12. 常见使用案例
+    ```shell
+    # 只允许管理员从202.13.0.0/16网段使用SSH远程登录防火墙主机
+    
+    iptables -A INPUT -p tcp --dport 22 -s 202.13.0.0/16 -j ACCEPT
+    
+    iptables -A INPUT -p tcp --dport 22 -j DROP
+    ```
+
+13. DROP 和 RESET 对比
+
+    1. iptables -A INPUT -p tcp -m tcp --dport 4444 -j DROP：对方会不断发送syn，直到超时，可以模拟断开网线的情况
+    2. iptables -A INPUT -p tcp -m tcp --dport 5555 -j REJECT --reject-with icmp-port-unreachable：对方会发两次syn
+    3. iptables -A INPUT -p tcp -m tcp --dport 5566 -j REJECT --reject-with tcp-reset ： 效果和4一样，返回reset
+    4. \# 未被使用的 5568 端口作为参照
+
+14. 常见使用案例
 
     + 模拟网线突然被掐断的情况[TCP连接,网络被掐断,而双方都不知道]
 
