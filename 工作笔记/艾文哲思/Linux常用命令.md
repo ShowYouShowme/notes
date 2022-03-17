@@ -1319,7 +1319,7 @@ du -sh ./protobuf/
 
 
 
-# iptable
+# iptables
 
 1. 安装
 
@@ -1433,6 +1433,8 @@ du -sh ./protobuf/
 11. nat转发，充当路由器角色
 
     ```shell
+    # 台式机里装虚拟机，虚拟机装centos7做nat，必须使用网线，测试无线网卡不可用
+    
     #需要开启内核转发
     iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -j SNAT --to-source 192.168.1.159
     
