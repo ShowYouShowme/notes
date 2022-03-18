@@ -716,7 +716,12 @@ rz -y ${fileName}
      nslookup httpbin.org 8.8.8.8
      ```
 
-  
+
+
+
+# telnet 
+
+tcp的客户端，测试端口是否处于监听状态。
 
 
 
@@ -819,7 +824,74 @@ rz -y ${fileName}
   >
   > 
   >
-  > 
+
+
+
+# watch
+
+作用：监控命令运行结果，省得你一遍遍手动运行
+
+
+
+参数
+
+| 选项 | 作用                                 |
+| ---- | ------------------------------------ |
+| -n   | 缺省每2秒运行一下程序                |
+| -d   | 高亮显示变化的区域                   |
+| -t   | 会关闭watch命令在顶部的时间间隔,命令 |
+
+示例
+
++ 监控网络连接数
+
+  ```shell
+  watch -n 1 -d netstat -ant
+  
+  # 或者 会显示time-out剩余时间
+  watch -n 1 -d netstat -ant
+  ```
+
++ 监控http连接数
+
+  ```shell
+  watch -n 1 -d 'pstree|grep http'
+  ```
+
++ 查看指定客户机连接数
+
+  ```shell
+  watch 'netstat -an | grep:21 | \ grep<模拟攻击客户机的IP>| wc -l' 
+  ```
+
++ 查看目录中文件变化
+
+  ```shell
+  watch -d 'ls -l|grep scf'
+  ```
+
++ 10s一次输出系统负载
+
+  ```shell
+  watch -n 10 'cat /proc/loadavg'
+  ```
+
++ 配合tail查看日志
+
+  ```shell
+  # 每一秒显示后3行
+  watch -n 1 tail -n 3 name.txt
+  ```
+
++ watch和grep配合使用
+
+  ```shell
+  watch 'netstat -nat | grep 22'
+  ```
+
+  
+
+
 
 # chown
 
@@ -1465,7 +1537,7 @@ du -sh ./protobuf/
     
     iptables -A INPUT -p tcp --dport 22 -s 202.13.0.0/16 -j ACCEPT
     
-    iptables -A INPUT -p tcp --dport 22 -j DROP
+    iptables -A INPUT -p tcp --dport 5600 -j DROP
     ```
 
 13. DROP 和 RESET 对比
