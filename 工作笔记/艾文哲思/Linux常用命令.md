@@ -93,6 +93,15 @@ taskkill /T /F /PID 12052
 
 
 
+# 压测ab
+
+命令
+
+```shell
+# 500并发，发起10000个请求
+ab -n 10000 -c 500 http://192.168.1.159:5000/
+```
+
 
 
 # alias
@@ -771,7 +780,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                              
+  >                                                                                 
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -795,7 +804,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                              
+  >                                                                                 
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -887,6 +896,12 @@ tcp的客户端，测试端口是否处于监听状态。
 
   ```shell
   watch 'netstat -nat | grep 22'
+  ```
+
++ 监控cpu使用情况
+
+  ```shell
+  watch -n 1 'top -n 1 -d 1 -b  | sed -n 3p'
   ```
 
   
@@ -1559,9 +1574,12 @@ du -sh ./protobuf/
 
 0. 功能
 
-   ```
-   输出CPU和磁盘I/O相关的统计信息
-   ```
+    ```shell
+    输出CPU和磁盘I/O相关的统计信息，主要关注TPS
+    
+    # 测试命令
+    dd if=/dev/zero of=/opt/test2 bs=1k count=10240000
+    ```
 
 1. 安装
 
@@ -1736,7 +1754,21 @@ du -sh ./protobuf/
 
    ```shell
    shutdown -r now
+   
+   # 或者
+   reboot
    ```
+   
+2. 关机
+
+   ```shell
+   shutdown -h now
+   
+   # 或者
+   poweroff
+   ```
+
+   
 
 
 
@@ -1830,6 +1862,15 @@ WantedBy=multi-user.target # 多用户模式下需要
    # step3:更新缓存
    yum makecache
    ```
+   
+5. 安装本地rpm包
+
+   ```shell
+   # 会自动解决依赖问题
+   yum localinstall grafana.rpm -y
+   ```
+
+   
 
 
 
@@ -2029,43 +2070,56 @@ vim /etc/fstab
 
 # top
 
-1. 查看CPU个数
+1. 选项
+
+   | 选项 | 作用                                         |
+   | ---- | -------------------------------------------- |
+   | -d   | 更新间隔，默认3s                             |
+   | -b   | 批处理模式，用于将输出重定向到文件，避免乱码 |
+   | -n   | 执行次数，默认一直执行                       |
+   | -p   | 进程pid                                      |
+   | -u   | 指定用户                                     |
+   | -s   | 安全模式                                     |
+
+   
+
+2. 查看CPU个数
 
    ```shell
    按下Q上的数字1
    ```
 
-2. 按CPU使用率排序
+3. 按CPU使用率排序
 
    ```shell
    P  [daxie]
    ```
 
-3. 按内存使用排序
+4. 按内存使用排序
 
    ```shell
    M [daxie]
    ```
 
-4. 存储单位修改
+5. 存储单位修改
 
    ```shell
    shift + e
    ```
-   
-5. 查看指定进程
+
+6. 查看指定进程
 
    ```shell
    top -p ${pid}
    ```
 
-6. 查看指定多个进程
+7. 查看指定多个进程
 
    ```shell
     top -p ${pid1},${pid2}
    ```
 
-7. 监控指定进程
+8. 监控指定进程
 
    ```shell
    top -p 3595782  -b -n 1 -d 3 > kvm.txt
@@ -2077,7 +2131,7 @@ vim /etc/fstab
    # -d 3: 每次top时间间隔是3秒钟
    ```
 
-8. 获取某个进程数据
+9. 获取某个进程数据
 
    ```shell
    # c++ 可以执行此命令来获取标准输出 得到CPU 使用率

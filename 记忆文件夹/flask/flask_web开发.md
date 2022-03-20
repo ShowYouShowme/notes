@@ -128,7 +128,7 @@ def index():
   ```shell
   # hello.py是脚本文件名
   (venv) $ export FLASK_APP=hello.py
-  (venv) $ flask run
+  (venv) $ flask run --host=0.0.0.0 --port=5000
   ```
 
 + Win

@@ -125,6 +125,9 @@ int main(int argc, char* argv[])
 	// 但发送的报文会导致对端发送RST报文, 因为对端的socket已经调用了close, 完全关闭, 
 	// 既不发送, 也不接收数据. 所以, 第二次调用write方法(假设在收到RST之后), 
 	// 会生成SIGPIPE信号, 导致进程退出
+    
+    // 底层socket已经关闭，但是上层未主动调用close，然后连续调用两次write/send，第二次就会宕机。比如server先sleep(60s),此时client调用close，然后
+    // server两次write
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
 		return 1;
 #endif
