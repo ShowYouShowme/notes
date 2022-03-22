@@ -101,6 +101,24 @@
    service mysqld start
    ```
 
+5. 列出全部数据库
+
+   ```shell
+   SHOW DATABASES;
+   ```
+
+6. 使用数据库
+
+   ```shell
+   use ${dbName};
+   ```
+
+7. 列出全部表
+
+   ```shell
+   SHOW TABLES;
+   ```
+
    
 
 
