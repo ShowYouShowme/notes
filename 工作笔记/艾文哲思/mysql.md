@@ -1,3 +1,38 @@
+# 安装
+
+## yum安装
+
+```shell
+# 不管是redis还是mysql或者gcc这种工具，尽量用yum安装，源码编译安装太麻烦！
+# 如果C++开发过程需要用到对应sdk，比如openssl-devel之类，也可以考虑用yum安装，编译安装太麻烦了，或者干脆更换编程语言！
+# centos7
+yum install -y mariadb-server
+
+#启动
+systemctl start mariadb
+
+#开机启动
+systemctl enable mariadb
+
+# 初始化
+mysql_secure_installation
+
+## 
+0. 设置root密码(设置不设置都可以)
+1. 去除匿名用户
+2. 去除root远程登陆权限
+3. 删除test库
+4. 重新加载权限表
+```
+
+
+
+## docker安装
+
+
+
+
+
 #  导出数据
 
 1. 只导出表结构
