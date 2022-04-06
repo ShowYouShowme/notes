@@ -1,9 +1,27 @@
 # 第一章 安装Redis服务
 
+
+
+## 1.1 docker安装
+
 ```shell
 docker pull redis:6.2.3
 
 docker run -d -p 6379:6379 redis:6.2.3
+```
+
+
+
+## 1.2 yum安装
+
+```shell
+yum install -y epel-release
+yum install redis -y
+
+#启动redis
+systemctl start redis
+#设置开机启动
+systemctl enable redis
 ```
 
 

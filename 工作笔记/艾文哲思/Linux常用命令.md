@@ -93,6 +93,43 @@ taskkill /T /F /PID 12052
 
 
 
+# ansible
+
+作用：批量操作机器
+
+安装
+
+```shell
+yum install epel-release -y
+yum install -y ansible
+```
+
+配置
+
+```shell
+vim /etc/ansible/hosts
+
+# 加入以下内容
+[www_jfedu]
+192.168.1.88
+```
+
+执行shell命令
+
+```shell
+ansible www_jfedu  -m shell -a "pwd"
+
+# ping
+ansible www_jfedu  -m ping
+
+# 拷贝文件
+ansible www_jfedu -m copy -a 'src=/root/install.log dest=/tmp/
+```
+
+
+
+
+
 # 压测ab
 
 命令
@@ -232,6 +269,8 @@ scp [命令参数] [源路径] [目的路径]
 
    ```shell
    # 如果公钥copy过去了,用户名不需要指定(root@ 可以省略)
+   # 1-- 要将公钥copy过去
+   # 2-- 在hosts里面配置域名和ip映射关系,这样就不用写ip地址了
    
    scp -r /home/administrator/ root@192.168.6.129:/etc/squid
    ```
@@ -270,33 +309,6 @@ scp [命令参数] [源路径] [目的路径]
    
 
 
-
-
-
-# 开机启动服务或脚本
-
-1. 编写脚本，在脚本前加入下面三行
-
-   ```shell
-   #!/bin/bash
-   # chkconfig:   2345 90 10
-   # description:  myservice
-   ```
-
-2. 给脚本赋予执行权限，并移动至**/etc/rc.d/init.d**
-
-   ```shell
-   chmod u+x ./autostart.sh
-   mv  ./autostart.sh /etc/rc.d/init.d
-   ```
-
-3. 添加脚本至开机启动项目
-
-   ```shell
-   cd /etc/rc.d/init.d
-   chkconfig --add autostart.sh
-   chkconfig autostart.sh on
-   ```
 
 
 
@@ -528,27 +540,10 @@ rz -be ${fileName}
 
 # -y 选项可以替换-be
 rz -y ${fileName}
+
+
+# 也可以使用ftp服务,然后利用win的资源管理器上传和下载
 ```
-
-
-
-# 
-
-
-
-
-
-# 解决RPM包依赖问题
-
-1. 如上下载软件包及其依赖
-
-2. 进入目录安装
-
-   ```shell
-   rpm -Uvh *
-   ```
-
-   
 
 
 
@@ -575,7 +570,13 @@ rz -y ${fileName}
      wget -e "http_proxy=http://127.0.0.1:8087" http://www.subversion.org.cn/svnbook/1.4/
      ```
 
-     
+3. 断点续传
+
+   ```shell
+   wget -c url
+   ```
+
+   
 
 
 
@@ -780,7 +781,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                 
+  >                                                                                       
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -804,7 +805,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                 
+  >                                                                                       
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1186,35 +1187,9 @@ zip -r we.zip we
 
 # ssh 
 
- ## 1 使用代理
-
-```shell
-# xshell 里面的'连接'有个代理的选项;可以设置http tunnel 或者 socket5 代理
-```
-
-## 2 本地隧道
-
-```shell
-#1--隧道仅转发流量[端口映射],此方法可以通过跳板机连接测试机和线上的服务器,防止被攻击
-
-ssh -N -f -L 0.0.0.0:2121:47.75.37.140:22 47.112.162.19
-
-ssh -N -f -L ${本地IP}:${本地端口}:${目的服务器IP}:${目的服务器端口} ${中间服务器IP}
 
 
-#2--不经过跳板机的映射
-# 本机2121端口映射到47.112.251.164:1081
-ssh -N -f -L 0.0.0.0:2121:47.112.251.164:1081 127.0.0.1 
-
-#3--本地1089端口映射到172.18.29.247:1082,公网1082未对外暴露
-# 47.112.251.164 是公网地址,172.18.29.247是机器网卡地址,1082端口不对外开放
-# 此方法可以让服务器只对外暴露22端口,其它服务端口均通过映射的方式,安全性极高
-ssh -N -f -L 0.0.0.0:1089:172.18.29.247:1082 47.112.251.164
-
-ssh -N -f -L ${局域网IP}:${局域网端口}:${线上服务器内网IP}:${线上服务器端口,不对外暴露} ${线上服务器公网IP}
-```
-
-## 3 远程隧道
+## 1 远程隧道
 
 ```shell
 # 让家里的电脑能访问公司内网的电脑
@@ -1231,19 +1206,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
 
 
-## 4 sockets代理服务器
-
-```shell
-# ssh 内置了socks5服务
-
-ssh -N -f -D 0.0.0.0:1080 10.10.10.188  # 内网的机器有sshd服务,可以将sshd服务器地址设置为本机
-
-ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
-```
-
-
-
-## 5 密钥登陆
+## 2 密钥登陆
 
 1. 生成密钥
 
@@ -1273,7 +1236,7 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
 
 
 
-## 6 长时间无操作，ssh自动断开
+## 3 长时间无操作，ssh自动断开
 
 1. 修改ssh服务配置[方式一]
 
@@ -1295,7 +1258,7 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
 
 
 
-## 7 远程服务器执行脚本
+## 4 远程服务器执行脚本
 
 1. 执行服务器上的shell脚本
 
@@ -1324,7 +1287,7 @@ ssh -N -f -D ${本地IP}:${本机端口} ${sshd服务地址}
 
 
 
-## 8 公钥拷贝到远程机器
+## 5 公钥拷贝到远程机器
 
 ```shell
 ssh-copy-id -p ${port} ${user}@${host}
@@ -1820,6 +1783,9 @@ WantedBy=multi-user.target # 多用户模式下需要
 1. 查找软件包是否存在
 
    ```shell
+   # 查找java相关的包
+   yun list java*
+   
    # List a package or groups of packages
    yum list | grep redis
    
@@ -1868,6 +1834,15 @@ WantedBy=multi-user.target # 多用户模式下需要
    ```shell
    # 会自动解决依赖问题
    yum localinstall grafana.rpm -y
+   
+   # 或者
+   yum localinstall *.rpm -y
+   ```
+   
+6. 查看已安装的包
+
+   ```shell
+   rpm -qa| grep nginx
    ```
 
    
