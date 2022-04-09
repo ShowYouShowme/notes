@@ -39,5 +39,7 @@ systemctl enable tomcat
 yum install -y java-11-openjdk
 
 # jenkins里配置新节点ip和账号密码
+
+useradd jenkins
 ```
 
