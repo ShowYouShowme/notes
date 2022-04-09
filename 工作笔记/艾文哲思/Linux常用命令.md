@@ -632,6 +632,9 @@ rz -y ${fileName}
 
      ```shell
      curl -O http://www.netscape.com/index.html -L -v
+     
+     # 或者
+     curl -LO http://www.netscape.com/index.html
      ```
 
 4. 使用代理
@@ -781,7 +784,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                       
+  >                                                                                          
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -805,7 +808,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                       
+  >                                                                                          
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
