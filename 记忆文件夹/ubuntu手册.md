@@ -1,3 +1,43 @@
+# 第一章 显卡驱动安装
+
+```shell
+
+############################### 禁用已有显卡驱动
+# 检查是否安装Nouveau驱动
+lsmod | grep nouveau
+
+# 如果安装了需要禁用
+sudo vim /etc/modprobe.d/blacklist.conf
+## 加入下面两行
+blacklist nouveau
+options nouveau modeset=0
+
+# 更新
+sudo update-initramfs -u
+
+# 重启设备
+reboot
+
+# 检查禁用是否成功
+lsmod | grep nouveau  # 没有输出说明禁用成功
+
+################################### 安装系统推荐显卡驱动
+
+# 检查系统推荐的显卡驱动
+sudo ubuntu-drivers devices
+
+# 安装显卡驱动
+sudo apt install nvidia-driver-415
+
+
+# 重启电脑，查看显卡驱动
+nvidia-smi
+```
+
+
+
+
+
 # 第一章 ubuntu 18.04
 
 1. 设置网卡
