@@ -1,10 +1,29 @@
 # 第一章 显卡驱动安装
 
 ```shell
+# 查看显卡型号
+lspci | grep -i vga
 
+## AMD 显卡
+06:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Device 1638 (rev c9)
+
+### 检查是否装了nouveau
+lsmod | grep nouveau  # 这个驱动非常不稳定
+
+###  AMD显卡查看系统需要安装的驱动
+sudo ubuntu-drivers devices  # 我的机器返回是空，即不需要安装任何驱动。装了Chrome，vscode，typora, 搜狗输入法 系统运行非常稳定，不会花屏也不会死机，系统版本是ubuntu 20.04
+# (注意：软件包里面的vscode中文输入，只能英文输入)
+
+
+
+## NVIDIA 显卡
+01:00.0 VGA compatible controller: NVIDIA Corporation Device 1f06 (rev a1)
+
+
+## NVIDIA 显卡驱动安装流程
 ############################### 禁用已有显卡驱动
 # 检查是否安装Nouveau驱动
-lsmod | grep nouveau
+lsmod | grep nouveau  # 网上说这个驱动非常不稳定,和chrome一起使用会出问题，实际使用确实如此
 
 # 如果安装了需要禁用
 sudo vim /etc/modprobe.d/blacklist.conf
