@@ -167,9 +167,56 @@ ab -n 10000 -c 500 http://192.168.1.159:5000/
      alias ll='ls -lh'
      ```
 
-     
-
   
+  
+  
+  
+  
+  
+  
+  # su
+  
+  切换到指定用户
+  
+  ```shell
+  su - root
+  
+  # 切换到root[针对ubuntu系统]
+  sudo su - root
+  ```
+  
+  
+  
+  切换到非登录用户shell
+  
+  ```shell
+  # 切换到非登录用户ftp的shell
+  su -s /bin/bash ftp
+  
+  # 进入用户加目录
+  cd
+  ```
+  
+  
+
+# history
+
+
+
+1. 执行历史命令
+
+   ```shell
+   # 56是命令标号
+   !56
+   ```
+
+2. 搜索历史命令
+
+   ```shell
+   Ctrl + R
+   ```
+
+   
 
 # tar
 
@@ -784,7 +831,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                          
+  >                                                                                             
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -808,7 +855,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                          
+  >                                                                                             
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
