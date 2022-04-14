@@ -208,7 +208,7 @@ yum install bridge-utils -y
 >
 >     ```shell
 >     virsh autostart ${domain}
->
+>    
 >     virsh autostart ${domain} --disable # 禁止自动启动
 >     ```
 >
@@ -310,9 +310,48 @@ yum install bridge-utils -y
    ```shell
    qemu-system-x86_64 -m 2048 -enable-kvm fedora.img
    
-
+   
    # 启动虚拟机,同时暴露端口给spice client
    /mnt/server/opt/qemu/build/bin/qemu-system-x86_64 -m 4096 -enable-kvm /mnt/images/5ffdf526b0321206714888c7_518df33b-684d-4457-a3f0-4e7f99c8f441.qcow2 -spice port=5902,image-compression=off,playback-compression=off,disable-ticketing
    ```
    
-   
+
+
+
+# 第五章 ubuntu安装
+
+说明：使用的ubuntu版本是20.04
+
+
+
+```shell
+# step-1 确认CPU支持虚拟化
+grep -Eoc '(vmx|svm)' /proc/cpuinfo  # 输出大于0的数字即可
+
+# step-2 检查VT 是否启用
+sudo apt update
+sudo apt install cpu-checker -y
+
+# step-3 开始检查
+kvm-ok
+
+## 如果处理器虚拟化能力没有在 BIOS 中被禁用，命令将会打印出:
+INFO: /dev/kvm exists
+KVM acceleration can be used
+
+
+# step-4 安装相关软件包
+sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virtinst virt-manager -y
+
+
+# step-5 检查libvirt服务是否启动
+sudo systemctl is-active libvirtd  # 输出 active
+
+
+# step-6 启动虚拟机管理器
+sudo virt-manager
+
+# step-7 下载iso镜像，并将其移动到指定目录
+sudo mv win10.iso /var/lib/libvirt/images/
+```
+

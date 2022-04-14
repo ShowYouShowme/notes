@@ -451,6 +451,18 @@ gnome-shell用一段时间就会卡死，需要重启
    sudo apt install -y ./teamviewer_amd64.deb
    ```
 
+6. 列出已安装的软件包
+
+   ```shell
+   apt list --installed
+   ```
+
+7. 卸载软件
+
+   ```shell
+   apt purge  # 连同配置文件一起删除
+   ```
+
    
 
 
