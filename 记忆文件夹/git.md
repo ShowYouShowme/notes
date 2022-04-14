@@ -476,9 +476,14 @@ git submodule update
 1. 使用命令
 
    ```shell
+   #全局代理
    #http代理：
    git config --global http.proxy http://127.0.0.1:8090
    git config --global https.proxy https://127.0.0.1:8090
+   
+   # 只有github使用代理
+   git config --global http.https://github.com.proxy http://127.0.0.1:8090
+   git config --global https.https://github.com.proxy https://127.0.0.1:8090
    ```
    
 2. 编辑文件
