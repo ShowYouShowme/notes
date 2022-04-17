@@ -87,6 +87,8 @@ int main(int argc, char* argv[])
 #include<stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include<errno.h>
+#include <unistd.h>
 #ifdef WIN32
 	#include <WinSock2.h>
 	#pragma comment(lib, "ws2_32.lib")
@@ -107,7 +109,7 @@ typedef int SOCKET;
 #define SOCKADDR_IN sockaddr_in
 #endif
 
-unsigned short PORT = 5670;
+unsigned short PORT = 5671;
 int main(int argc, char* argv[])
 {
 	int szClntAddr = 0;
@@ -146,6 +148,9 @@ int main(int argc, char* argv[])
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serverAddr.sin_port = htons(PORT);
+	
+	int optval = 1;
+        setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	ret = bind(server, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (ret == SOCKET_ERROR) {
@@ -160,54 +165,17 @@ int main(int argc, char* argv[])
 	}
 
 	szClntAddr = sizeof(clientAddr);
+	int connect_count = 0;
 	for (;;) {
-		client = accept(server, (SOCKADDR*)&clientAddr, &szClntAddr);
+		client = accept(server, (SOCKADDR*)&clientAddr, (socklen_t*)&szClntAddr);
 		if (client == INVALID_SOCKET) {
-			printf("accept error! \n");
-			return -5;
+			printf("accept error!, msg : %s \n", strerror(errno));
+			sleep(10);
+			continue;
 		}
+		connect_count += 1;
+		printf("当前链接数:%d \n", connect_count);
 
-		char message[1024] = { 0 };
-		
-		//recv 成功返回收到的字节数 0表示对方关闭了socket <0 出错
-		int strLen = recv(client, message, sizeof(message) - 1, 0);
-		if (strLen < 0) {
-			printf("recv error! \n");
-			return -3;
-		}
-		// send 成功返回发送的字节数 失败返回-1
-		//strLen = send(client, message, strlen(message), 0);
-		//if (strLen < 0) {
-		//	printf("send error! \n");
-		//	return -3;
-		//}
-		// closesocket(client);
-
-		/// 从关闭的socket 接受消息返回-1
-		//strLen = recv(client, message, sizeof(message) - 1, 0);
-		//if (strLen < 0) {
-		//	DWORD dwError = WSAGetLastError();
-		//	printf("recv error! \n");
-		//	return -3;
-		//}
-
-		message[0] = 'H';
-		message[1] = 'e';
-		message[2] = '\0';
-		/// TIPS: 向自己关闭的socket 写数据返回-1
-		/// TIPS: socket 未关闭,但是对端已经关闭,第一次写入正常
-		strLen = send(client, message, strlen(message), 0);
-		if (strLen < 0) {
-			printf("send error! \n");
-			return -3;
-		}
-
-		/// 第二次向对端已经关闭的socket写数据, 触发SIGPIPE信号,写数据返回-1
-		strLen = send(client, message, strlen(message), 0);
-		if (strLen < 0) {
-			printf("2---send error! \n");
-			//return -3;
-		}
 	}
 #ifdef WIN32
 	WSACleanup();

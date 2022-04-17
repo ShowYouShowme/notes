@@ -55,6 +55,19 @@ nvidia-smi
 
 
 
+# 第二章 安装google输入法
+
+```shell
+# ubuntu 20.04
+sudo apt-get install fcitx-googlepinyin -y
+
+# 设置键盘输入法系统为fcitx
+
+# 重启系统，点击右上角键盘图标进行配置
+```
+
+
+
 
 
 # 第一章 ubuntu 18.04
@@ -203,6 +216,8 @@ duso apt full-upgrade
    ```
 
 6. vscode好像会导致系统崩溃
+
+7. 这些问题好像都是noveau显卡驱动导致的，禁用后就没有这种问题了
 
 
 
