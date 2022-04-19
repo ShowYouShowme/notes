@@ -461,7 +461,16 @@ git submodule update
    init.sql
    ```
 
-   
+
+
+
+## 2.18 文件重命名
+
+```shell
+git mv readme README.md
+```
+
+
 
 
 

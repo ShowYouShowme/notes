@@ -68,5 +68,78 @@ print(str)
    print(mylib.ding_sum2(23,17))
    ```
 
-   
 
+
+# 第三章 错误处理
+
+
+
+## 3.1 error
+
+
+
+## 3.2 assert
+
+```lua
+assert(type(a) == "number", "a 不是一个数字")
+```
+
+
+
+## 3.3 pcall
+
+
+
+## 3.4 xpcall
+
+
+
+## 3.5 debug
+
+
+
+
+
+# 第四章 excel转换为lua
+
+使用wps的xml作为源文件。
+
+1. 表tab的格式
+
+   ```shell
+   # 表名|代码表名
+   
+   巅峰商城|bestShop
+   ```
+
+2. 字段格式
+
+   ```shell
+   # 字段名|代码字段名|数据类型
+   商品名|productName|string
+   ```
+
+3. 特殊值
+
+   ```shell
+   # 表格里没有值时用nil表示
+   # ''是代码才有的值,excel配置文件没有
+   # 每个表格的值先去掉前后空白然后再解析
+   
+   # 配置文件值只有 int和string，不要存放小数
+   ```
+
+4. 客户端修改配置文件流程[不需要开发干预]
+
+   ```shell
+   # step-1
+   导出lua
+   
+   # step-2
+   提交到代码仓库
+   
+   # step-3
+   jenkins自动构建发布
+   ```
+
+   
