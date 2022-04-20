@@ -1,6 +1,16 @@
-## 1-1 前言
+# 第一章  前言
 
-### 创建项目
+安装开发环境
+
+```shell
+sudo apt install nodejs npm
+```
+
+
+
+
+
+## 1.1 创建项目
 
 1. 初始化npm包管理器
 
@@ -25,7 +35,7 @@
    "target": "es6",
    ```
 
-### 调试项目
+## 1.2 调试项目
 
 1. 编译生成javascript代码
 
@@ -42,7 +52,7 @@
    > 2. vscode
    >
    > 添加debug配置，然后设置启动的js文件，最后断点启动项目即可
-### 代码跳转
+## 1.3 代码跳转
 
 ***
 
@@ -50,9 +60,11 @@
 
 
 
-### 第三方包安装
+## 1.4 第三方包安装
 
-#### redis安装
+
+
+### 1.4.1 redis安装
 
 ------
 
@@ -74,7 +86,7 @@
    npm install @types/ioredis
    ```
 
-#### MySQL安装
+### 1.4.2 MySQL安装
 
 ------
 
@@ -99,7 +111,7 @@
    npm install sequelize
    ```
 
-#### typescript安装
+### 1.4.3 typescript安装
 
 ------
 
@@ -107,7 +119,9 @@
 npm install typescript -g
 ```
 
-#### 安装node声明文件
+
+
+### 1.4.4 安装node声明文件
 
 ------
 
@@ -115,7 +129,9 @@ npm install typescript -g
 npm install @types/node
 ```
 
-### npm教程
+
+
+### 1.4.5 npm教程
 
 1. 使用cnpm
 
@@ -268,7 +284,7 @@ npm install @types/node
 
 
 
-### 示例代码
+### 1.4.6 示例代码
 
 ```js
 import redis = require('redis') //引入nodejs的包
@@ -291,17 +307,17 @@ server.listen( 9999, "0.0.0.0" );
 
 
 
-## 1-2 创建应用
+# 第二章 创建应用
 
-### node.js运行原理
 
-***
+
+## 2.1 node.js运行原理
 
 php开发时，接受http请求并提供web页面由apache或nginx来处理，php仅处理业务。Node.js不仅处理业务，还实现了整个http服务器。
 
 
 
-### 创建应用
+## 2.2 创建应用
 
 ***
 
@@ -318,9 +334,11 @@ server.listen(8899,'0.0.0.0');
 
 
 
-## 1-3 REPL
+# 第三章 REPL
 
-### 定义
+
+
+## 3.1 定义
 
 ***
 
@@ -328,7 +346,7 @@ Node.js的交互式解释器
 
 
 
-### 简单示范
+## 3.2 简单示范
 
 ***
 
@@ -350,7 +368,7 @@ Node.js的交互式解释器
 
 
 
-### 常用的REPL命令
+## 3.3 常用的REPL命令
 
 ***
 
@@ -367,15 +385,19 @@ Node.js的交互式解释器
 
 
 
-## 1-4 回调函数
+# 第四章 回调函数
 
-### 回调函数的机制原理
+
+
+## 4.1 回调函数的机制原理
 
 ***
 
 任务开始执行前注册回调函数，任务执行完毕执行回调函数！
 
-### 简单范例
+
+
+## 4.2 简单范例
 
 ***
 
@@ -383,9 +405,9 @@ Node.js的交互式解释器
 >
 >    ```javascript
 >    import fs = require("fs");
-> let fd : number = fs.openSync("configureNet.bat", "r");
-> let data : Buffer = Buffer.alloc(1024);
-> fs.readSync(fd, data, 0,1024,0);
+>    let fd : number = fs.openSync("configureNet.bat", "r");
+>    let data : Buffer = Buffer.alloc(1024);
+>    fs.readSync(fd, data, 0,1024,0);
 >    console.log(data.toString());
 >    console.log("程序执行完毕!");
 >    ```
@@ -409,21 +431,27 @@ Node.js的交互式解释器
 
 
 
-## 1-5 事件循环
+# 第五章 事件循环
 
-### 事件循环机制解释
+
+
+## 5.1 事件循环机制解释
 
 ***
 
 基于观察者模式实现，有一个while事件主循环，类似Libevent，直到没有事件观察者就退出！
 
-### 事件驱动程序
+
+
+## 5.2 事件驱动程序
 
 ***
 
 Node.js事件驱动模型中，有一个主循环监听事件，事件发生时触发回调函数。我们把它成为事件IO或非阻塞IO。
 
-### 简单范例
+
+
+## 5.3 简单范例
 
 ***
 
@@ -445,7 +473,7 @@ console.log("程序执行完毕!");
 
 
 
-### Node应用程序如何工作
+## 5.4 Node应用程序如何工作
 
 ***
 
@@ -467,11 +495,11 @@ console.log("程序执行完毕!");
 
 
 
-## 1-6 EventEmitter
+# 第六章 EventEmitter
 
-### EventEmitter类
 
-***
+
+## 6.1 EventEmitter类
 
 1. 所有产生事件的对象都是events.EventEmitter的实例
 
@@ -494,9 +522,9 @@ console.log("程序执行完毕!");
    }, 3000);
    ```
 
-### EventEmitter常用方法
 
-***
+
+## 6.2 EventEmitter常用方法
 
 1. 代码
 
@@ -556,7 +584,9 @@ console.log("程序执行完毕!");
    >
    > 9. emitter.listenerCount
 
-### error事件
+
+
+## 6.3 error事件
 
 ***
 
@@ -570,9 +600,9 @@ console.log("程序执行完毕!");
 >   emitter.emit('error');
 >   ```
 
-### 继承EventEmitter
 
-***
+
+## 6.4 继承EventEmitter
 
 1. 一般不会直接使用EventEmitter，而是在对象中继承
 2. fs、net、http都是继承EventEmitter。
@@ -581,7 +611,7 @@ console.log("程序执行完毕!");
 
 
 
-## 1-7 Stream
+# 第七章 Stream
 
 > 1. 定义：stream是个抽象接口，所有流对象都是EventEmitter的实例
 >
@@ -599,7 +629,7 @@ console.log("程序执行完毕!");
 >    > + error：接收和写入过程中发生错误触发
 >    > + finish：所有数据已被写入底层系统时触发
 
-### 从流中读取数据
+## 7.1 从流中读取数据
 
 ***
 
@@ -620,7 +650,9 @@ readStream.on("error", (err : Error)=>{
 console.log("程序执行完毕!");
 ```
 
-### 写入流
+
+
+## 7.2 写入流
 
 ***
 
@@ -639,7 +671,9 @@ writeStream.on('err', (err):void=>{
 console.log("程序执行完毕!");
 ```
 
-### 管道流
+
+
+## 7.3 管道流
 
 ***
 
@@ -656,7 +690,9 @@ console.log("程序执行完毕!");
   console.log("程序执行完毕!");
   ```
 
-### 链式流
+
+
+## 7.4 链式流
 
 ***
 
@@ -690,11 +726,13 @@ console.log("程序执行完毕!");
 
 
 
-## 1-8 Buffer
+# 第八章 Buffer
 
 + 定义：存放二进制数据的缓冲区，类似一个整数数组
 
-### 创建Buffer类
+
+
+## 8.1 创建Buffer类
 
 ***
 
@@ -704,7 +742,9 @@ let b2 : Buffer = new Buffer([10, 20, 30, 40, 50]);
 let b3 : Buffer = new Buffer("www.runoob.com", "utf-8");
 ```
 
-### 写入缓冲区
+
+
+## 8.2 写入缓冲区
 
 ***
 
@@ -716,7 +756,7 @@ console.log("写入字节数:" + len);
 
 
 
-### 从缓冲区读取数据
+## 8.3 从缓冲区读取数据
 
 ***
 
@@ -729,7 +769,9 @@ console.log(buf.toString('ascii'));
 console.log(buf.toString('ascii', 0, 4));
 ```
 
-### 将Buffer转换为JSON对象
+
+
+## 8.4 将Buffer转换为JSON对象
 
 ***
 
@@ -739,9 +781,9 @@ let json : object = buf.toJSON();
 console.log(json);
 ```
 
-### 缓冲区合并
 
-***
+
+## 8.5 缓冲区合并
 
 ```javascript
 let buf1 : Buffer = new Buffer("我的职业是");
@@ -753,9 +795,9 @@ let buf3 : Buffer = Buffer.concat([buf1, buf2]);
 console.log("合并后的buf是:" + buf3.toString());
 ```
 
-### 缓冲区比较
 
-***
+
+## 8.6 缓冲区比较
 
 ```javascript
 let buf1 : Buffer = new Buffer("ABE");
@@ -771,9 +813,9 @@ if (result < 0){
 }
 ```
 
-### 缓冲区裁剪
 
-***
+
+## 8.7 缓冲区裁剪
 
 ```javascript
 let buf = new Buffer("ABCDEFHIJK");
@@ -783,9 +825,9 @@ let buf2 = buf.slice(1,3);
 console.log(buf2.toString());
 ```
 
-### 拷贝缓冲区
 
-***
+
+## 8.8 拷贝缓冲区
 
 ```javascript
 // 与旧缓冲区指向同一块内存,只是索引不同
@@ -795,9 +837,9 @@ buf.copy(buf2);
 console.log(buf2.toString());
 ```
 
-### 缓冲区长度
 
-***
+
+## 8.9 缓冲区长度
 
 ```javascript
 let buf : Buffer = new Buffer("1234567890");
@@ -805,9 +847,9 @@ let buf : Buffer = new Buffer("1234567890");
 console.log(buf.length)
 ```
 
-### 方法参考手册
 
-***
+
+## 8.10 方法参考手册
 
 [Buffer文档](http://nodejs.cn/api/buffer.html)
 
@@ -815,11 +857,11 @@ console.log(buf.length)
 
 
 
-## 1-9 模块系统
+# 第九章 模块系统
 
 + 定义：模块就是Node.JS代码文件
 
-### 创建模块
+## 9.1 创建模块
 
 ***
 
@@ -856,7 +898,9 @@ console.log(buf.length)
 > world();
 > ```
 
-### 服务端模块
+
+
+## 9.2 服务端模块
 
 ***
 
@@ -888,9 +932,11 @@ console.log(buf.length)
 
 
 
-## 1-10 函数
+# 第十章 函数
 
-### 创建函数
+
+
+## 10.1 创建函数
 
 ***
 
@@ -907,7 +953,7 @@ execute(printOut, "Hello Function!");
 
 
 
-### 匿名函数
+## 10.2 匿名函数
 
 ***
 
@@ -923,7 +969,7 @@ nodeFun((param : string) : void =>{
 
 
 
-### 函数传递的工作原理
+## 10.3 函数传递的工作原理
 
 ***
 
@@ -943,7 +989,7 @@ server.listen(port, host);
 
 
 
-## 1-11 路由
+# 第十一章 路由
 
 + 定义：访问路径
 
@@ -989,15 +1035,17 @@ server.listen(port, host);
 
 
 
-## 1-12 全局系列
+# 第十二章 全局系列
 
-### 全局对象
+## 12.1 全局对象
 
 ***
 
 > 浏览器中，window是全局对象；Node.js中，global是全局对象，所有全局对象都是global的属性。
 
-### 全局对象与全局变量
+
+
+## 12.2 全局对象与全局变量
 
 ***
 
@@ -1054,7 +1102,7 @@ server.listen(port, host);
 
   
 
-### 全局函数
+## 12.3 全局函数
 
 ***
 
@@ -1064,7 +1112,9 @@ server.listen(port, host);
 > 4. clearInterval
 > 5. require
 
-### 准全局变量
+
+
+## 12.4 准全局变量
 
 ***
 
@@ -1080,9 +1130,11 @@ server.listen(port, host);
 
 
 
-## 1-13 文件系统
+# 第十三章 文件系统
 
-### 异步和同步
+
+
+## 13.1 异步和同步
 
 ***
 
@@ -1105,7 +1157,9 @@ console.log("同步读取:" + data.toString());
 console.log("程序执行完毕!");
 ```
 
-### 打开文件
+
+
+## 13.2 打开文件
 
 ***
 
@@ -1137,7 +1191,7 @@ console.log("程序执行完毕!");
   });
   ```
 
-### 获取文件信息
+## 13.3 获取文件信息
 
 ***
 
@@ -1191,7 +1245,7 @@ console.log("程序执行完毕!");
 
   
 
-### 写入文件
+## 13.4 写入文件
 
 ***
 
@@ -1228,7 +1282,7 @@ console.log("程序执行完毕!");
   });
   ```
 
-### 读取文件
+## 13.5 读取文件
 
 ***
 
@@ -1269,7 +1323,7 @@ console.log("程序执行完毕!");
   });
   ```
 
-### 关闭文件
+## 13.6 关闭文件
 
 ***
 
@@ -1311,7 +1365,7 @@ console.log("程序执行完毕!");
   })
   ```
 
-### 截取文件 == TODO
+## 13.7 截取文件 == TODO
 
 ***
 
@@ -1326,7 +1380,7 @@ console.log("程序执行完毕!");
 
   
 
-### 删除文件
+## 13.8 删除文件
 
 ***
 
@@ -1352,7 +1406,7 @@ console.log("程序执行完毕!");
   })
   ```
 
-### 创建目录
+## 13.9 创建目录
 
 ***
 
@@ -1380,7 +1434,7 @@ console.log("程序执行完毕!");
   })
   ```
 
-### 读取目录
+## 13.10 读取目录
 
 ***
 
@@ -1411,7 +1465,7 @@ console.log("程序执行完毕!");
 
   
 
-### 删除目录
+## 13.11 删除目录
 
 ***
 
@@ -1438,13 +1492,15 @@ console.log("程序执行完毕!");
 
   
 
-### 参考手册
+## 13.12 参考手册
 
 ***
 
 [File System](https://nodejs.org/dist/latest-v12.x/docs/api/fs.html)
 
-### 补充知识点
+
+
+## 13.13 补充知识点
 
 ***
 
@@ -1471,11 +1527,11 @@ fs.open("1.js", "a",(err, fd):void=>{
 
 
 
-## 1-14 GET-POST请求
+# 第十四章 GET-POST请求
 
-### GET请求
 
-***
+
+## 14.1 GET请求
 
 ```javascript
 import http = require("http");
@@ -1508,9 +1564,7 @@ Url {
 
 
 
-### 获取URL参数
-
-***
+## 14.2 获取URL参数
 
 ```javascript
 // request:http://127.0.0.1:3000/gm?name=xiaoming&age=90
@@ -1531,7 +1585,7 @@ http.createServer((req: IncomingMessage, res: ServerResponse):void=>{
 }).listen(3000);
 ```
 
-### 如何获取URL头部
+## 14.3 如何获取URL头部
 
 ****
 
@@ -1539,7 +1593,7 @@ http.createServer((req: IncomingMessage, res: ServerResponse):void=>{
 
 
 
-### POST请求
+## 14.4 POST请求
 
 ***
 
@@ -1596,7 +1650,7 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 
 
 
-## 1-15 promise
+# 第十五章 promise
 
 1. 函数体内部出现`await`关键词时，要在function前加`async`
 
@@ -1620,6 +1674,7 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
          console.log("after 2 s!");
      }
      
+
   // 最简单的方法
      async function t1(){
       console.log("begin...")
@@ -1629,7 +1684,7 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
          console.log("after 2 seconds")
      }
      ```
-   
+
    + 示例二
    
      ```javascript

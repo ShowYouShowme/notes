@@ -1,6 +1,7 @@
 # 第一章 代码提示
 
 ```lua
+-- 其它脚本语言,比如JavaScript类似
 local t2 = {
     id = 123,
     info = {
