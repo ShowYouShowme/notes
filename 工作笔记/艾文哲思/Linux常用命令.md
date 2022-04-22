@@ -831,7 +831,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                             
+  >                                                                                                
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -855,7 +855,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                             
+  >                                                                                                
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1540,6 +1540,13 @@ du -sh ./protobuf/
      
      # 设置服务开机启动
      systemctl enable iptables
+     
+     
+     
+     # ubuntu
+     sudo apt install iptables-persistent # 安装服务
+     
+     sudo netfilter-persistent  save
     ```
 
 11. nat转发，充当路由器角色
@@ -2163,7 +2170,17 @@ vim /etc/fstab
    top -p 3462371  -n 1
    ```
 
-   
+
+
+
+# 查看进程信息
+
+```shell
+# 可以看到进程包含的线程数，内存，uid等等
+cat /proc/{pid}/status
+```
+
+
 
 
 
