@@ -511,6 +511,24 @@ git mv readme README.md
    git config --global --unset http.proxy
    git config --global --unset https.proxy
    ```
+   
+4. 配置样例
+
+   ```shell
+   [credential]
+           helper = store
+   [user]
+           email = wzc199088@gmail.com
+           name = wzc 
+   [http "https://github.com"]
+           #proxy = http://127.0.0.1:8090
+           proxy = socks5://127.0.0.1:8099
+   [https "https://github.com"]
+           #proxy = https://127.0.0.1:8090
+           proxy = socks5://127.0.0.1:8099
+   ```
+
+   
 
 
 
