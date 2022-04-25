@@ -1237,3 +1237,35 @@ end
 
 
 
+# 第二十七章 性能
+
++ Funs非常快
++ 使用++运算符需要小心
++ 字符串处理不当会很慢
++ BEAM是一个基于堆栈的字节码虚拟机
+
+
+
+# 第二十八章 驱动程序
+
+主要讲解erlang如何调用动态链接库，其实完全可以使用进程间通信接入sdk。
+
+
+
+# 第二十九章 网络编程
+
+利用inets库来构建web服务。
+
+
+
+```erlang
+-module(helloworld). 
+-export([start/0]). 
+
+start() ->
+   inets:start(), 
+   Pid = inets:start(httpd, [{port, 8081}, {server_name,"httpd_test"}, 
+   {server_root,"D://tmp"},{document_root,"D://tmp/htdocs"},
+   {bind_address, "localhost"}]), io:fwrite("~p",[Pid]).
+```
+
