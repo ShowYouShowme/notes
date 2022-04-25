@@ -830,3 +830,410 @@ start() ->
 
 
 
+
+
+# 第十七章 异常
+
+
+
+
+
+# 第十八章 宏
+
+和c语言的宏定义类似
+
+
+
+```erlang
+-module(helloworld). 
+-export([start/0]). 
+-define(a,1). 
+
+start() -> 
+   io:fwrite("~w",[?a]).
+```
+
+
+
+```erlang
+-module(helloworld). 
+-export([start/0]). 
+-define(macro1(X,Y),{X+Y}). 
+
+start() ->
+   io:fwrite("~w",[?macro1(1,2)]).
+```
+
+
+
+# 第十九章 头文件
+
+
+
+## 19.1 案例 一
+
++ user.hrl
+
+  ```erlang
+  -record(person, {name = "", id}).
+  ```
+
++ hello_world.erl
+
+  ```erlang
+  % hello world program
+  -module(hello_world).
+  -export([start/0]). 
+  -include("user.hrl").
+  
+  start()->
+      P = #person{name = "John", id = 8},
+      io:fwrite("~p~n", [P#person.name]),
+      io:fwrite("~p~n", [P#person.id]).
+  ```
+
+
+
+## 19.2 案例二
+
++ user.hrl
+
+  ```erlang
+  -define(macro1(X, Y), {X+Y}).
+  ```
+
++ hello_world.erl
+
+  ```erlang
+  % hello world program
+  -module(hello_world).
+  -export([start/0]). 
+  -include("user.hrl").
+  
+  start()->
+      io:fwrite("~w~n", [?macro1(11,22)]).
+  ```
+
+  
+
+# 第二十章 预处理
+
+
+
++ 源文件
+
+  ```erlang
+  % hello world program
+  -module(hello_world).
+  -export([start/0]). 
+  -include("user.hrl").
+  
+  start()->
+      io:fwrite("~w~n", [?macro1(11,22)]).
+  ```
+
++ 预处理
+
+  ```shell
+  erlc -P hello_world.erl 
+  ```
+
++ 预处理之后的文件
+
+  ```erlang
+  -file("hello_world.erl", 1).
+  
+  -module(hello_world).
+  
+  -export([start/0]).
+  
+  -file("user.hrl", 1).
+  
+  -file("hello_world.erl", 5).
+  
+  start() ->
+      io:fwrite("~w~n", [{11 + 22}]).
+  ```
+
+
+
+# 第二十章 模式匹配
+
+
+
+# 第二十一章 Guard
+
+
+
+# 第二十二章 BIFS
+
+定义：内置函数
+
+
+
+## 22.1 基础用法
+
+```erlang
+-module(helloworld). 
+-export([start/0]). 
+
+start() ->   
+   io:fwrite("~p~n",[tuple_to_list({1,2,3})]), 
+   io:fwrite("~p~n",[time()]).
+```
+
+
+
+## 22.2 常见API
+
+| 函数          | 说明                                                       |
+| ------------- | ---------------------------------------------------------- |
+| date          | 返回当前系统日期                                           |
+| byte_size     | 返回一个位串中包含的字节数                                 |
+| element       | 返回元组中的第N个元素                                      |
+| float         | 返回特定数字的浮点值                                       |
+| get           | 将字典作为列表返回                                         |
+| put           | 在字典中放置一个键值对                                     |
+| localtime     | 给出系统中的本地日期和时间                                 |
+| memory        | 内存的信息                                                 |
+| now           | 自1970年1月1日格林威治标准时间00:00开始经过的时间          |
+| ports         | 返回本地节点上所有端口的列表                               |
+| processes     | 返回与本地节点上当前存在的所有进程相对应的进程标识符的列表 |
+| universaltime | 根据世界标准时间(UTC)返回当前日期和时间                    |
+
+
+
+# 第二十二章 二进制文件
+
+
+
+# 第二十三章 进程
+
+```erlang
+-module(helloworld). 
+-export([start/0, call/2]). 
+
+call(Arg1, Arg2) -> 
+   io:format("~p ~p~n", [Arg1, Arg2]). 
+start() -> 
+   Pid = spawn(?MODULE, call, ["hello", "process"]), 
+   io:fwrite("~p",[Pid]).
+```
+
+
+
+
+
+# 第二十四章  网络编程
+
+
+
+## 24.1 udp编程
+
+```erlang
+% hello world program
+-module(hello_world).
+-export([start/0,client/1]). 
+
+start() -> 
+   spawn(fun() -> server(4000) end).
+
+server(Port) ->
+   {ok, Socket} = gen_udp:open(Port, [binary, {active, false}]), 
+   io:format("server opened socket:~p~n",[Socket]), 
+   loop(Socket). 
+
+loop(Socket) ->
+   inet:setopts(Socket, [{active, once}]), 
+   receive 
+      {udp, Socket, Host, Port, Bin} -> 
+      io:format("server received:~p~n",[Bin]), 
+      gen_udp:send(Socket, Host, Port, Bin), 
+      loop(Socket) 
+   end. 
+
+client(N) -> 
+   {ok, Socket} = gen_udp:open(0, [binary]), 
+   io:format("client opened socket=~p~n",[Socket]), 
+   ok = gen_udp:send(Socket, "localhost", 4000, N), Value = receive 
+      {udp, Socket, _, _, Bin} ->
+         io:format("client received:~p~n",[Bin]) after 2000 ->
+      0 
+   end, 
+   
+gen_udp:close(Socket), 
+Value.
+```
+
+
+
+
+
+## 24.2 tcp编程
+
+
+
+# 第二十五章 分布式编程
+
+
+
+## 25.1 原因
+
++ 性能
++ 可靠性
++ 可拓展性
+
+
+
+## 25.2 常用方法
+
+| 函数      | 说明                       |
+| --------- | -------------------------- |
+| spawn     | 创建新进程并对其进行初始化 |
+| node      | 返回本地节点的名称         |
+| spawn节点 | 在节点上创建新进程         |
+| is_alive  | 判断节点是否处于活动状态   |
+| spawnlink | 在节点上创建新的过程链接   |
+
+
+
+
+
+# 第二十六章 并发
+
+
+
+## 26.1 创建进程
+
+```erlang
+-module(hello_world).
+-export([start/0]). 
+
+
+start() ->
+    spawn(fun() -> server("Hello") end).
+
+server(Message) ->
+    io:fwrite("~p~n", [Message]).
+```
+
+
+
+## 26.2 发送消息
+
+```erlang
+-module(helloworld). 
+-export([start/0]). 
+start() -> 
+   Pid = spawn(fun() -> server("Hello") end), 
+   Pid ! {hello}. 
+
+server(Message) ->
+   io:fwrite("~p",[Message]).
+```
+
+
+
+
+
+## 26.3 接受消息
+
+
+
+### 26.3.1 语法
+
+```erlang
+receive
+Pattern1 [when Guard1] ->
+Expressions1;
+Pattern2 [when Guard2] ->
+Expressions2;
+...
+End
+```
+
+
+
+### 26.3.2 案例
+
+```erlang
+-module(helloworld). 
+-export([loop/0,start/0]). 
+
+loop() ->
+   receive 
+      {rectangle, Width, Ht} -> 
+         io:fwrite("Area of rectangle is ~p~n" ,[Width * Ht]), 
+         loop(); 
+      {circle, R} ->
+      io:fwrite("Area of circle is ~p~n" , [3.14159 * R * R]), 
+      loop(); 
+   Other ->
+      io:fwrite("Unknown"), 
+      loop() 
+   end. 
+
+start() ->
+   Pid = spawn(fun() -> loop() end), 
+   Pid ! {rectangle, 6, 10}.
+```
+
+
+
+## 26.4 超时
+
+
+
+### 26.4.1 语法
+
+```erlang
+receive 
+Pattern1 [when Guard1] -> 
+Expressions1; 
+
+Pattern2 [when Guard2] ->
+Expressions2; 
+... 
+after Time -> 
+Expressions 
+end
+```
+
+
+
+### 26.4.2 案例
+
+```erlang
+-module(helloworld). 
+-export([sleep/1,start/0]). 
+
+sleep(T) ->
+   receive 
+   after T -> 
+      true 
+   end. 
+   
+start()->
+   sleep(1000). %休眠1000毫秒
+```
+
+
+
+## 26.5 选择性接受
+
+```erlang
+receive 
+Pattern1 [when Guard1] ->
+Expressions1; 
+
+Pattern2 [when Guard1] ->
+Expressions1; 
+... 
+after 
+Time ->
+ExpressionTimeout 
+end
+```
+
+
+
