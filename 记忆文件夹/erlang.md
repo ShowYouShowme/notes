@@ -1,5 +1,15 @@
 # 第一章 基本语法
 
+## 1.1 安装
+
+```shell
+sudo apt-get install erlang
+```
+
+
+
+## 1.2 第一个程序
+
 ```erlang
 % hello world program
 -module(hello_world).
@@ -9,15 +19,37 @@ start()->
     io:fwrite("Hello, world!\n").
 ```
 
-运行
 
-```shell
-~/erlang$ erl
 
-1> c(hello_world).   # 编译
+## 1.3 运行
 
-2> hello_world:start(). # 运行
-```
++ 在erlang的shell中运行
+
+  ```shell
+  ~/erlang$ erl
+  
+  1> c(hello_world).   # 编译
+  
+  2> hello_world:start(). # 运行
+  ```
+
++ 在命令提示符下运行
+
+  ```shell
+  # 使用erlc编译模块 
+  $ erlc hello.erl
+  
+  # 1--前台运行模块
+  $ erl -noshell -s fac main -s init stop
+  
+  # 2--前台带参数运行
+  $ erl -noshell -s fac main 25
+  
+  # 加载指定路径并执行其所包含的模块中的函数
+  erl -noshell -pa path -s module fun
+  ```
+
+  
 
 
 
@@ -135,7 +167,7 @@ condition ->
    statement #1;
 true ->
    statement #2
-end.
+end
 ```
 
 ```erlang
@@ -170,7 +202,7 @@ conditionN ->
    statement#N;
 true ->
    defaultstatement
-end.
+end
 ```
 
 
@@ -225,7 +257,7 @@ case expression of
    value1 -> statement#1;
    value2 -> statement#2;
    valueN -> statement#N
-end.
+end
 ```
 
 ```erlang
@@ -836,6 +868,64 @@ start() ->
 
 
 
+## 17.1 异常分类
+
++ error：运行时异常，在发生除零错误、匹配运算失败、找不到匹配的函数子句等情况时触发。这些异常的特点在于一旦它们促使某个进程崩溃，Erlang错误日志管理器便会将之记录在案
++ exit：用于通报“进程即将停止”。它们会在迫使进程崩溃的同时将进程退出的原因告知给其他的进程，因此一般不捕获这类异常，exit也在进程正常终止时使用，这时它会令进程退出并通报“任务结束，一切正常”。无论是哪种情况，进程因exit而终止都不算是意外事件，因而也不会被汇报至错误日志管理器
++ throw：用于处理用户自定义的情况。你可以用throw来通报你的函数遭遇了某种意外，也可以用它来完成所谓的非局部返回或是用于跳出深层递归。如果进程没能捕获throw异常，它便会转变成一个原因为nocatch的error异常，迫使进程终止并记录日志
+
+
+
+## 17.2 抛出异常
+
+```erlang
+throw(SomeTerm)
+exit(Reason)
+erlang:error(Reason)
+```
+
+
+
+## 17.3 异常处理语法
+
+异常捕获一般形式
+
+```erlang
+try
+     some_unsafe_function()
+catch
+	 oops               -> got_throw_oops;
+     throw:Other  -> {got_throw,Other};
+     exit:Reason  -> {got_exit,Reason};
+     error:Reason -> {got_error,Reason}
+end
+```
+
+
+
+捕获所有异常
+
+```erlang
+_:_      -> got_some_exception
+```
+
+
+
+异常捕获复杂形式
+
+```erlang
+try
+     some_unsafe_function
+of
+     0 -> io:format("nothing to do ~n");
+     N -> do_something_with(N)
+catch
+     _:_ -> io:format("some problem")
+end
+```
+
+此外，还可以增加after段，不管出现什么情况，after的代码一定会被执行。
+
 
 
 # 第十八章 宏
@@ -1082,7 +1172,7 @@ Value.
 %% Starts an echo server listening for incoming connections on
 %% the given Port.
 accept(Port) ->
-    {ok, Socket} = gen_tcp:listen(Port, [binary, {active, true}, {packet, line}, {reuseaddr, true}]),
+    {ok, Socket} = gen_tcp:listen(Port, [binary, {active, true}, {packet, 0}, {reuseaddr, true}]),
     io:format("Echo server listening on port ~p~n", [Port]),
     server_loop(Socket).
 
