@@ -2060,6 +2060,7 @@ select 语法
 2. 如果没有case可以执行
    + 存在default，执行default
    + 不存在default，阻塞
+3. for select配合时，break并不能跳出循环，需要使用标签
 
 ```go
 func service() string {
@@ -4053,7 +4054,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >           
+   >             
    >   # 2-- 检查进程是否存在
    >   ```
    >

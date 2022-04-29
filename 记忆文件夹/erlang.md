@@ -39,7 +39,7 @@ start()->
   # 使用erlc编译模块 
   $ erlc hello.erl
   
-  # 1--前台运行模块
+  # 1--前台运行模块,加上 -s init stop 程序运行完会退出，不加不会
   $ erl -noshell -s fac main -s init stop
   
   # 2--前台带参数运行
@@ -58,10 +58,10 @@ start()->
 + Number：包含整数和浮点数
 + Atom
 + Boolean
-+ Bit String
++ Bit String：类似C++的Vector\<unsigned char>
 + Tuple
 + Map
-+ List
++ List：string也是用List表示，类似C语言
 
 
 
@@ -1051,6 +1051,24 @@ start() ->
 
 
 
+## 20.1 列表匹配
+
+```erlang
+[A,B,C|T] = [1,2,3,4,5,6],
+io:format("A: ~w B: ~w C : ~p T : ~p ~n", [A,B,C, T]).
+```
+
+```erlang
+% 匹配失败,[H|T]意味着至少有一个元素
+[H|T]=[]
+```
+
+
+
+## 20.2 bitstring 匹配
+
+
+
 # 第二十一章 Guard
 
 
@@ -1391,5 +1409,126 @@ start() ->
    Pid = inets:start(httpd, [{port, 8081}, {server_name,"httpd_test"}, 
    {server_root,"D://tmp"},{document_root,"D://tmp/htdocs"},
    {bind_address, "localhost"}]), io:fwrite("~p",[Pid]).
+```
+
+
+
+# 第三十章 OTP编程
+
+
+
+## 30.1 gen_server
+
+最简单的示例
+
+```erlang
+% erlang 实现的echo服务,基于TCP协议
+-module(tr_server).
+-behaviour(gen_server).
+-define(SERVER, ?MODULE).
+-export([start/0, get_count/0, stop/0]).
+% gen_server callbacks
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2]).
+-record(state, {port, lsock, request_count = 0}). % 保存进程状态
+
+start() ->
+    Port = 1085,
+    gen_server:start({local,?SERVER}, ?MODULE, [Port], []). % 单独启动的服务, 成功返回{ok,Pid} 可以利用NAME 或者Pid来rpc调用接口
+
+% gen_server:start 会回调该函数初始化服务
+init([Port]) ->
+    {ok, LSock} = gen_tcp:listen(Port, [{active, true}, {reuseaddr, true}]),
+    % 第三个参数是超时,0表示立即超时,handle_info 会被调用
+    {ok, #state{port = Port, lsock = LSock}, 0}.
+
+handle_call(get_count, _From, State) ->
+    {reply, {ok, State#state.request_count}, State}.
+
+handle_cast(stop, State) ->
+    {stop, normal, State}.
+
+handle_info(Info, State) ->
+    case Info of
+        timeout ->
+            io:fwrite("[receive info]: ~p ~p ~n", [Info, State]),
+            #state{lsock = LSock}=State,
+            {ok, _Sock} = gen_tcp:accept(LSock),
+            {noreply, State};
+        {tcp, Connect, Message} ->
+            io:fwrite("[receive info]: ~p !~n", [Message]),
+            gen_tcp:send(Connect, Message),
+            RequestCount = State#state.request_count,
+            {noreply, State#state{request_count = RequestCount +1}};
+        {tcp_closed, Connect} ->
+            io:fwrite("[receive info]: connection is closed !~n", []),
+            gen_tcp:close(Connect),
+            {noreply, State};
+        Other ->
+            io:fwrite("[receive info]: unexpected message ~p !~n", [Other]),
+            {noreply, State}
+    end.
+
+
+% 对外暴露的API 接口, 如果有多个实例,可以传入Pid而不是NAME
+get_count() ->
+    gen_server:call(?SERVER, get_count).
+
+
+stop()->
+    gen_server:cast(?SERVER, stop).
+```
+
+
+
+## 30.2 gen_event
+
+```erlang
+-module(sc_event_logger).
+-behaviour(gen_event).
+-record(state, {}).
+-export([start/0, add_handler/0, delete_handler/0, create/2, lookup/1, add_handler/2]).
+-export([init/1, handle_event/2, handle_call/2,
+         handle_info/2]).
+-define(SERVER, ?MODULE).
+start() ->
+    gen_event:start({local, ?SERVER}). % 创建event manager,一个event manager可以加入多个handler
+
+add_handler(Handler, Args) ->
+    gen_event:add_handler(?SERVER, Handler, Args). % 添加一个Handler,会回调Handler的init函数
+
+add_handler() ->
+    gen_event:add_handler(?SERVER, ?MODULE, []).
+
+delete_handler() ->
+    gen_event:delete_handler(?SERVER, ?MODULE, []).
+
+init([]) ->
+    io:fwrite("call fun init to do something...~n"),
+    {ok, #state{}}.
+
+handle_event(Event, State)->
+    case Event of
+        Other ->
+            io:fwrite("[event]:~p~n",[Other]),
+            {ok, State}
+    end.
+
+handle_call(Request, State)->
+    case Request of
+        Other ->
+            io:fwrite("[call]:~p~n", [Other]),
+            Reply = {ok, "call success!"},
+            {ok, Reply, State}
+    end.
+
+handle_info(Info, State)->
+    io:fwrite("[info]:~p~n",[Info]),
+    {ok, State}.
+
+create(Key, Value) ->
+    gen_event:notify(?SERVER, {create, {Key, Value}}). % 发送消息到全部加入到event manager的Handler
+
+lookup(Key) ->
+    gen_event:notify(?SERVER, {lookup, Key}).
 ```
 
