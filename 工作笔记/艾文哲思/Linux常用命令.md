@@ -1346,6 +1346,33 @@ ssh-copy-id -p 22 root@192.168.1.2
 ```
 
 
+## 6 多机器免密钥配置
+
+1. 创建文件
+
+   ```shell
+   ~/.ssh/config
+   
+   # 证书的权限必须是600
+   ```
+
+2. 写入如下内容
+
+   ```shell
+   Host aliyun
+       HostName 120.25.248.58
+       User root
+       Port 22
+       IdentityFile ~/.ssh/aliyun.pem
+   
+   Host aws
+   HostName 120.25.248.58
+   User ubuntu
+   Port 8000
+   IdentityFile ~/.ssh/hk.pem
+   ```
+
+
 
 
 
@@ -2409,6 +2436,12 @@ killall -h
    ps -C lock-free -f
    ```
 
+4. 查看指定用户进程
+
+   ```shell
+   # 生产机器上全部业务服务都用一个非root帐号启动，此方式可以快速查看全部进程
+   ps -u ubuntu -f
+   ```
    
 
 # lsblk
