@@ -320,6 +320,9 @@ scp [命令参数] [源路径] [目的路径]
    # 2-- 在hosts里面配置域名和ip映射关系,这样就不用写ip地址了
    
    scp -r /home/administrator/ root@192.168.6.129:/etc/squid
+   
+   # ssh 配置一下, 这样更加简单
+   scp aws:/home/ubuntu/erl-socks5/socks5.erl .
    ```
 
 2. 将远程文件复制到本地
@@ -569,7 +572,21 @@ yum install tree -y
    grep ${CONTENT} -l ./*
    ```
 
-   
+
+
+
+# lsof
+
+作用：列出打开的文件，正常情况超过1024程序就会报错
+
+
+
+```shell
+# 列出打开的TCP链接，从1开始排序
+lsof -p 1252164 | grep IPv4 | grep  IPv4 -n
+```
+
+
 
 
 
@@ -641,6 +658,9 @@ rz -y ${fileName}
      { \
      \"Image\":\"centos:7.6.1810\" \
      }"
+     
+     # 或者
+     curl  -H "Content-Type: application/json" -X POST -d '{"user_id": "123", "coin":100, "success":1, "msg":"OK!" }' "http://www.baidu.com/"
      ```
 
    + url编码的数据
@@ -831,7 +851,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                
+  >                                                                                                         
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -855,7 +875,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                
+  >                                                                                                         
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

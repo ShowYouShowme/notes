@@ -1419,6 +1419,33 @@ start() ->
 
 ## 30.1 gen_server
 
+简介
+
+```erlang
+gen_server module            Callback module
+-----------------            ---------------
+gen_server:start
+gen_server:start_link -----> Module:init/1
+
+gen_server:stop       -----> Module:terminate/2
+
+gen_server:call
+gen_server:multi_call -----> Module:handle_call/3
+
+gen_server:cast
+gen_server:abcast     -----> Module:handle_cast/2
+
+-                     -----> Module:handle_info/2
+
+-                     -----> Module:terminate/2
+
+-                     -----> Module:code_change/3
+```
+
+
+
+
+
 最简单的示例
 
 ```erlang
@@ -1482,6 +1509,39 @@ stop()->
 
 ## 30.2 gen_event
 
+简介
+
+```erlang
+gen_event module                   Callback module
+----------------                   ---------------
+gen_event:start
+gen_event:start_link       ----->  -
+
+gen_event:add_handler
+gen_event:add_sup_handler  ----->  Module:init/1
+
+gen_event:notify
+gen_event:sync_notify      ----->  Module:handle_event/2
+
+gen_event:call             ----->  Module:handle_call/2
+
+-                          ----->  Module:handle_info/2
+
+gen_event:delete_handler   ----->  Module:terminate/2
+
+gen_event:swap_handler
+gen_event:swap_sup_handler ----->  Module1:terminate/2
+                                   Module2:init/1
+
+gen_event:which_handlers   ----->  -
+
+gen_event:stop             ----->  Module:terminate/2
+
+-                          ----->  Module:code_change/3
+```
+
+
+
 ```erlang
 -module(sc_event_logger).
 -behaviour(gen_event).
@@ -1532,3 +1592,130 @@ lookup(Key) ->
     gen_event:notify(?SERVER, {lookup, Key}).
 ```
 
+
+
+## 30.3 gen_fsm
+
+
+
+1. 文档：https://www.erlang.org/docs/19/man/gen_fsm.html
+
+2. 简介
+
+   ```erlang
+   % 有限状态机，和gen_server对比，它不仅拥有数据，还有状态
+   
+   gen_fsm module                    Callback module
+   --------------                    ---------------
+   gen_fsm:start
+   gen_fsm:start_link                -----> Module:init/1
+   
+   gen_fsm:stop                      -----> Module:terminate/3
+   
+   gen_fsm:send_event                -----> Module:StateName/2
+   
+   gen_fsm:send_all_state_event      -----> Module:handle_event/3
+   
+   gen_fsm:sync_send_event           -----> Module:StateName/3
+   
+   gen_fsm:sync_send_all_state_event -----> Module:handle_sync_event/4
+   
+   -                                 -----> Module:handle_info/3
+   
+   -                                 -----> Module:terminate/3
+   
+   -                                 -----> Module:code_change/4
+   ```
+
+3. 示例代码
+
+   ```erlang
+   -module(code_lock). 
+   -define(NAME, code_lock).
+   -behaviour(gen_fsm). 
+   
+   -export([start/1, button/1, stop/0]). 
+   
+   -export([
+   	init/1, 
+   	locked/2, 
+   	open/2, 
+   	handle_sync_event/4, 
+   	handle_event/3, 
+   	handle_info/3, 
+   	terminate/3, 
+   	code_change/4]). 
+   
+   start(Code) -> 
+   	gen_fsm:start({local, ?NAME}, ?MODULE, Code, []). 
+   
+   button(Digit) -> 
+   	gen_fsm:send_event(?NAME, {button, Digit}). 
+   
+   stop() -> 
+   	Reply = gen_fsm:sync_send_all_state_event(?NAME, stop),
+   	io:fwrite("Reply is : ~p ~n", [Reply]).
+   
+   init(Code) -> 
+   	do_lock(), 
+   	Data = #{code => Code, remaining => Code}, 
+   	{ok, locked, Data}. 
+   
+   locked({button, Digit}, Data0) -> 
+   	io:fwrite("data:~p~n",[Data0]),
+   	case analyze_lock(Digit, Data0) of 
+   		{open = StateName, Data} -> 
+   			{next_state, StateName, Data, 10000}; 
+   		{StateName, Data} -> 
+   			{next_state, StateName, Data} 
+   	end. 
+   
+   open(timeout, State) -> 
+   	io:fwrite("call open with timeout!~n", []),
+   	do_lock(), 
+   	{next_state, locked, State}; 
+   open({button,_}, Data) -> 
+   	io:fwrite("call open normal!~n", []),
+   	{next_state, locked, Data}. 
+   
+   % handle_sync_event(stop, _From, _StateName, Data) -> 
+   % 	{stop, normal, ok, Data}. 
+   
+   handle_sync_event(Event, From, StateName, StateData) ->
+   	io:fwrite("Event:~p From:~p, StateName:~p, StateData:~p ~n",[Event, From, StateName, StateData]),
+   	Reply = "This is reply",
+   	{reply,Reply,StateName,StateData}.
+   handle_event(Event, StateName, Data) -> 
+   	{stop, {shutdown, {unexpected, Event, StateName}}, Data}. 
+   handle_info(Info, StateName, Data) -> 
+   	{stop, {shutdown, {unexpected, Info, StateName}}, StateName, Data}. 
+   
+   terminate(_Reason, State, _Data) -> 
+   	State =/= locked andalso do_lock(),
+   	ok. 
+   code_change(_Vsn, State, Data, _Extra) -> 
+   	{ok, State, Data}.
+   
+   analyze_lock(Digit, #{code := Code, remaining := Remaining} = Data) -> 
+   	io:fwrite("[Remaining]:~p~n",[Remaining]),
+   	case Remaining of 
+   		Digit -> 
+   			io:fwrite("[Digit]:~p~n",[Digit]),
+   			do_unlock(), 
+   			{open, Data#{remaining := Code}}; 
+   		% [Digit|Rest] -> 
+   		% % Incomplete 
+   		% 	io:fwrite("[Digit|Rest]:~p~n",[Digit|Rest]),
+   		% 	{locked, Data#{remaining := Rest}}; 
+   		_Wrong -> 
+   			io:fwrite("_Wrong:~p~n",[_Wrong]),
+   			{locked, Data#{remaining := Code}} 
+   	end. 
+   do_lock() -> 
+   	io:format("Lock~n", []). 
+   do_unlock() -> 
+   	io:format("Unlock~n", []).
+   
+   ```
+
+   
