@@ -157,30 +157,6 @@ sudo apt-get install fcitx-googlepinyin -y
 
 ## 2.1 配置阿里源
 
-### 2.1.1 方法一
-
-```shell
-# vim /etc/apt/source.list
-deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
- 
-deb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
- 
-deb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
- 
-deb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
- 
-deb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-```
-
-
-
-### 2.1.2 方法二
-
 ```shell
 # ubuntu desktop 推荐此方法
 软件和更新 --> 下载自 --> 选择阿里源
@@ -199,25 +175,23 @@ duso apt full-upgrade
 
 ## 2.3 常见问题
 
-***
-
-1. chrome会导致系统崩溃：建议使用firefox
-
-2. ubuntu crash 时，找出导致crash的软件，不使用即可
-
-3. vscode 从官网下载deb包安装，商店里面安装的无法输入中文
-
-4. 关闭qemu后，系统变得非常稳定了
-
-5. 鼠标可以移动，但点击失效且键盘失效
+1. 如果是NVIDIA显卡，必须禁用开源驱动noveau，再用apt安装显卡驱动，否则会导致一系列的问题
 
    ```shell
-   全程按住Alt, 然后按下 Print ,再依据次序按下reisub
+   # 问题一
+   chrome 浏览器崩溃
+   
+   # 问题二
+   登录界面死循环
+   
+   # 问题三
+   花屏
+   
+   # 问题四
+   ......
    ```
 
-6. vscode好像会导致系统崩溃
-
-7. 这些问题好像都是noveau显卡驱动导致的，禁用后就没有这种问题了
+   
 
 
 
@@ -368,40 +342,6 @@ duso apt full-upgrade
 
    
 
-
-
-# 第四章 gnome-shell
-
-
-
-## 4.1 重启gnome-shell
-
-gnome-shell用一段时间就会卡死，需要重启
-
-***
-
-1. 方法一
-
-   ```shell
-   ALT + F2
-   输入r，然后按下回车
-   ```
-
-2. 方法二
-
-   ```shell
-   killall -3 gnome-shell
-   ```
-
-3. 方法三
-
-   ```shell
-   #会导致全部gui程序关闭,不推荐
-   /etc/init.d/gdm3 restart
-   ```
-
-
-
 # 第五章 init命令
 
 ***
@@ -545,6 +485,40 @@ gnome-shell用一段时间就会卡死，需要重启
 ```shell
 sudo su
 ```
+
+
+
+## 6.4 未满足的依赖关系
+
+### 原因
+
+1. 软件依赖于某一软件旧的版本，可是你却已经安装了新的。
+
+2. 要装A， 依赖B, 但是已经安装的软件C也依赖B， 但是A依赖的B的版本和C依赖的B的版本不一致， 导致了如果要安装B，那么C便不能正常运行了，所以系统报错。
+
+
+
+### 解决方案
+
+使用apt purge 移除软件包，再安装即可
+
+
+
+```shell
+下列软件包有未满足的依赖关系：
+ libqt4-opengl : 依赖: libqtcore4 (= 4:4.8.3+dfsg-0ubuntu3) 但是 4:4.8.3+dfsg-0ubuntu3.1 正要被安装
+                 依赖: libqtgui4 (= 4:4.8.3+dfsg-0ubuntu3) 但是 4:4.8.3+dfsg-0ubuntu3.1 正要被安装
+E: 无法修正错误，因为您要求某些软件包保持现状，就是它们破坏了软件包间的依赖关系。
+
+
+# step-1 删除已经存在的软件包
+sudo apt purge libqtcore4
+sudo apt purge libqtgui4
+
+# step-2 再次安装即可
+```
+
+
 
 
 
