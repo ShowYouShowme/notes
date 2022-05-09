@@ -2,9 +2,35 @@
 
 ## 1.1 安装
 
+
+
+### 1.1.1 包管理器安装
+
 ```shell
 sudo apt-get install erlang
 ```
+
+### 1.1.2 源码安装
+
+```shell
+# Centos7 安装
+# OTP 19.3 wants OpelSSL 1.0.x.
+
+# step-1 安装openssl
+wget https://www.openssl.org/source/openssl-1.0.2r.tar.gz --no-check-certificate
+tar -zxvf openssl-1.0.2r.tar.gz 
+cd openssl-1.0.2r
+./config --prefix=/usr/ -fpic 
+make 
+make install
+
+# step-3 安装otp 19.3
+./configure --prefix=/usr/ --with-ssl=/usr/include/openssl/
+make 
+make install
+```
+
+
 
 
 

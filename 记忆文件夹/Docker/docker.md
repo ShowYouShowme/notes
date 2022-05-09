@@ -79,6 +79,15 @@ systemctl restart docker
 >    关闭SELinux,重启电脑
 >    ```
 
+## 1.4 启动docker容器
+
+```shell
+# ubuntu 20.04 启动并且挂载目录
+sudo docker run -it -v /data:/data centos:centos7.9.2009 /bin/bash
+```
+
+
+
 
 
 # 第二章 常见操作
@@ -223,7 +232,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >       
+   >          
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```

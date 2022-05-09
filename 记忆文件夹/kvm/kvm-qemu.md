@@ -208,7 +208,7 @@ yum install bridge-utils -y
 >
 >     ```shell
 >     virsh autostart ${domain}
->    
+>        
 >     virsh autostart ${domain} --disable # 禁止自动启动
 >     ```
 >
@@ -355,3 +355,16 @@ sudo virt-manager
 sudo mv win10.iso /var/lib/libvirt/images/
 ```
 
+
+
+# 第六章 心得
+
+1. ubuntu上使用win系统就用qemu
+
+2. ubuntu上使用linux系统，比如centos7，那么就使用docker来安装,然后把数据目录挂载进去即可，比如
+
+   ```shell
+   sudo docker run -it -v /data:/data centos:centos7.9.2009 /bin/bash
+   ```
+
+   
