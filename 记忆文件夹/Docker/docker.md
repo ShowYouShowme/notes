@@ -83,7 +83,7 @@ systemctl restart docker
 
 ```shell
 # ubuntu 20.04 启动并且挂载目录
-sudo docker run -it -v /data:/data centos:centos7.9.2009 /bin/bash
+sudo docker run --name mysql --hostname master-node -it -v /data:/data centos:centos7.9.2009 /bin/bash
 ```
 
 
@@ -232,7 +232,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >          
+   >             
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -310,6 +310,22 @@ docker start ${containerID}
 
 # 或者
 docker restart ${containerID}
+```
+
+
+
+## 2.14 指定镜像名
+
+```shell
+--name mysql
+```
+
+
+
+## 2.15 指定主机名
+
+```shell
+--hostname master-node
 ```
 
 

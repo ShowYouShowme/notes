@@ -888,6 +888,39 @@ start() ->
 
 
 
+## 16.5 模式匹配
+
+```erlang
+-module(record_access). 
+-export([start/0]). 
+-record(person, {name = "", id,age}). 
+
+start() -> 
+    P1 = #person{name = "nash", id = 123, age = 29},
+    io:fwrite("P1:~p~n",[P1]),
+    %% 快速获取多个变量
+    #person{name = Name, id = Id, age = Age} = P1,
+    io:fwrite("[Name]:~p, [Id]:~p, [Age]:~p ~n",[Name, Id, Age]).
+```
+
+
+
+嵌套类型的模式匹配
+
+```erlang
+-module(record_access). 
+-export([start/0]). 
+-record(person, {name = "", address}). 
+-record(employee, {person, id}). 
+
+start() -> 
+   P = #employee{person = #person{name = "John",address = "A"},id = 1}, 
+   #employee{person = #person{name = Name,address = Addr},id = Id} = P,
+   io:fwrite("[Name]:~p, [Addr]:~p, [Id]:~p ~n", [Name, Addr, Id]).
+```
+
+
+
 
 
 # 第十七章 异常
