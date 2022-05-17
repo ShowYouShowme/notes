@@ -141,6 +141,41 @@ ab -n 10000 -c 500 http://192.168.1.159:5000/
 
 
 
+# 自动化部署流程
+
+作用：常用于开发阶段
+
+
+
+## 传统部署
+
+```shell
+# step-1 打包源码
+tar -zcvf ebin.tar.gz ebin/*
+
+# step-2 上传到服务器 注意配置ssh免密码登录
+scp ebin.tar.gz dev:/data/hmyxz_code/v220228/server
+
+# step-3 远程执行脚本
+ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
+```
+
+
+
+## jenkins部署
+
+```shell
+# step-1 在开发机上配置jenkins
+
+# step-2 提交代码
+
+# step-3 使用jenkins自动构建和发布
+```
+
+
+
+
+
 # sudo
 
 作用：以root身份执行命令，主要在Debian的发行版上。
