@@ -232,7 +232,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >             
+   >                   
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -533,3 +533,29 @@ CMD ["/usr/sbin/httpd", "-DFOREGROUND"] # 从httpd.service里面拿出来的
 ```shell
 docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 ```
+
+
+
+# 第五章  Docker网络
+
+处于一个docker网络内的容器，可以用容器名称访问其它的容器[访问其它服务比如mysql，redis非常方便]。也可以隐藏db，后端业务服的端口号。
+
+
+
+
+
+# 第六章 Docker Compose
+
+作用：单个节点上定义和运行多个容器的工具
+
+
+
+# 第七章 Docker Swarm
+
+Docker集群管理工具，简易版的k8s，适用于中小型项目（几个~几十个节点），对比k8s更加简单。
+
+
+
+# 第八章 Docker machine
+
+作用：快速帮助我们搭建 Docker 主机环境

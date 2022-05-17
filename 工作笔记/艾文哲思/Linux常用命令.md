@@ -141,6 +141,51 @@ ab -n 10000 -c 500 http://192.168.1.159:5000/
 
 
 
+# sudo
+
+作用：以root身份执行命令，主要在Debian的发行版上。
+
+
+
+## 加入sudo用户组
+
+```shell
+usermod -aG sudo $username
+```
+
+
+
+## 查看是否拥有sudo权限
+
+```shell
+sudo whoami
+
+# 你会被提示输入密码。如果用户有 sudo 权限，这个命令将会打印“root”
+```
+
+
+
+## 免密码执行sudo
+
+```shell
+sudo visudo
+
+# 将以下行添加到文件最后, 替换用户名
+$username  ALL=(ALL) NOPASSWD:ALL
+```
+
+
+
+## 免密码sudo运行部分命令
+
+```shell
+$username ALL=(ALL) NOPASSWD:/bin/mkdir,/bin/rmdir
+```
+
+
+
+
+
 # alias
 
 ***
@@ -851,7 +896,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                         
+  >                                                                                                               
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -875,7 +920,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                         
+  >                                                                                                               
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2022,6 +2067,14 @@ vim /etc/fstab
    ```shell
    data -R
    ```
+   
+4. 文件备份
+
+   ```shell
+   mv ebin ebin-`date  +%Y-%m-%d-%H-%M-%S`
+   ```
+
+   
 
 
 
