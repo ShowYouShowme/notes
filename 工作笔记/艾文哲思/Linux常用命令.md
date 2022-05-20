@@ -158,6 +158,10 @@ scp ebin.tar.gz dev:/data/hmyxz_code/v220228/server
 
 # step-3 远程执行脚本
 ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
+
+
+# STEP-4 MAKEFILE
+# make file 里面有 build, deploy 和 test[测试接口] 三个target 基本就够了
 ```
 
 
@@ -931,7 +935,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                               
+  >                                                                                                                     
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -955,7 +959,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                               
+  >                                                                                                                     
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1854,6 +1858,14 @@ du -sh ./protobuf/
        
        docker images | sed -n "1,2p;6p"
        ```
+       
+     + 从第二行到最后一行
+  
+       ```shell
+       sed -n "2, $"p test.lua 
+       ```
+  
+       
   
   5. 批量删除docker镜像
   
@@ -2517,7 +2529,68 @@ killall -h
    daemonize -a -e  watch-dog.err -o watch-dog.out -p watch-dog.pid -c `pwd` /usr/bin/python3 /home/slzg/watch-dog/main.py /home/slzg/test 
    ```
 
-   
+
+
+
+# 进程状态
+
+
+
+| 进程状态 | 含义                                                         | 对应ps命令的状态码                            |
+| -------- | ------------------------------------------------------------ | --------------------------------------------- |
+| 运行     | 正在运行或在运行队列中等待                                   | R 运行 runnable (on run queue)                |
+| 中断     | 休眠中, 受阻, 在等待某个条件的形成或接受到信号               | S 中断 sleeping                               |
+| 不可中断 | 收到信号不唤醒和不可运行, 进程必须等待直到有中断发生         | D 不可中断 uninterruptible sleep (usually IO) |
+| 僵死     | 进程已终止, 但进程描述符存在, 直到父进程调用wait4()系统调用后释放 | Z 僵死 a defunct (”zombie”) process           |
+| 停止     | 进程收到SIGSTOP, SIGSTP, SIGTIN, SIGTOU信号后停止运行运行    | T 停止 traced or stopped                      |
+
+只需要关注运行R和中断S两种。
+
+
+
+查看进程状态
+
+```shell
+# top 或者 ps -aux
+```
+
+
+
+统计处于R状态的进程数
+
+```shell
+ps -aux | sed -n "2, $"p | awk '{print  $8}' | grep R | wc -l
+```
+
+
+
+系统负载分析
+
+```shell
+# STEP-1 查看负载
+uptime
+00:44:22 up  1:17,  3 users,  load average: 8.13, 5.90, 4,94
+
+# load average:    8.13,5.90,4,94
+# 显示的是过去的1,5,15分钟内进程队列中的平均进程数量
+
+# 系统负载这个指标表示的是系统中当前正在运行的进程数量，它等于running状态的进程数 + uninterrupt状态的进程数 
+# load = runing tasks num + uninterrupt tasks num
+
+
+# STEP-2 查看负载是否过高
+
+如果每个cpu(可以按CPU核心的数量计算)上当前活动进程数不大于3，则系统性能良好
+不大于4，表示可以接受
+如大于5，则系统性能问题严重
+上面例中的8.13,如果有2个cpu核心,则8.13/2=4.065,  此系统性能可以接受
+
+# STEP-3 CPU 核心数查看
+
+## 方法一  top命令按下1
+## 方法二  lscpu
+```
+
 
 
 

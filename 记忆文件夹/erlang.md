@@ -298,6 +298,17 @@ start() ->
    end.
 ```
 
+```erlang
+    A1 = 50,
+    B1 = 100,
+    case (A1 > 20) and (B1 > 80) of
+        true ->
+            io:fwrite("++++~n", []);
+        _ ->
+            io:fwrite("====~n")
+    end.
+```
+
 
 
 # 第六章 函数
@@ -331,6 +342,35 @@ start() ->
       io:fwrite("Anonymous Function") end, 
    Fn().
 ```
+
+```erlang
+% 匿名函数递归, 匿名函数可以直接捕获外部变量
+start() ->
+	CallBack = fun
+                    Test([]) -> 
+                        io:fwrite("finished");
+                    Test([H|T]) ->
+                        io:fwrite("~p ", [H]),
+                        Test(T)
+    end,
+    L1 = [1,2,3,4],
+    CallBack(L1).
+```
+
+
+
+```erlang
+%% 类似map，非常简洁
+start() -> 
+    P = [1,2,3,4],
+    Fun = fun 
+            Loop([]) -> [];
+            Loop([H|T]) -> [2 * H | Loop(T)]
+    end,
+   io:fwrite("~p~n",[Fun(P)]). %%[2,4,6,8]
+```
+
+
 
 
 
@@ -869,6 +909,11 @@ start() ->
    io:fwrite("~p~n",[P1#person.name]).
 ```
 
+```erlang
+%% 嵌套类型更新数据值 t_battle_pass 成员要写全，否则未写的成员是undefined
+NewRole = Role#role{m_battle_pass = #t_battle_pass{info = Info, reward = Reward, open_moment = CurTimestamp} },
+```
+
 
 
 
@@ -916,6 +961,8 @@ start() ->
 start() -> 
    P = #employee{person = #person{name = "John",address = "A"},id = 1}, 
    #employee{person = #person{name = Name,address = Addr},id = Id} = P,
+    %% 或者 不一定要匹配出全部成员
+    %% #employee{person = #person{name = Name},id = Id} = P,
    io:fwrite("[Name]:~p, [Addr]:~p, [Id]:~p ~n", [Name, Addr, Id]).
 ```
 
