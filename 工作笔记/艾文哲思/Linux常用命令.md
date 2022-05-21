@@ -935,7 +935,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                     
+  >                                                                                                                        
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -959,7 +959,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                     
+  >                                                                                                                        
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2743,6 +2743,14 @@ echo 0 > /proc/sys/vm/drop_caches
 ```shell
 sudo fdisk -l
 ```
+
+
+
+# fio
+
+
+
+测试磁盘的随机读写和顺序读写性能
 
 
 
