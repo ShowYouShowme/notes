@@ -910,8 +910,14 @@ start() ->
 ```
 
 ```erlang
-%% 嵌套类型更新数据值 t_battle_pass 成员要写全，否则未写的成员是undefined
+%% 错误的更新方式:  嵌套类型更新数据值 t_battle_pass 成员要写全，否则未写的成员是undefined
 NewRole = Role#role{m_battle_pass = #t_battle_pass{info = Info, reward = Reward, open_moment = CurTimestamp} },
+    
+    
+%% 推荐的写法 上面那种写法修改了结果就出问题
+    Old_battle_pass = NewRole#role.m_battle_pass,
+    New_battle_pass = Old_battle_pass#t_battle_pass{info = NewInfo, reward = NNReward},
+    UpdateRole = NewRole#role{m_battle_pass = New_battle_pass },
 ```
 
 
