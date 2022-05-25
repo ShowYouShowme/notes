@@ -82,8 +82,58 @@ systemctl restart docker
 ## 1.4 启动docker容器
 
 ```shell
-# ubuntu 20.04 启动并且挂载目录
+# 方法一： 交互式启动 ubuntu 20.04 启动并且挂载目录
 sudo docker run --name mysql --hostname master-node -it -v /data:/data centos:centos7.9.2009 /bin/bash
+
+
+
+# 方法二： 后台启动 服务必须在前台运行的方式
+sudo docker run --name test3  --hostname test3  -d  centos:centos7.9.2009 /path/to/yourapp
+
+# 方法三： 命令如果执行完毕了，或者叫指定的应用终结时，容器会自动停止，加上-t 后阻止容器终止
+sudo docker run --name test3  --hostname test3  -td  centos:centos7.9.2009 /bin/bash
+```
+
+
+
+## 1.5 启动参数
+
+```shell
+-a stdin: 指定标准输入输出内容类型，可选 STDIN/STDOUT/STDERR 三项；
+
+-d: 后台运行容器，并返回容器ID；
+
+-i: 以交互模式运行容器，通常与 -t 同时使用；
+
+-P: 随机端口映射，容器内部端口随机映射到主机的端口
+
+-p: 指定端口映射，格式为：主机(宿主)端口:容器端口
+
+-t: 为容器重新分配一个伪输入终端，通常与 -i 同时使用；
+
+--name="nginx-lb": 为容器指定一个名称；
+
+--dns 8.8.8.8: 指定容器使用的DNS服务器，默认和宿主一致；
+
+--dns-search example.com: 指定容器DNS搜索域名，默认和宿主一致；
+
+-h "mars": 指定容器的hostname；
+
+-e username="ritchie": 设置环境变量；
+
+--env-file=[]: 从指定文件读入环境变量；
+
+--cpuset="0-2" or --cpuset="0,1,2": 绑定容器到指定CPU运行；
+
+-m :设置容器使用内存最大值；
+
+--net="bridge": 指定容器的网络连接类型，支持 bridge/host/none/container: 四种类型；
+
+--link=[]: 添加链接到另一个容器；
+
+--expose=[]: 开放一个端口或一组端口；
+
+--volume , -v: 绑定一个卷
 ```
 
 
@@ -232,7 +282,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                      
+   >                         
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -267,7 +317,7 @@ docker exec -it 775c7c9ee1e1 /bin/bash
 2. 退出不关闭容器
 
    ```shell
-   # 按住ctrl,然后按下P,然后再按下Q
+   # 按住ctrl,然后按下P,然后再按下Q 注意是大写字母
    Ctrl+P+Q
    ```
 
@@ -326,6 +376,62 @@ docker restart ${containerID}
 
 ```shell
 --hostname master-node
+```
+
+
+
+## 2.16 容器执行命令
+
++ 查看容器进程
+
+  ```shell
+  sudo docker exec test3 ps -ef
+  ```
+
++ 杀死容器中某个进程
+
+  ```shell
+  # 先用sudo docker exec test3 ps -ef 查看进程ID
+  sudo docker exec test3 kill -9 39
+  ```
+
++ 容器服务更新流程
+
+  ```shell
+  # step-1 停止容器服务
+  sudo docker exec  powell ps -ef  # 查看容器服务PID
+  sudo docker exec  powell kill -9 58 # 停止服务
+  
+  # step-2 更新代码
+  
+  # step-3 启动服务
+  sudo docker exec -td powell python3 /data/test.py
+  
+  ## 缺点：容器的日志无法通过docker logs查看，可以将日志目录挂载出来
+  ```
+
+  
+
+
+
+## 2.17 无法使用systemctl
+
+描述：使用centos7的镜像的容器，使用systemctl会报错Failed to get D-Bus connection: Operation not permitted
+
+
+
+解决方案
+
+```shell
+# step-1 使用特权模式运行容器
+docker run -d --name centos7 --privileged=true centos:7 /usr/sbin/init
+
+# step-2 进入容器
+docker exec -it centos7 /bin/bash
+
+# step-3 安装和启动服务
+yum install vsftpd
+systemctl start vsftpd
 ```
 
 
