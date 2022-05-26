@@ -258,6 +258,10 @@ start() ->
 -module(helloworld). 
 -export([start/0]). 
 
+%% 如果没有true，当其它模式都不匹配的时候会报错，具有assert的功能
+
+%% 如果true里面什么也不想做，可以这么写
+%% true -> void 模拟 C语言的 if(expr){}   -- 此时没有else
 start() -> 
    A = 4, 
    B = 6, 
@@ -368,6 +372,20 @@ start() ->
             Loop([H|T]) -> [2 * H | Loop(T)]
     end,
    io:fwrite("~p~n",[Fun(P)]). %%[2,4,6,8]
+```
+
+
+
+```erlang
+%% 返回fun的函数,用于捕获变量
+%% 默认情况下，匿名函数会捕获全部变量,如果只想捕获一部分变量
+%% 可以使用全局函数 或者 避免变量重名
+
+	%% 把X捕获进去
+	%% 使用场景,lists:filter 的回调函数只有一个参数,如果需要其它状态做处理就可以这样做
+    Fun = fun(X)->
+        (fun(Y) -> io:format("~w : ~w ~n",[X, Y])end)
+    end,
 ```
 
 

@@ -282,7 +282,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                         
+   >                            
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -436,6 +436,80 @@ systemctl start vsftpd
 
 
 
+## 2.18 保存容器为镜像
+
+构建开发或者运行环境时，需要安装很多依赖，有些情况下使用dockerfile很难处理，安装完成后可以保存容器为镜像，下次部署只需要挂载目录然后执行命令即可。
+
+
+
+保存步骤
+
+1. 退出容器
+
+   ```shell
+   exit
+   
+   # 确保容器已经关闭
+   docker ps -a
+   ```
+
+2. 保存容器为新镜像
+
+   ```shell
+    docker commit 23c18d958279 nginx:v0.2
+   ```
+
+3. 导出镜像为压缩包
+
+   ```shell
+   docker save -o nginx.tar nginx:v0.2
+   ```
+
+
+
+
+## 2.19 服务更新
+
+
+
+### 更新步骤
+
+1. 停止容器
+
+   ```shell
+   docker stop ${containerID}
+   ```
+
+2. 更新挂载目录的代码
+
+3. 启动容器
+
+   ```shell
+   docker start ${containerID}
+   ```
+
+
+
+### 示例
+
+```shell
+# Dockerfile
+FROM centos:centos7.9.2009
+RUN yum install -y python3
+WORKDIR /data
+CMD ["/usr/bin/python3", "test.py"] # 服务启动命令,必须前台运行
+```
+
+启动命令
+
+```shell
+sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-network:v1
+```
+
+
+
+
+
 
 
 # 第三章 常用官方镜像
@@ -484,7 +558,7 @@ systemctl start vsftpd
 
 # 第四章 镜像制作
 
-
+文件名：Dockerfile
 
 ## 4.1 nginx
 
@@ -644,11 +718,74 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 
 # 第五章  Docker网络
 
-处于一个docker网络内的容器，可以用容器名称访问其它的容器[访问其它服务比如mysql，redis非常方便]。也可以隐藏db，后端业务服的端口号。
+处于一个docker网络内的容器，可以用容器名称访问其它的容器[访问其它服务比如mysql，redis非常方便]。也可以隐藏db，后端业务服的端口号。使用docker网络后，只需要对外暴露给客户端访问的端口，数据库和内部服务端口不需要暴露。
 
 
 
+命令
 
+| 命令       | 功能                                                 |
+| ---------- | ---------------------------------------------------- |
+| connect    | Connect a container to a network                     |
+| create     | Create a network                                     |
+| disconnect | Disconnect a container from a network                |
+| inspect    | Display detailed information on one or more networks |
+| ls         | List networks                                        |
+| prune      | Remove all unused networks                           |
+| rm         | Remove one or more networks                          |
+
+
+
+## 5.1 使用案例
+
++ 创建网络
+
+  ```shell
+  docker network create simple-network
+  ```
+
++ 创建容器
+
+  ```shell
+  docker run -itd --name=test11 busybox
+  
+  docker run -itd --name=test22 busybox
+  ```
+
++ 容器加入网络
+
+  ```shell
+  sudo docker network connect simple-network test11
+  sudo docker network connect simple-network test22
+  ```
+
++ 查看网络中的容器
+
+  ```shell
+  sudo docker network inspect simple-network
+  ```
+
+  
+
++ 测试容器是否能ping通
+
+  ```shell
+  sudo docker exec -it test 11 /bin/bash
+  
+  ping test22
+  ```
+
++ 测试容器telnet是否成功
+
+  ```shell
+  # step-1 在test22 里监听端口
+  nc -l 123
+  
+  # step-2 在test11 里面telnet测试
+  telnet test22 123
+  ```
+
+  
 
 # 第六章 Docker Compose
 
