@@ -2975,7 +2975,28 @@ with open('person.json', 'r') as f:
       print(l)
   ```
 
-  
+
+
+
+## 26.3 字符串字面量
+
+当代码里面出现字符串字面量时，不同编码方式保存在内存里的字节序列不同。使用encode指定编码方式，默认为utf-8。调用encode函数后，返回的数据类型是bytes。 bytes 调用decode函数后，返回数据类型是str。
+
+```python
+str = "菜鸟教程";
+str_utf8 = str.encode("UTF-8") 
+str_gbk = str.encode("GBK")
+ 
+print(str)
+ 
+print("UTF-8 编码：", str_utf8)
+print("GBK 编码：", str_gbk)
+ 
+print("UTF-8 解码：", str_utf8.decode('UTF-8','strict'))
+print("GBK 解码：", str_gbk.decode('GBK','strict'))
+```
+
+
 
 # 第二十七章 网络编程
 
