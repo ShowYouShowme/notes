@@ -93,6 +93,31 @@ taskkill /T /F /PID 12052
 
 
 
+# Linux上查看不可见字符
+
+1.  windows上用\r\n作为换行，linux上用\n。shell脚本必须用\n换行，否则执行出错
+
+2. 查看换行符
+
+   ```shell
+   # \r 用^M表示   \n用$表示
+   cat -A vm-key.pri
+   ```
+
+3. 换行符转换
+
+   ```shell
+   # 单个文件
+   sed -i 's/\r//'  filename
+   
+   # 多个文件
+   sed -i 's/\r//'  filename1 filename2 ...
+   ```
+
+   
+
+
+
 # ansible
 
 作用：批量操作机器
@@ -935,7 +960,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                        
+  >                                                                                                                              
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -959,7 +984,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                        
+  >                                                                                                                              
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1475,6 +1500,23 @@ ssh-copy-id -p 22 root@192.168.1.2
    Port 8000
    IdentityFile ~/.ssh/hk.pem
    ```
+
+## 7 常用配置
+
+1. 配置文件：/etc/ssh/sshd_config
+
+1. 禁止root登录
+
+   ```shell
+   PermitRootLogin no
+   ```
+
+2. 禁止密码登录
+
+   ```shell
+   AuthorizedKeysFile   .ssh/authorized_keys   //公钥公钥认证文件
+   PubkeyAuthentication yes   //可以使用公钥登录
+   PasswordAuthentication no  //不允许使用密码登录
 
 
 
@@ -2448,7 +2490,12 @@ cat /proc/{pid}/status
 ## 添加用户
 
 ```shell
-adduser ${user}
+# root用户执行此命令，ubuntu 用 sudo su - 切换到root
+adduser ${user}  # 只需要设置密码，其它的全部直接按回车
+
+# 创建.ssh目录
+su - powell && cd ~ && mkdir .ssh
+cd .ssh && touch authorized_keys  # 把公钥粘贴到里面即可
 ```
 
 
