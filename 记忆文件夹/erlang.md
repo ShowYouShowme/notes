@@ -13,19 +13,22 @@ sudo apt-get install erlang
 ### 1.1.2 源码安装
 
 ```shell
-# Centos7 安装
 # OTP 19.3 wants OpelSSL 1.0.x.
 
 # step-1 安装openssl
 wget https://www.openssl.org/source/openssl-1.0.2r.tar.gz --no-check-certificate
 tar -zxvf openssl-1.0.2r.tar.gz 
 cd openssl-1.0.2r
-./config --prefix=/usr/ -fpic 
+./config --prefix=/usr/local/openssl -fpic
 make 
 make install
 
+# 如果是ubuntu 20.04 需要安装curse
+sudo apt-get install libncurses5-dev
+
 # step-3 安装otp 19.3
-./configure --prefix=/usr/ --with-ssl=/usr/include/openssl/
+./configure --prefix=/usr/local/erlang --with-ssl=/usr/local/openssl/ --enable-threads --enable-smp-support --enable-kernel-poll --enable-hipe --without-javac
+
 make 
 make install
 ```

@@ -522,5 +522,39 @@ sudo apt purge libqtgui4
 
 
 
+# 第七章 包管理器
 
+
+
+## 7.1 dpkg
+
+1. 查看软件包安装了哪些文件
+
+   ```shell
+   dpkg -L redis-tools
+   ```
+
+2. 安装deb包
+
+   ```shell
+   dpkg -i ${package}
+   ```
+
+3. 删除软件包
+
+   ```shell
+   # [不推荐使用]不删除配置文件，下次安装该软件时不会重新创建配置文件
+   dpkg -r ${package}
+   
+   # 或者 会同时删除配置文件，[推荐建议使用]
+   dpkg -P ${package}
+   ```
+
+4. 查看已经安装的软件包
+
+   ```shell
+   dpkg -l  # 可以类似vim操作，比如翻页，查找
+   ```
+
+   
 
