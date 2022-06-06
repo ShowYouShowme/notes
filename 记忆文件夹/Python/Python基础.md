@@ -3043,3 +3043,51 @@ conn.close()
 server.close()
 ```
 
+
+
+
+
+
+
+# 第二十八章 ssh客户端
+
+```python
+import paramiko
+import sys
+from scp import SCPClient
+
+
+# 本脚本演示如何利用python远程执行shell命令，上传和下载文件
+
+def main():
+    # 使用命令 ssh-keygen -m PEM -t rsa 生成公私钥
+    pkey = paramiko.RSAKey.from_private_key_file('id_rsa')
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname='192.168.0.72',
+                port=22,
+                username='powell',
+                pkey=pkey)
+
+    # 执行命令
+    stdin, stdout, stderr = ssh.exec_command('pwd && touch a.txt && ls')  # 把需要执行的命令填入此处
+    # 结果放到stdout中，如果有错误将放到stderr中
+    print(stdout.read().decode())
+
+    # 如何scp复制文件呢
+    def progress(filename, filesize, filesent):
+        sys.stdout.write("%s's progress: %.2f%%   \r" % (filename, float(filesent) / float(filesize) * 100))
+
+    scp = SCPClient(ssh.get_transport(), progress=progress)
+    scp.put('powell.pri', '~/')  # 上传文件
+
+    scp.get('/etc/nginx/nginx.conf', './')  # 下载文件
+
+    # 关闭连接
+    ssh.close()
+
+
+if __name__ == '__main__':
+    main()
+```
+

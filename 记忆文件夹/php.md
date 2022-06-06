@@ -71,6 +71,10 @@
 
 # 第二章  nginx配置鉴权
 
+
+
+## 2.1 使用数据库鉴权
+
 1. 增加配置
 
    ```SHEll
@@ -100,6 +104,84 @@
    
    # 存放账号和加密后的密码
    echo -n "nash:m1267HhWihWTQ" > auth_pwd
+   ```
+
+
+
+
+## 2.2 使用接口鉴权
+
+1. 源码编译nginx并且开启ngx_http_auth_request_module模块
+
+   ```shell
+   wget  http://nginx.org/download/nginx-1.10.2.tar.gz
+   
+   # 配置
+     ./configure --prefix=/opt/nginx \
+                 --with-http_dav_module \
+                 --with-http_ssl_module \
+                 --with-http_realip_module \
+                 --with-http_gzip_static_module \
+                 --with-http_stub_status_module \
+                 --with-http_degradation_module \
+                 --with-http_auth_request_module
+     make && make install
+   ```
+
+2. 配置
+
+   ```shell
+       server {
+           listen       80;
+           server_name  localhost;
+   
+           location / {
+               auth_request /auth;    # 添加此行
+               root   html;
+               index  index.html index.htm;
+           }
+   
+   		# 配置鉴权接口
+       	location = /auth {
+               proxy_pass http://192.168.0.72:8011/HttpBasicAuthenticate.php;
+               proxy_pass_request_body off;
+               proxy_set_header Content-Length "";
+               proxy_set_header X-Original-URI $request_uri;
+       	}
+      }
+      
+      
+   server {
+       listen       8011;
+       location ~ \.php$ {
+           root           html;
+           fastcgi_pass unix:/run/php/php7.4-fpm.sock;  # 设置文件权限为666,否则普通用户无法读写
+           fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+           include        fastcgi_params;
+       }
+   }
+   
+   
+   ```
+
+3. 鉴权的php代码
+
+   ```php
+   <?php
+   
+   if(isset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'])){
+       $username = $_SERVER['PHP_AUTH_USER'];
+       $password = $_SERVER['PHP_AUTH_PW'];
+   
+       if ($username == 'wang' && $password == '123456'){
+           return true;
+       }   
+   }
+   
+   header('WWW-Authenticate: Basic realm="Git Server"');
+   header('HTTP/1.0 401 Unauthorized');
+   
+   ?>
    ```
 
    

@@ -960,7 +960,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                              
+  >                                                                                                                                 
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -984,7 +984,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                              
+  >                                                                                                                                 
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1401,6 +1401,8 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
    ```shell
    ssh-copy-id -i ~/.ssh/id_rsa.pub slzg@192.168.0.10
+   
+   # 或者 打开服务器 ~/.ssh/authorized_keys , 把你的公钥复制进去
    ```
 
 3. 登陆
