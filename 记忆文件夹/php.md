@@ -23,7 +23,7 @@
    cd /etc/nginx/conf.d && touch app.conf
    server {
        listen       8011;
-       location ~ \.php?.*$ {
+       location ~ \.php$ {
            root           /var/www/html;
            #fastcgi_pass   127.0.0.1:9000;
            fastcgi_pass unix:/run/php/php7.4-fpm.sock;
@@ -36,8 +36,10 @@
 4. 增加php文件
 
    ```shell
+   # step-1 创建php文件
    cd /var/www/html && touch index.php
    
+   # step-2 编辑文件
    <!DOCTYPE html>
    <html>
    <body>
@@ -48,9 +50,17 @@
    
    </body>
    </html>
+   
+   # step-3 重新加载nginx配置
+   sudo nginx -s reload
    ```
 
-5. 附录
+5. 访问php文件
+
+   ```SHE
+   http://192.168.0.72:8011/index.php
+
+6. 附录
 
    ```shell
    # 配置php-fpm 使用tcp通信
