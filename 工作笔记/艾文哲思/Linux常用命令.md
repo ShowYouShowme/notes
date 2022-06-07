@@ -166,6 +166,31 @@ ab -n 10000 -c 500 http://192.168.1.159:5000/
 
 
 
+# 查看网卡信息
+
+
+
+## 全部网卡
+
+```shell
+ip a
+```
+
+
+
+## 指定网卡
+
+```shell
+# ifconfig ${网卡名}
+ifconfig ens32
+```
+
+
+
+
+
+
+
 # 自动化部署流程
 
 作用：常用于开发阶段
@@ -960,7 +985,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                 
+  >                                                                                                                                       
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -984,7 +1009,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                 
+  >                                                                                                                                       
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1538,6 +1563,8 @@ du -sh ./protobuf/
 
 ***
 
+主要是用来备份数据，rsync 的最大特点是会检查发送方和接收方已有的文件，仅传输有变动的部分。配合python脚本就可以定时备份了，不建议使用cron。
+
 
 
 ## 选项和功能
@@ -1570,6 +1597,18 @@ du -sh ./protobuf/
 
 ***
 
+1. 安装
+
+   ```shell
+   sudo apt-get install rsync
+   ```
+
+2. 命令语法
+
+   ```shell
+    rsync -r source destination
+   ```
+
 1. test1备份到test2
 
    ```shell
@@ -1582,23 +1621,91 @@ du -sh ./protobuf/
    rsync -av --delete test1/ test2/
    ```
 
-3. 拷贝本地机器内容到远程机器
+
+
+## 远程同步
+
+
+
+### ssh协议
+
+1. 拷贝本地机器内容到远程机器
 
    ```shell
    rsync -av /home/coremail/ 192.168.11.12:/home/coremail/
    ```
 
-4. 远程机器内容拷贝到本地
+2. 远程机器内容拷贝到本地
 
    ```shell
    rsync -av 192.168.11.11:/home/coremail/ /home/coremail/
    ```
 
-5. 显示远程机器的文件列表
+3. 显示远程机器的文件列表
 
    ```shell
    rsync -v rsync://192.168.11.11/data
    ```
+
+
+
+### rsync协议
+
+必须在服务器部署rsync守护程序
+
+1. 查看module列表
+
+   ```shell
+   rsync rsync://192.168.122.32
+   ```
+
+2. 同步数据
+
+   ```shell
+   rsync -av source/ rsync://192.168.122.32/module/destination
+   ```
+
+
+
+## 增量备份
+
+```shell
+rsync -a --delete --link-dest /compare/path /source/path /target/path
+
+# --link-dest参数用来指定同步时的基准目录
+# --link-dest参数指定基准目录/compare/path，然后源目录/source/path跟基准目录进行比较，找出变动的文件，将它们拷贝到目标目录/target/path。那些没变动的文件则会生成硬链接。这个命令的第一次备份时是全量备份，后面就都是增量备份了。
+```
+
+```shell
+# 示例脚本
+
+#!/bin/bash
+
+# A script to perform incremental backups using rsync
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+readonly SOURCE_DIR="${HOME}"
+readonly BACKUP_DIR="/mnt/data/backups"
+readonly DATETIME="$(date '+%Y-%m-%d_%H:%M:%S')"
+readonly BACKUP_PATH="${BACKUP_DIR}/${DATETIME}"
+readonly LATEST_LINK="${BACKUP_DIR}/latest"
+
+mkdir -p "${BACKUP_DIR}"
+
+rsync -av --delete \
+  "${SOURCE_DIR}/" \
+  --link-dest "${LATEST_LINK}" \
+  --exclude=".cache" \
+  "${BACKUP_PATH}"
+
+rm -rf "${LATEST_LINK}"
+ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
+```
+
+
 
 
 
