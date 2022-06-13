@@ -114,7 +114,17 @@ taskkill /T /F /PID 12052
    sed -i 's/\r//'  filename1 filename2 ...
    ```
 
-   
+
+
+
+# 搜索路径
+
+```shell
+vim /etc/profile
+export PATH=$PATH:/opt/bin
+```
+
+
 
 
 
@@ -257,6 +267,9 @@ sudo whoami
 ## 免密码执行sudo
 
 ```shell
+# 使用vim编辑 visudo
+export EDITOR=vim; 
+
 sudo visudo
 
 # 将以下行添加到文件最后, 替换用户名
@@ -985,7 +998,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                       
+  >                                                                                                                                             
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1009,7 +1022,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                       
+  >                                                                                                                                             
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

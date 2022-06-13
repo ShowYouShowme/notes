@@ -3091,3 +3091,41 @@ if __name__ == '__main__':
     main()
 ```
 
+
+
+
+
+# 第二十九章 执行python脚本
+
+1. 使用脚本解释器
+
+   ```SHEll
+   python3 ${脚本名}
+   ```
+
+2. 增加执行权限
+
+   + 脚本：第一行指定了解释器路径
+
+     ```python
+     #!/usr/bin/python3
+     import time
+     while True:
+         print("--hello--")
+         time.sleep(1)
+     ```
+
+   + 增加执行权限
+
+     ```shell
+     chmod u+x hello.py
+     ```
+
+   + 执行
+
+     ```shell
+     ./hello.py
+     ```
+
+     
+

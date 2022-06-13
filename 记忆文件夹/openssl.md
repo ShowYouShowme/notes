@@ -183,3 +183,17 @@ $ openssl dgst -sha1 -verify mypublic.pem -signature sha1.sign myfile.txt
 Verified OK
 ```
 
+
+
+
+
+
+
+# 第四章 免费证书申请网站
+
+```ini
+[info]
+url  = https://manage.sslforfree.com/
+域名  = 公网IP地址   ---> 申请域名需要设置DNS解析,非常麻烦,所以直接使用ip地址
+```
+
