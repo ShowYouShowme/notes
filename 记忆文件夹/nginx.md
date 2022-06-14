@@ -821,6 +821,71 @@ st->op2->op3->op4->op5->op6
 
 1. concat模块
 
+   ```ini
+   ; 页面需要访问多个小文件时,把他们的内容合并到一次http响应中返回
+   ; 模块: ngx_http_concat_module  阿里巴巴提供的开源模块
+   
+   [concat]
+   ; 是否启用concat模块
+   Syntax  = concat on | off
+   default = concat off
+   Context = http,server,location
+   
+   [concat_delimiter]
+   ; 文件内容分隔符
+   Syntax  = concat_delimiter string
+   Default = NONE
+   Context = http,server,location
+   
+   [concat_types]
+   ; 对哪些文件类型做合并
+   Syntax = concat_types MIME types
+   Default = concat_types text/css application/x-javascript
+   Context = http,server,location
+   
+   [concat_unique]
+   ; 对一种或者多种文件类型进行合并
+   Syntax  = concat_unique on | off
+   Default = concat_unique on
+   Context = http,server,location
+   
+   [concat_ignore_file_error]
+   ; 部分文件出错(比如不存在)继续返回其它文件
+   Syntax  = concat_ignore_file_error on | off
+   Default = off
+   Context = http,server,location
+   
+   [concat_max_files]
+   ; 最多合并多少文件
+   Syntax  = concat_max_files numberp
+   Default =  concat_max_files 10
+   Context = http,server,location
+   ```
+
+   示例
+
+   ```nginx
+   server {
+       server_name concat.taohui.tech;
+       
+       error_log logs/myerror.log debug;
+       concat on;
+       root html;
+       
+       location /concat {
+           concat_max_files 20;
+           concat_types text/plain;
+           concat_unique on;
+           concat_delimiter ':::';
+           concat_ignore_file_error on;
+       }
+   }
+   
+   # curl concat.taohui.tech/concat/??1.txt,2.txt
+   ```
+
+   
+
 2. random_index模块
 
 3. index模块
@@ -829,6 +894,7 @@ st->op2->op3->op4->op5->op6
    ; 优先于auto_index模块
    ; 用于设置网站的默认首页
    [index]
+   ; 指定/访问时返回index文件的内容
    Syntax = index file ...
    Default = index index.html
    Context = http,server,location
@@ -851,7 +917,8 @@ st->op2->op3->op4->op5->op6
 
    ```ini
    [autoindex]
-   ; 用于显示目录结构
+   ; 以/访问时返回目录结构
+   ; 用于显示目录结构,如果目录下有index.html则不会显示目录结构
    Syntax  = autoindex on | off;
    Default = autoindex off;
    Context = http,server,location;
@@ -867,9 +934,24 @@ st->op2->op3->op4->op5->op6
    Context = http,server,location;
    
    [autoindex_localtime]
-   Syntax  = port_in_redirect on | off;
-   Default = port_in_redirect off;
+   Syntax  = autoindex_localtime on | off;
+   Default = autoindex_localtime off;
    Context = http,server,location;
+   ```
+
+   示例
+
+   ```nginx
+   server{
+       listen 8080;
+       location / {
+           alias html/; # 必须以/结尾,使用命令nginx -h查看prefix path
+           autoindex on;
+           autoindex_exact_size off;
+           autoindex_format html;
+           autoindex_localtime on;
+       }
+   }
    ```
 
    
@@ -885,4 +967,23 @@ st->op2->op3->op4->op5->op6
 
 
 # 第七章 Nginx与Openresty
+
+
+
+# 第八章 windows使用nginx
+
+```ini
+[启动nginx]
+cmd = start nginx
+
+[重新加载配置文件]
+cmd = nginx -s reload
+
+[测试配置文件]
+cmd =  nginx -t -c /path/to/nginx.conf
+
+[关闭nginx]
+cmd1 = nginx -s stop
+cmd2 = nginx -s quit
+```
 
