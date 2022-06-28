@@ -315,6 +315,16 @@ git commit -m "${comment}"
      git reset --soft ${commitID}
      ```
 
+   + 执行[commit](https://so.csdn.net/so/search?q=commit&spm=1001.2101.3001.7020)后，还没执行push时，想撤销这次的commit
+   
+     ```shell
+     # 不删除工作空间的改动代码 ，撤销commit，不撤销git add file [常用]
+     git reset --soft HEAD^
+     
+     # 删除工作空间的改动代码，撤销commit且撤销add  [慎用]
+     git reset --hard HEAD^
+     ```
+   
      
 
 ## 2.10 日志

@@ -926,7 +926,7 @@ st->op2->op3->op4->op5->op6
    [autoindex_exact_size]
    Syntax  = autoindex_exact_size on | off;
    Default = autoindex_exact_size on;
-   Context = http,server,location;
+   Context = http,server,location; 
    
    [autoindex_formt]
    Syntax  = autoindex_formt html | xml | json | jsonp;
@@ -954,7 +954,12 @@ st->op2->op3->op4->op5->op6
    }
    ```
 
-   
+
+
+
+## log阶段
+
+模块：nix_http_log_module
 
 
 
