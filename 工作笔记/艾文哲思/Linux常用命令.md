@@ -67,8 +67,12 @@
    ```shell
    # 查询全部监听的tcp端口
    netstat -f inet -n | grep tcp4
+   
+   
+   # 使用lsof
+   lsof -i:3000  # 查看3000端口是否处于listening状态
    ```
-
+   
    
 
 # windows查看端口占用
@@ -739,6 +743,13 @@ lsof -p 1252164 | grep IPv4 | grep  IPv4 -n
 
 
 
+```shell
+# 查看某个端口的服务的全部链接
+lsof -i:3000
+```
+
+
+
 
 
 # unlink
@@ -1002,7 +1013,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                                
+  >                                                                                                                                                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1026,7 +1037,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                                
+  >                                                                                                                                                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
