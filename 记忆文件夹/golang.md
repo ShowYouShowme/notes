@@ -27,7 +27,7 @@
 
    ```shell
    go env -w GO111MODULE=on
-   go env -w GOPROXY=https://goproxy.cn,direct
+   go env -w GOPROXY="https://goproxy.io,direct"
    ```
 
    
@@ -4054,7 +4054,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >             
+   >               
    >   # 2-- 检查进程是否存在
    >   ```
    >

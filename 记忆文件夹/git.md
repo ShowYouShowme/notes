@@ -5,7 +5,7 @@
    ```shell
    git config --global core.quotepath false
    ```
-   
+
 2. 安装目录
 
    ```shell
@@ -16,6 +16,21 @@
 
    + 不要使用release版本，要直接git clone 代码
    + 不要使用master分支，要手动切换到指定tag
+
+4. git-server 安装
+
+   ```shell
+   wget -O gitea https://dl.gitea.io/gitea/1.16.9/gitea-1.16.9-linux-amd64
+   chmod +x gitea
+   
+   ./gitea web
+   
+   # 数据库选择sqlite3
+   
+   # 地址配置为ip 而不是localhost
+   ```
+
+   
 
 
 

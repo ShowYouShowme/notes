@@ -18,11 +18,11 @@ systemctl enable mariadb
 mysql_secure_installation
 
 ## 
-0. 设置root密码(设置不设置都可以)
-1. 去除匿名用户
-2. 去除root远程登陆权限
-3. 删除test库
-4. 重新加载权限表
+0. 设置root密码(设置不设置都可以)  n
+1. 去除匿名用户 y
+2. 去除root远程登陆权限 y
+3. 删除test库 y
+4. 重新加载权限表 y
 ```
 
 
@@ -208,6 +208,18 @@ grant all on *.* to 'tars'@'%' identified by 'tars2015' with grant option;
    ```
 
    该会话和其它会话只能读，不能往表里写入数据。其它会话可以获取read锁！
+
+
+
+# 创建用户
+
+```mysql
+>use mysql;
+
+>create user gitea identified by "123456";
+
+>flush privileges;
+```
 
 
 
@@ -911,4 +923,11 @@ CONVERT_TZ
     >        -> );
     >    ```
     >
-    >    
+
+16. 查看默认引擎
+
+    ```shell
+    show engines \G;
+    ```
+
+    

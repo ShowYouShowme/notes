@@ -77,6 +77,8 @@
 # 查看指定端口被谁占用
 netstat -aon|findstr "8081"
 
+# 或者
+netstat -aon|findstr "TCP" | findstr "LISTENING"
 
   TCP    172.18.80.183:6396     172.18.80.183:8888     ESTABLISHED     27068
   TCP    172.18.80.183:8888     0.0.0.0:0              LISTENING       12052   # 这个
@@ -89,6 +91,8 @@ tasklist|findstr "12052"
 
 # 强行杀死进程
 taskkill /T /F /PID 12052  
+
+
 ```
 
 
@@ -998,7 +1002,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                             
+  >                                                                                                                                                
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1022,7 +1026,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                             
+  >                                                                                                                                                
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
