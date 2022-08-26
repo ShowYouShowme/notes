@@ -67,8 +67,12 @@
    ```shell
    # 查询全部监听的tcp端口
    netstat -f inet -n | grep tcp4
+   
+   
+   # 使用lsof
+   lsof -i:3000  # 查看3000端口是否处于listening状态
    ```
-
+   
    
 
 # windows查看端口占用
@@ -764,6 +768,13 @@ yum install tree -y
 ```shell
 # 列出打开的TCP链接，从1开始排序
 lsof -p 1252164 | grep IPv4 | grep  IPv4 -n
+```
+
+
+
+```shell
+# 查看某个端口的服务的全部链接
+lsof -i:3000
 ```
 
 
