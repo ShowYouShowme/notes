@@ -23,6 +23,104 @@
 
 ## 安装
 
+
+
+### centos7
+
+***
+
+1. 创建repo文件
+
+   ```shell
+   vim /etc/yum.repos.d/mongodb-org-4.0.repo
+   
+   [mongodb-org-4.0]
+   name=MongoDB Repository
+   baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.0/x86_64/
+   gpgcheck=1
+   enabled=1
+   gpgkey=https://www.mongodb.org/static/pgp/server-4.0.asc
+   ```
+
+2. 安装
+
+   ```shell
+   yum install -y mongodb-org
+   ```
+
+3. 修改配置文件
+
+   ```shell
+   vim /etc/mongod.conf
+   ```
+
+   ```shell
+   # mongod.conf
+   
+   # for documentation of all options, see:
+   #   http://docs.mongodb.org/manual/reference/configuration-options/
+   
+   # where to write logging data.
+   systemLog:
+     destination: file
+     logAppend: true
+     path: /var/log/mongodb/mongod.log
+   
+   # Where and how to store data.
+   storage:
+     dbPath: /var/lib/mongo
+     journal:
+       enabled: true
+   #  engine:
+   #  wiredTiger:
+   
+   # how the process runs
+   processManagement:
+     fork: true  # fork and run in background
+     pidFilePath: /var/run/mongodb/mongod.pid  # location of pidfile
+     timeZoneInfo: /usr/share/zoneinfo
+   
+   # network interfaces
+   net:
+     port: 27017
+   # 修改为0.0.0.0 否则远程无法连接
+     bindIp: 0.0.0.0  # Enter 0.0.0.0,:: to bind to all IPv4 and IPv6 addresses or, alternatively, use the net.bindIpAll setting.
+   
+   # 配置为启用认证（创建账号/密码用户登录）
+   security:
+     authorization: enabled
+   
+   #operationProfiling:
+   
+   #replication:
+   
+   #sharding:
+   
+   ## Enterprise-Only Options
+   
+   #auditLog:
+   
+   #snmp:
+   ```
+
+4. 开启服务
+
+   ```shell
+   systemctl enable mongod
+   systemctl start mongod
+   ```
+
+5. 客户端
+
+   ```shell
+   mongo --host 127.0.0.1:27017
+   
+   # 或者
+   mongo --port 27017 -u "adminUser" -p "adminPass" --authenticationDatabase "admin"
+   ```
+
+   
+
 > + [MongoDB下载地址](https://www.mongodb.com/)
 > + [Robo下载地址](https://robomongo.org/)
 
@@ -208,15 +306,15 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >   ```javascript
 >   import Mongodb = require("mongodb");
 >   import {MongoClient, MongoError} from "mongodb";
->   
+>     
 >   let url = "mongodb://localhost:27017/testdb";
->   
+>     
 >   // 连接数据库,不存在则创建
 >   Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >       if (err) throw err;
->   
+>     
 >       let dbase = db.db("testdb");
->   
+>     
 >       let myInfo  = [
 >           {name:"jim", age:18},
 >           {name:"lilei", age:26},
@@ -228,7 +326,7 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >           db.close();
 >       })
 >   });
->   
+>     
 >   ```
 >
 

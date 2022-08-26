@@ -7,8 +7,8 @@
 1. 下载安装包安装
 
    ```shell
-   wget https://golang.google.cn/dl/go1.16.6.linux-amd64.tar.gz
-   tar -zxvf go1.16.6.linux-amd64.tar.gz
+   wget https://go.dev/dl/go1.19.linux-amd64.tar.gz
+   tar -zxvf go1.19.linux-amd64.tar.gz
    mv go /usr/local
    ```
 
@@ -4054,7 +4054,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >               
+   >                 
    >   # 2-- 检查进程是否存在
    >   ```
    >

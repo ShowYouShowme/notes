@@ -250,7 +250,9 @@ ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
 
 
 
-## 加入sudo用户组
+## Ubuntu
+
+### 加入sudo用户组
 
 ```shell
 usermod -aG sudo $username
@@ -258,7 +260,7 @@ usermod -aG sudo $username
 
 
 
-## 查看是否拥有sudo权限
+### 查看是否拥有sudo权限
 
 ```shell
 sudo whoami
@@ -268,7 +270,7 @@ sudo whoami
 
 
 
-## 免密码执行sudo
+### 免密码执行sudo
 
 ```shell
 # 使用vim编辑 visudo
@@ -282,11 +284,38 @@ $username  ALL=(ALL) NOPASSWD:ALL
 
 
 
-## 免密码sudo运行部分命令
+### 免密码sudo运行部分命令
 
 ```shell
 $username ALL=(ALL) NOPASSWD:/bin/mkdir,/bin/rmdir
 ```
+
+
+
+
+
+## centos7
+
+1. 修改配置文件
+
+   ```shell
+   vim /etc/sudoers
+   
+   # 注释掉这行
+   %wheel ALL=(ALL)       ALL
+   
+   # 去掉这行的注释
+   %wheel  ALL=(ALL)       NOPASSWD: ALL
+   ```
+
+2. 将用户加入组wheel
+
+   ```shell
+   # 以后每次sudo 都不需要输入命令了
+   usermod -G wheel ${user}
+   ```
+
+   
 
 
 
@@ -1002,7 +1031,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                                
+  >                                                                                                                                                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1026,7 +1055,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                                
+  >                                                                                                                                                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

@@ -6,23 +6,34 @@
 ## 1.1 安装docker
 
 ```shell
-# centos7
-yum install -y docker
+# 参考官方文档
+# https://docs.docker.com/engine/install/centos/
 
-# centos8 用以下命令
-yum install --allowerasing docker-ce
-systemctl start docker # 启动
-systemctl status docker # 查看状态
-systemctl enable docker.service # 设置服务开机启动
+# centos7 安装docker
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
 
-# ubuntu 18.04
-sudo apt install curl
-curl -fsSL get.docker.com -o get-docker.sh
-sudo sh get-docker.sh --mirror Aliyun
+sudo yum install -y yum-utils
+sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+
+# 安装最新版本
+sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
 
 # 启动docker
 sudo systemctl enable docker
 sudo systemctl start docker
+
+
+# 测试docker是否可用
+sudo docker run hello-world
 ```
 
 
@@ -282,7 +293,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                               
+   >                                  
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
