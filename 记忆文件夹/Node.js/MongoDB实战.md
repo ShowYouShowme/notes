@@ -23,7 +23,7 @@
 
 ## 安装
 
-
+官方安装文档：https://mongodb.net.cn/manual/tutorial/install-mongodb-on-red-hat/
 
 ### centos7
 
@@ -306,15 +306,15 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >   ```javascript
 >   import Mongodb = require("mongodb");
 >   import {MongoClient, MongoError} from "mongodb";
->     
+>       
 >   let url = "mongodb://localhost:27017/testdb";
->     
+>       
 >   // 连接数据库,不存在则创建
 >   Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >       if (err) throw err;
->     
+>       
 >       let dbase = db.db("testdb");
->     
+>       
 >       let myInfo  = [
 >           {name:"jim", age:18},
 >           {name:"lilei", age:26},
@@ -326,7 +326,7 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >           db.close();
 >       })
 >   });
->     
+>       
 >   ```
 >
 

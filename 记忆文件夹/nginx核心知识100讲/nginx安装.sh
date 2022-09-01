@@ -40,8 +40,9 @@ stream {
 
     server {
     listen 8399 so_keepalive=on;
-    proxy_connect_timeout 10s;
-    proxy_timeout 30s;
+    proxy_connect_timeout 10s;  # 链接超时
+    # proxy_timeout 30s;  不设置则使用默认时间:10分钟
+    proxy_timeout 60m;
     proxy_pass tcp_proxy;
     }
 

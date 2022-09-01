@@ -293,7 +293,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                  
+   >                                     
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -547,6 +547,14 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
    >   docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
    >   ```
 
+3. 链接mysql
+
+   ```ini
+   docker run -it --rm mysql:5.7 mysql -h192.168.2.110 -uroot -ptars2015
+   ```
+
+   
+
 
 
 ## 3.2 Redis
@@ -554,14 +562,27 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
 1. 下载镜像
 
    ```shell
-   docker pull redis:6.2.3
+   docker pull redis
    ```
 
 2. 启动容器
 
    ```shell
-   docker run -d -p 6379:6379 redis:6.2.3
+   docker run --name some-redis -d redis
    ```
+
+3. 连接
+
+   ```ini
+   ;redis-cl
+   docker run -it --link some-redis --rm redis redis-cli -h some-redis
+   ```
+
+
+
+## 3.3 mongodb
+
+
 
 
 
@@ -813,3 +834,22 @@ Docker集群管理工具，简易版的k8s，适用于中小型项目（几个~�
 # 第八章 Docker machine
 
 作用：快速帮助我们搭建 Docker 主机环境
+
+
+
+
+
+# 第九章  常见问题
+
+
+
+## 9.1 静态ip
+
+```ini
+[创建自定义网络]
+docker network create --subnet=172.11.0.0/20 mynetwork
+
+[创建容器]
+docker run -itd --name network_test --net mynetwork --ip 172.11.0.3 centos:latest /bin/bash
+```
+

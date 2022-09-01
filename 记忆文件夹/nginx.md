@@ -28,7 +28,8 @@ stream {
   server {
     listen 10086 so_keepalive=on;				# 开启 TCP 存活探测
     proxy_connect_timeout 10s;					# 连接超时时间
-    proxy_timeout 300s;							# 端口保持时间
+    # proxy_timeout 300s;							# 300s内没有数据可读写则关闭，默认10m
+    proxy_timeout 60m;
     proxy_pass test_mysql;
   }
 }
@@ -189,6 +190,37 @@ server {
    
    
    
+   
+
+基本http服务配置
+
+```nginx
+#user  nobody;
+worker_processes  1;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+http{
+    server{
+        listen 8100;
+        default_type application/json;
+        return 200  '{"name":"aming","id":"100"}';
+    }
+
+}
+```
+
+
+
 
 
 
@@ -992,3 +1024,18 @@ cmd1 = nginx -s stop
 cmd2 = nginx -s quit
 ```
 
+
+
+# 附录
+
+1. 非root测试nginx配置时不能绑定端口
+
+   ```shell
+   msg=nginx: [emerg] bind() to 0.0.0.0:80 failed (13: Permission denied)
+   
+   reason=Linux只有root用户可以使用1024一下的端口
+   
+   solution=将配置文件中的80端口改为1024以上
+   ```
+
+   

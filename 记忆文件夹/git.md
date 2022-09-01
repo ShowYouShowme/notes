@@ -497,8 +497,6 @@ git mv readme README.md
 
 
 
-
-
 # 第三章 管理
 
 ***
@@ -594,3 +592,35 @@ git config --global user.name "wzc"
    + 如果单个开发者，直接在develop上面开发
    + 如果主分支有修复bug的提交，develop分支要rebase主分支
    + 发布版本时，把develop合并至master再发布
+
+
+
+
+
+# 第五章 创建仓库
+
+
+
+## 5.1 从命令行创建
+
+```shell
+touch README.md
+git init
+git checkout -b dev
+git add README.md
+git commit -m "first commit"
+git remote add origin http://192.168.2.110:3000/roglic/protocol.git
+git push -u origin dev
+```
+
+
+
+
+
+## 5.2 推送已创建仓库
+
+```shell
+git remote add origin http://192.168.2.110:3000/roglic/protocol.git
+git push -u origin dev
+```
+

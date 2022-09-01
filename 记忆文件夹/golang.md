@@ -4054,7 +4054,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                 
+   >                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -4780,3 +4780,75 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
 // 输出：an error}
 ```
 
+
+
+
+
+# 第二十二章  protobuf
+
+
+
+## 22.1 安装
+
+1. windows
+
+   ```ini
+   [下载protoc]
+   url = https://github.com/protocolbuffers/protobuf/releases/download/v21.5/protoc-21.5-win64.zip
+   
+   [下载protoc-gen-go]
+   url = https://github.com/protocolbuffers/protobuf-go/releases/download/v1.28.1/protoc-gen-go.v1.28.1.windows.amd64.zip
+   
+   [安装]
+   step1 = 解压protoc,将bin目录加入path
+   step2 = 解压protoc-gen-go,将protoc-gen-go.exe 放到protoc-21.5-win64\bin 里面
+   
+   
+   [产生pb文件]
+   cmd = protoc --go_out=. person.proto
+   ```
+
+2. centos
+
+   ```ini
+   [下载protoc]
+   url = https://github.com/protocolbuffers/protobuf/releases/download/v21.5/protoc-21.5-linux-x86_64.zip
+   
+   [下载protoc-gen-go]
+   url = https://github.com/protocolbuffers/protobuf-go/releases/download/v1.28.1/protoc-gen-go.v1.28.1.linux.amd64.tar.gz
+   
+   [安装]
+   step1 = unzip protoc-21.5-linux-x86_64.zip
+   step2 = tar -zxvf protoc-gen-go.v1.28.1.linux.amd64.tar.gz --warning=no-timestamp
+   step3 = mv protoc-gen-go bin/
+   step4 = 把bin目录加入系统path
+   ```
+
+
+
+## 22.2 编译
+
+1. person.proto
+
+   ```protobuf
+   syntax = "proto3";
+   package example;
+   option go_package="./;protocol"; // go语言必须加这行,分号前是生成文件路径;后面是package名称
+   
+   message person {    //  aa 会生成 Aa 命名的结构体
+     int32 id = 1;
+     string name = 2;
+   }
+   
+   message all_person {    //  aa_bb 会生成 AaBb 的驼峰命名的结构体
+     repeated person Per = 1;
+   }
+   ```
+
+2. 编译
+
+   ```shell
+   protoc --go_out=. person.proto
+   ```
+
+   
