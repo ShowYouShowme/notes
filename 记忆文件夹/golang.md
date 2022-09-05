@@ -2970,6 +2970,54 @@ func TestFillNameAndAge(t *testing.T)  {
 
 ## 14.1 内置JSON解析
 
+```go
+package main
+
+import (
+	"encoding/json"
+	"log"
+)
+
+type BasicInfo struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+type JobInfo struct {
+	Skills []string `json:skills`
+}
+
+type Employee struct {
+	BasicInfo BasicInfo `json:"basic_info"`
+	JobInfo   JobInfo   `json:"job_info"`
+}
+
+func main() {
+	//反序列化
+	var jsonStr = "{\"basic_info\":{\"name\":\"Mike\",\"age\":30},\"job_info\":{\"skills\":[\"Java\",\"Go\",\"C++\"]}}"
+	e := new(Employee)
+	err := json.Unmarshal([]byte(jsonStr), e)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(e)
+	log.Println("....")
+
+	//序列化
+	var e1 = BasicInfo{
+		Name: "powell",
+		Age:  29,
+	}
+	if v, err := json.Marshal(e1); err != nil {
+		log.Fatal(v)
+	} else {
+		log.Println(string(v))
+	}
+	log.Println("....")
+}
+
+```
+
 
 
 ## 14.2 easyjson
@@ -4054,7 +4102,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                   
+   >                     
    >   # 2-- 检查进程是否存在
    >   ```
    >

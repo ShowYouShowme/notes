@@ -20,6 +20,7 @@
 	3. 类库丰富
 	4. 开放源码
 	5. 可扩展，可以调用C/C++的库
+	
 + 发展历史与版本
 	+ 发展历史 
 		1. 1990年诞生
@@ -38,6 +39,7 @@
 		4. sublime text 文本编辑器
 		5. Pycharm 集成开发环境
 		6. Pip 包管理器
+	
 + 安装
 	1. 安装python
 	
@@ -115,6 +117,19 @@
      ldconfig
      
      ```
+  
+  4. centos7源码编译python3.8
+  
+     ```shell
+     yum install gcc openssl-devel bzip2-devel libffi-devel -y
+     curl -O https://www.python.org/ftp/python/3.8.1/Python-3.8.1.tgz
+     tar -xzf Python-3.8.1.tgz
+     cd Python-3.8.1/
+     ./configure --enable-optimizations --prefix=/home/roglic/local/
+     make altinstall
+     ```
+  
+     
 
 ## 1.3 第一个程序
 

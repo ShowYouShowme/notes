@@ -221,6 +221,22 @@ http{
 
 
 
+文件服务器配置
+
+```nginx
+http{
+    server{
+	  listen 8200;
+          location / {
+		alias dlib/;
+		autoindex on;		
+		}
+    }
+}
+```
+
+
+
 
 
 

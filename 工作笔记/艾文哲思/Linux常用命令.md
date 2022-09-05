@@ -1042,7 +1042,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                                      
+  >                                                                                                                                                         
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1066,7 +1066,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                                      
+  >                                                                                                                                                         
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -3311,3 +3311,26 @@ Rsyslog可以简单的理解为syslog的超集，系统日志工具。类似Logs
    echo " world"
    EOF
    ```
+
+
+
+# centos7 源码编译gcc9.2
+
+```shell
+cd /home/build
+GCC_VERSION=9.2.0
+wget https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz
+tar xzvf gcc-${GCC_VERSION}.tar.gz
+mkdir obj.gcc-${GCC_VERSION}
+cd gcc-${GCC_VERSION}
+./contrib/download_prerequisites
+cd ../obj.gcc-${GCC_VERSION}
+../gcc-${GCC_VERSION}/configure --disable-multilib --enable-languages=c,c++
+make -j $(nproc)
+make install
+
+#卸载已经安装的gcc和g++
+yum remove gcc gcc-c++
+#用户重新登录即可
+```
+
