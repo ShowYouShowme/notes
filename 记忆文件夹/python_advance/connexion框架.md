@@ -1,5 +1,7 @@
 # 第一章 connexion框架使用说明
 
+<font color=red>直接使用flask即可，不推荐使用这个框架，有坑</font>
+
 
 
 ## 1.1 安装框架

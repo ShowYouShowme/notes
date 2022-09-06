@@ -4102,7 +4102,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                     
+   >                         
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -4899,4 +4899,189 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
    protoc --go_out=. person.proto
    ```
 
+
+
+
+# 第二十三章 http客户端
+
+
+
+## 23.1 Get请求
+
+```go
+// 基本的GET请求
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+type Result struct {
+	Name string `json:"name"`
+	Age  int    `json:age`
+}
+
+func main() {
+	resp, err := http.Get("http://192.168.2.110:8100")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
+	fmt.Println(resp.StatusCode)
+	if resp.StatusCode == 200 {
+		fmt.Println("ok")
+	}
+
+	//解析json
+	var res = new(Result)
+	_ = json.Unmarshal(body, res)
+	fmt.Println(res)
+}
+```
+
+添加请求头
+
+```go
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+func main() {
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", "http://192.168.2.110:8100", nil)
+	req.Header.Add("name", "zhaofan")
+	req.Header.Add("age", "3")
+	resp, _ := client.Do(req)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Printf(string(body))
+}
+```
+
+
+
+## 23.2 Post请求
+
+
+
+### 23.2.1 表单
+
+1. 做法一
+
+   ```go
+   package main
    
+   import (
+       "fmt"
+       "io/ioutil"
+       "net/http"
+       "net/url"
+   )
+   
+   func main() {
+       urlValues := url.Values{}
+       urlValues.Add("name","zhaofan")
+       urlValues.Add("age","22")
+       resp, _ := http.PostForm("http://httpbin.org/post",urlValues)
+       body, _ := ioutil.ReadAll(resp.Body)
+       fmt.Println(string(body))
+   }
+   ```
+
+2. 做法二
+
+   ```go
+   //或者
+   package main
+   
+   import (
+   	"fmt"
+   	"io/ioutil"
+   	"net/http"
+   	"net/url"
+   	"strings"
+   )
+   
+   func main() {
+   	urlValues := url.Values{
+   		"name": {"nash"},
+   		"age":  {"9902"},
+   	}
+   	reqBody := urlValues.Encode()
+   	resp, _ := http.Post("http://127.0.0.1:5234/login", "application/x-www-form-urlencoded", strings.NewReader(reqBody))
+   	body, _ := ioutil.ReadAll(resp.Body)
+   	fmt.Println(string(body))
+   }
+   ```
+
+   
+
+
+
+### 23.2.2 json
+
+1. 推荐的写法
+
+   ```go
+   package main
+   
+   import (
+       "bytes"
+       "encoding/json"
+       "fmt"
+       "io/ioutil"
+       "net/http"
+   )
+   
+   func main() {
+       data := make(map[string]interface{})
+       data["name"] = "zhaofan"
+       data["age"] = "23"
+       bytesData, _ := json.Marshal(data)
+       resp, _ := http.Post("http://httpbin.org/post","application/json", bytes.NewReader(bytesData))
+       body, _ := ioutil.ReadAll(resp.Body)
+       fmt.Println(string(body))
+   }
+   ```
+
+2. 另一个做法
+
+   ```go
+   package main
+   
+   import (
+       "bytes"
+       "encoding/json"
+       "fmt"
+       "io/ioutil"
+       "net/http"
+   )
+   
+   func main() {
+       client := &http.Client{}
+       data := make(map[string]interface{})
+       data["name"] = "zhaofan"
+       data["age"] = "23"
+       bytesData, _ := json.Marshal(data)
+       req, _ := http.NewRequest("POST","http://httpbin.org/post",bytes.NewReader(bytesData))
+       req.Header.Set("Content-Type", "application/json")
+       resp, _ := client.Do(req)
+       body, _ := ioutil.ReadAll(resp.Body)
+       fmt.Println(string(body))
+   
+   }
+   ```
+
+   
+
+
+

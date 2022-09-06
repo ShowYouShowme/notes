@@ -3144,3 +3144,79 @@ if __name__ == '__main__':
 
      
 
+
+
+# 第三十章 Protobuf
+
+
+
+## 30.1 安装
+
+```shell
+#下载源码
+wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protobuf-python-3.20.1.tar.gz
+
+#解压后进入目录protobuf-3.20.1\python执行如下命令安装
+python3 setup.py install #如果是pycharm在虚拟环境里面安装也可以
+```
+
+
+
+## 30.2 生成代码
+
+```ini
+ ; 生成的代码和C++ 不一样,不会生成class,因此无法代码补全
+ protoc3 --python_out=. addressbook.proto
+```
+
+
+
+## 30.3 示例代码
+
+```protobuf
+syntax = "proto2";
+
+package tutorial;
+
+message Person {
+  optional string name = 1;
+  optional int32 id = 2;
+  optional string email = 3;
+
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+
+  message PhoneNumber {
+    optional string number = 1;
+    optional PhoneType type = 2 [default = HOME];
+  }
+
+  repeated PhoneNumber phones = 4;
+}
+
+message AddressBook {
+  repeated Person people = 1;
+}
+```
+
+```python
+import addressbook_pb2
+person = addressbook_pb2.Person()
+person.id = 1234
+person.name = "John Doe"
+person.email = "jdoe@example.com"
+phone = person.phones.add()
+phone.number = "555-4321"
+phone.type = addressbook_pb2.Person.HOME
+
+#序列化函数
+buf = person.SerializeToString()
+
+#反序列化函数
+p2 = addressbook_pb2.Person()
+p2 = p2.ParseFromString(buf)
+```
+
