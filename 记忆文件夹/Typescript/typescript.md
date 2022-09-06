@@ -9,6 +9,7 @@
 2. 创建项目配置文件
 
    ```shell
+   #如果失败，先安装typescript：npm install -g typescript
    tsc --init
    ```
 
@@ -228,13 +229,13 @@ npm install @types/node
    >    ```shell
    >    # 精确安装指定模块版本
    >    npm install gulp-concat --save-exact 或 npm install gulp-concat –E
-   >    
+   >       
    >    # package.json文件里"dependencies"属性的
-   >    
+   >       
    >    "dependencies": {
-   >    
+   >       
    >        "gulp-concat": "2.6.1"   //注意此处：版本号没有 ^
-   >    
+   >       
    >    }
    >    ```
    >

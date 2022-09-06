@@ -1701,3 +1701,72 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
          })
      }
      ```
+
+
+
+
+
+
+
+# 第十六章 Protobuf
+
+
+
+## 16.1 安装依赖
+
+```ini
+npm install google-protobuf
+```
+
+
+
+## 16.2 安装protoc
+
+```ini
+; 21.5的版本不能生成js的文件
+wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protoc-3.20.1-win64.zip
+```
+
+
+
+## 16.3 生成文件
+
+```ini
+protoc --js_out=import_style=commonjs,binary:. cmd_net.proto
+```
+
+
+
+## 16.4 示例代码
+
+```javascript
+//webstorm里面是不能代码补全的
+const WebSocket = require('ws');
+const cmd_net = require('./cmd_net_pb')
+const {json} = require("stream/consumers");
+
+let p1 = new cmd_net.TPackage()
+p1.setMaincmd(cmd_net.MainCmdID.SYS)
+p1.setSubcmd(cmd_net.SubCmdID.SYS_HEART_ASK)
+
+const client = new WebSocket('ws://localhost:8080')
+client.on('open', function (){
+    client.send(p1.serializeBinary())  //序列化
+})
+
+client.on('close', function (){
+    console.log('peer close the connect!')
+})
+
+client.on('message', function (data){
+    let message = cmd_net.TPackage.deserializeBinary(data)  //反序列化
+    let mainCmd = message.getMaincmd()
+    let subCmd = message.getSubcmd()
+    console.log(JSON.stringify(message.toObject()))   //message打印为JSON
+})
+
+setInterval(function (){
+    console.log('....')
+}, 1500)
+```
+

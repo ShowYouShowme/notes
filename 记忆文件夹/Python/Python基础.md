@@ -3220,3 +3220,26 @@ p2 = addressbook_pb2.Person()
 p2 = p2.ParseFromString(buf)
 ```
 
+```python
+#websocket协议,发送protobuf数据
+from websocket import create_connection
+import cmd_net_pb2 as cmd_net
+def main():
+
+    ws = create_connection("ws://192.168.2.117:8080")
+    data = cmd_net.CTokenLogonReq()
+    data.Token = 'a38cc710410e7119d6d869ac0356a659125b8ef6'
+    data.GameID = 128
+
+    package = cmd_net.TPackage()
+    package.MainCmd = cmd_net.MainCmdID.ACCOUNTS
+    package.SubCmd = cmd_net.SubCmdID.ACCOUNTS_TOKEN_LOGON_REQ
+    package.Data = data.SerializeToString()
+    buf = package.SerializeToString()
+    ws.send(buf)
+    print("Receiving...")
+    result = ws.recv()
+    print("Received '%s'" % result)
+    ws.close()
+```
+
