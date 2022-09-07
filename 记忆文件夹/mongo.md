@@ -214,5 +214,11 @@ db.dropDatabase()
    
    db.collection.createIndex({"title":1}, { unique: true } )
    ```
-   
+
+8. 连接数查看
+
+   ```ini
+   db.serverStatus().connections
+   ```
+
    

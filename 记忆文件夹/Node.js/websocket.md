@@ -76,6 +76,9 @@ websocket 底层会处理TCP数据包的边界问题，用户收到的一定是�
 
    ```shell
    npm install ws
+   
+   #安装ts的声明文件,安装后可以使用import 导入
+   npm i --save-dev @types/ws
    ```
 
 3. 编写代码
@@ -96,6 +99,53 @@ websocket 底层会处理TCP数据包的边界问题，用户收到的一定是�
        });
    });
    ```
+
+4. websocket 客户端，配合protobuf
+
+   ```shell
+   import * as proto from "./cmd_net";
+   import WebSocket from 'ws'
+   // TODO 记录如何引入js的包
+   // TODO 记录如何为js的包增加注释
+   // import WebSocket = require("ws");
+   
+   let client = new WebSocket('ws://127.0.0.1:8080')
+   
+   function onOpen() {
+       console.log("websocket connect successful!")
+       let message: proto.TPackage = {}
+       message.MainCmd = proto.MainCmdID.ACCOUNTS
+       message.SubCmd = proto.SubCmdID.ACCOUNTS_TOKEN_LOGON_REQ
+   
+       let req: proto.CTokenLogonReq = {}
+       req.GameID = 124
+       req.Token = "a38cc710410e7119d6d869ac0356a659125b8ef6"
+       message.Data = proto.encodeCTokenLogonReq(req)
+       client.send(proto.encodeTPackage(message))
+   }
+   
+   function onClose() {
+   
+   }
+   
+   function onMessage(data: any) {
+       console.log(data)
+       let message : proto.TPackage = proto.decodeTPackage(data)
+       console.log(message.MainCmd, ":", message.SubCmd)
+       let content : proto.CLogonSuccessResp = proto.decodeCLogonSuccessResp(message.Data as Uint8Array)
+       console.log(JSON.stringify(content))
+       console.log("finished...")
+   }
+   client.on("open", onOpen);
+   client.on("close", onClose);
+   client.on("message", onMessage);
+   
+   setInterval(()=>{
+       console.log("....")
+   }, 1000)
+   ```
+
+   
 
 
 

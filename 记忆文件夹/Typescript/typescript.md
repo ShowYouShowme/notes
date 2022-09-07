@@ -38,9 +38,47 @@
    >
    >    在ts代码里面打断点，然后启动bin目录下生成的js文件即可
    >
+   >    ```shell
+   >    1.点击run
+   >    2.点击Edit configurations
+   >    3.设置JavaScript file:bin\index.js
+   >    4.在ts里面打断点:比如在index.ts里面打断点就能调试了
+   >    ```
+   >
+   >    
+   >
    > 2. vscode
    >
    >    添加debug配置，然后设置启动的js文件，最后断点启动项目即可
+   >
+   >    ```shell
+   >    #TODO 也可以点击运行和调试,然后创建调试文件
+   >    #1. 项目根目录创建文件夹.vscode
+   >    #2. 创建调试配置文件launch.json
+   >    #3. 配置文件写入如下内容
+   >    {
+   >        // 使用 IntelliSense 了解相关属性。 
+   >        // 悬停以查看现有属性的描述。
+   >        // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+   >        "version": "0.2.0",
+   >        "configurations": [
+   >            {
+   >                "type": "node",
+   >                "request": "launch",
+   >                "name": "Launch Program",
+   >                "skipFiles": [
+   >                    "<node_internals>/**"
+   >                ],
+   >                "program": "${workspaceFolder}\\index.ts",
+   >                "outFiles": [
+   >                    "${workspaceFolder}/**/*.js"
+   >                ]
+   >            }
+   >        ]
+   >    }
+   >    ```
+   >
+   > 
 
 
 
@@ -229,13 +267,13 @@ npm install @types/node
    >    ```shell
    >    # 精确安装指定模块版本
    >    npm install gulp-concat --save-exact 或 npm install gulp-concat –E
-   >       
+   >                
    >    # package.json文件里"dependencies"属性的
-   >       
+   >                
    >    "dependencies": {
-   >       
+   >                
    >        "gulp-concat": "2.6.1"   //注意此处：版本号没有 ^
-   >       
+   >                
    >    }
    >    ```
    >
@@ -258,6 +296,145 @@ let server:http.Server = http.createServer((req: http.IncomingMessage, res: http
 });
 
 server.listen( 9999, "0.0.0.0" );
+```
+
+
+
+
+
+
+
+# 使用Protobuf
+
+
+
+## 安装pbjs
+
+```ini
+; https://www.npmjs.com/package/pbjs
+npm install pbjs
+```
+
+
+
+## 生成ts文件
+
+```ini
+pbjs wire-format.proto --ts wire-format.ts
+```
+
+
+
+## 示例代码
+
+```typescript
+import * as proto from "./cmd_net"
+
+let message : proto.TPackage = {}
+message.MainCmd = proto.MainCmdID.ACCOUNTS
+message.SubCmd  = proto.SubCmdID.ACCOUNTS_TOKEN_LOGON_REQ
+
+let req : proto.CTokenLogonReq = {}
+req.GameID = 124
+req.Token = "65bad951c31b8777d512d832bcc633d718a1411f"
+message.Data = proto.encodeCTokenLogonReq(req)
+let buf = proto.encodeTPackage(message)
+
+let m2 : proto.TPackage = {}
+m2 = proto.decodeTPackage(buf)
+console.log(JSON.stringify(m2))
+let r2 = proto.decodeCTokenLogonReq(m2.Data as Uint8Array)
+console.log(JSON.stringify(r2))
+console.log("......")
+```
+
+
+
+
+
+# 引入js的模块
+
+模块代码utility.js
+
+```javascript
+const PI = 3.14
+
+function Sum(a, b){
+    return a + b
+}
+
+function Person(name){
+    this.name = name
+    this.say = ()=>{
+        console.log("I'm " + this.name)
+    }
+}
+
+module.exports = {
+    PI,
+    Sum,
+    Person
+}
+```
+
+
+
+
+
+## 方法一
+
+```javascript
+import {PI, Sum} from "./utility"
+
+console.log(PI)
+
+let a : number = 1
+let b : number = 20
+let c : number = Sum(a,b)
+console.log("a + b = ", c)
+console.log("...")
+```
+
+
+
+
+
+## 方法二
+
+```javascript
+//需要先安装依赖:npm i --save-dev @types/node
+const Helper = require("./utility") // 注意和方法一的区别
+console.log(Helper.PI)
+
+let a : number = 12
+let b : number = 208
+let c : number = Helper.Sum(a,b) // 调用方式和方法一不一样
+console.log("a + b = ", c)
+console.log("...")
+```
+
+
+
+真实代码
+
+```javascript
+//npm install ws --save
+const WS = require("ws"); //引入nodejs的模块
+
+
+const client = new WS.WebSocket('ws://127.0.0.1:8080');
+client.on('open', ()=>{
+    console.log("链接建立成功!");
+});
+client.on('message', (data:any)=>{
+    console.log("data : ", String(data))
+    console.log("...")
+});
+client.on('close', ()=>{
+    console.log("connection closed")
+});
+
+console.log("....")
 ```
 
 

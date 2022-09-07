@@ -32,6 +32,8 @@ make install
 
 # configure 时 加上--with-stream这个参数，以加载ngx_stream_core_module这个模块
 # 监听本机的2222端口，实现跳转到192.168.56.12的22号端口
+
+# --with-http_ssl_module 支持https
 stream {
     upstream tcp_proxy{
     hash $remote_addr consistent;
