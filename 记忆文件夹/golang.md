@@ -5095,180 +5095,191 @@ func main() {
 
 # 第二十四章 sqlite3
 
-1. 安装依赖
 
-   ```shell
-   #官网:https://github.com/mattn/go-sqlite3
-   go get github.com/mattn/go-sqlite3
-   ```
 
-   
+## 24.1 安装依赖
 
-2. 安装gcc
+```shell
+#官网:https://github.com/mattn/go-sqlite3
+go get github.com/mattn/go-sqlite3
+```
 
-   ```shell
-   #windows,设置环境变量;linux下直接用yum安装即可
-   wget https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/x86_64-12.2.0-release-win32-seh-rt_v10-rev0.7z
-   ```
 
-3. 示例代码
 
-   ```go
-   package main
-   
-   import (
-   	"database/sql"
-   	"fmt"
-   	_ "github.com/mattn/go-sqlite3"
-   	"log"
-   	"os"
-   )
-   
-   func main() {
-   	os.Remove("./foo.db")
-   
-   	db, err := sql.Open("sqlite3", "./foo.db")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	defer db.Close()
-   
-   	sqlStmt := `
-   	create table foo (id integer not null primary key, name text);
-   	delete from foo;
-   	create table IF NOT EXISTS photo (id integer not null primary key, data blob);
-   	delete from photo;
-   	`
-   	_, err = db.Exec(sqlStmt)
-   	if err != nil {
-   		log.Printf("%q: %s\n", err, sqlStmt)
-   		return
-   	}
-   
-       // 事务操作
-   	tx, err := db.Begin()
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	stmt, err := tx.Prepare("insert into foo(id, name) values(?, ?)")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	defer stmt.Close()
-   	for i := 0; i < 100; i++ {
-   		_, err = stmt.Exec(i, fmt.Sprintf("こんにちは世界%03d", i))
-   		if err != nil {
-   			log.Fatal(err)
-   		}
-   	}
-   	err = tx.Commit()
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   
-       //查询
-   	rows, err := db.Query("select id, name from foo")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	defer rows.Close()
-   	for rows.Next() {
-   		var id int
-   		var name string
-   		err = rows.Scan(&id, &name)
-   		if err != nil {
-   			log.Fatal(err)
-   		}
-   		fmt.Println(id, name)
-   	}
-   	err = rows.Err()
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   
-   	stmt, err = db.Prepare("select name from foo where id = ?")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	defer stmt.Close()
-   	var name string
-   	err = stmt.QueryRow("3").Scan(&name)
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	fmt.Println(name)
-   
-       // 删除
-   	_, err = db.Exec("delete from foo")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   
-       // 插入
-   	_, err = db.Exec("insert into foo(id, name) values(1, 'foo'), (2, 'bar'), (3, 'baz')")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-       
-       // 更新
-   	_, err = db.Exec("update foo set name='nash' where id = 2")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   
-   	rows, err = db.Query("select id, name from foo")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	defer rows.Close()
-   	for rows.Next() {
-   		var id int
-   		var name string
-   		err = rows.Scan(&id, &name)
-   		if err != nil {
-   			log.Fatal(err)
-   		}
-   		fmt.Println(id, name)
-   	}
-   	err = rows.Err()
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-       
-       // 二进制数据操作
-   	stmt, err = db.Prepare("insert into photo(id, data) values(?, ?)")
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	defer stmt.Close()
-   	var content = []byte{19, 22, 33, 47, 58, 60}
-   	_, err = stmt.Exec(2, content)
-   	if err != nil {
-   		log.Fatal(err)
-   	}
-   	fmt.Println(name)
-   
-   	{
-   		rows, err = db.Query("select id, data from photo where id = 2")
-   		if err != nil {
-   			log.Fatal(err)
-   		}
-   		defer rows.Close()
-   		for rows.Next() {
-   			var id int
-   			var name []byte
-   			err = rows.Scan(&id, &name)
-   			if err != nil {
-   				log.Fatal(err)
-   			}
-   			fmt.Println(id, name)
-   		}
-   		err = rows.Err()
-   		if err != nil {
-   			log.Fatal(err)
-   		}
-   	}
-   }
-   ```
+## 24.2 安装gcc
 
-   
+```shell
+#windows,设置环境变量;linux下直接用yum安装即可
+wget https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/x86_64-12.2.0-release-win32-seh-rt_v10-rev0.7z
+```
+
+
+
+## 24.3 示例代码
+
+```go
+package main
+
+import (
+	"database/sql"
+	"fmt"
+	_ "github.com/mattn/go-sqlite3"
+	"log"
+	"os"
+)
+
+func main() {
+	os.Remove("./foo.db")
+
+	db, err := sql.Open("sqlite3", "./foo.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	sqlStmt := `
+	create table foo (id integer not null primary key, name text);
+	delete from foo;
+	create table IF NOT EXISTS photo (id integer not null primary key, data blob);
+	delete from photo;
+	`
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
+
+    // 事务操作
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	stmt, err := tx.Prepare("insert into foo(id, name) values(?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	for i := 0; i < 100; i++ {
+		_, err = stmt.Exec(i, fmt.Sprintf("こんにちは世界%03d", i))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+    //查询
+	rows, err := db.Query("select id, name from foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(id, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stmt, err = db.Prepare("select name from foo where id = ?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	var name string
+	err = stmt.QueryRow("3").Scan(&name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(name)
+
+    // 删除
+	_, err = db.Exec("delete from foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+    // 插入
+	_, err = db.Exec("insert into foo(id, name) values(1, 'foo'), (2, 'bar'), (3, 'baz')")
+	if err != nil {
+		log.Fatal(err)
+	}
+    
+    // 更新
+	_, err = db.Exec("update foo set name='nash' where id = 2")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rows, err = db.Query("select id, name from foo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(id, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+    
+    // 二进制数据操作
+	stmt, err = db.Prepare("insert into photo(id, data) values(?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	var content = []byte{19, 22, 33, 47, 58, 60}
+	_, err = stmt.Exec(2, content)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(name)
+
+	{
+		rows, err = db.Query("select id, data from photo where id = 2")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var id int
+			var name []byte
+			err = rows.Scan(&id, &name)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(id, name)
+		}
+		err = rows.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+```
+
+
+
+## 24.4 sqlite3和protobuf组合
+
+1. 只有用一个表Role，里面有两个字段uid和data(blob类型)
+2. 数据用protobuf序列化再存进去
+3. protobuf的proto文件里面的Role[序列化存入data里]类型的字段，可以增加，不能删除，也不能修改字段的索引，即可兼容。
+4. 如果增加新字段后，希望默认值不是protobuf的默认值，可以自己定义version字段和upgrade函数，类似居家修仙那样。
