@@ -1042,7 +1042,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                                         
+  >                                                                                                                                                            
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1066,7 +1066,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                                         
+  >                                                                                                                                                            
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2662,6 +2662,10 @@ adduser ${user}  # 只需要设置密码，其它的全部直接按回车
 # 创建.ssh目录
 su - powell && cd ~ && mkdir .ssh
 cd .ssh && touch authorized_keys  # 把公钥粘贴到里面即可
+
+#创建用户并指定其家目录
+mkdir /home/second
+useradd fuck -d /home/second/fuck
 ```
 
 

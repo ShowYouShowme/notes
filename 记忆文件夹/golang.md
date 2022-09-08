@@ -147,6 +147,10 @@ var a int = 1
 var b int = 2
 
 c := 3 // 自动类型推导
+
+
+//一次赋值给多个,左边的a,b,c至少有一个是新变量
+a,b,c := 1,2,3
 ```
 
 
@@ -939,7 +943,9 @@ func TestVarParam(t *testing.T)  {
 
 1. 作用：函数延迟执行，在调用函数退出前执行，主要用于释放资源
 
-2. 案例
+2. 执行次序：一个函数里存在多个defer时，后面的defer先执行
+
+3. 案例
 
    ```go
    // 延迟执行
@@ -4102,7 +4108,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                         
+   >                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5085,3 +5091,184 @@ func main() {
 
 
 
+
+
+# 第二十四章 sqlite3
+
+1. 安装依赖
+
+   ```shell
+   #官网:https://github.com/mattn/go-sqlite3
+   go get github.com/mattn/go-sqlite3
+   ```
+
+   
+
+2. 安装gcc
+
+   ```shell
+   #windows,设置环境变量;linux下直接用yum安装即可
+   wget https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev0/x86_64-12.2.0-release-win32-seh-rt_v10-rev0.7z
+   ```
+
+3. 示例代码
+
+   ```go
+   package main
+   
+   import (
+   	"database/sql"
+   	"fmt"
+   	_ "github.com/mattn/go-sqlite3"
+   	"log"
+   	"os"
+   )
+   
+   func main() {
+   	os.Remove("./foo.db")
+   
+   	db, err := sql.Open("sqlite3", "./foo.db")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	defer db.Close()
+   
+   	sqlStmt := `
+   	create table foo (id integer not null primary key, name text);
+   	delete from foo;
+   	create table IF NOT EXISTS photo (id integer not null primary key, data blob);
+   	delete from photo;
+   	`
+   	_, err = db.Exec(sqlStmt)
+   	if err != nil {
+   		log.Printf("%q: %s\n", err, sqlStmt)
+   		return
+   	}
+   
+       // 事务操作
+   	tx, err := db.Begin()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	stmt, err := tx.Prepare("insert into foo(id, name) values(?, ?)")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	defer stmt.Close()
+   	for i := 0; i < 100; i++ {
+   		_, err = stmt.Exec(i, fmt.Sprintf("こんにちは世界%03d", i))
+   		if err != nil {
+   			log.Fatal(err)
+   		}
+   	}
+   	err = tx.Commit()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   
+       //查询
+   	rows, err := db.Query("select id, name from foo")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	defer rows.Close()
+   	for rows.Next() {
+   		var id int
+   		var name string
+   		err = rows.Scan(&id, &name)
+   		if err != nil {
+   			log.Fatal(err)
+   		}
+   		fmt.Println(id, name)
+   	}
+   	err = rows.Err()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   
+   	stmt, err = db.Prepare("select name from foo where id = ?")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	defer stmt.Close()
+   	var name string
+   	err = stmt.QueryRow("3").Scan(&name)
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	fmt.Println(name)
+   
+       // 删除
+   	_, err = db.Exec("delete from foo")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   
+       // 插入
+   	_, err = db.Exec("insert into foo(id, name) values(1, 'foo'), (2, 'bar'), (3, 'baz')")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+       
+       // 更新
+   	_, err = db.Exec("update foo set name='nash' where id = 2")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   
+   	rows, err = db.Query("select id, name from foo")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	defer rows.Close()
+   	for rows.Next() {
+   		var id int
+   		var name string
+   		err = rows.Scan(&id, &name)
+   		if err != nil {
+   			log.Fatal(err)
+   		}
+   		fmt.Println(id, name)
+   	}
+   	err = rows.Err()
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+       
+       // 二进制数据操作
+   	stmt, err = db.Prepare("insert into photo(id, data) values(?, ?)")
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	defer stmt.Close()
+   	var content = []byte{19, 22, 33, 47, 58, 60}
+   	_, err = stmt.Exec(2, content)
+   	if err != nil {
+   		log.Fatal(err)
+   	}
+   	fmt.Println(name)
+   
+   	{
+   		rows, err = db.Query("select id, data from photo where id = 2")
+   		if err != nil {
+   			log.Fatal(err)
+   		}
+   		defer rows.Close()
+   		for rows.Next() {
+   			var id int
+   			var name []byte
+   			err = rows.Scan(&id, &name)
+   			if err != nil {
+   				log.Fatal(err)
+   			}
+   			fmt.Println(id, name)
+   		}
+   		err = rows.Err()
+   		if err != nil {
+   			log.Fatal(err)
+   		}
+   	}
+   }
+   ```
+
+   

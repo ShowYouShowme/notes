@@ -19,7 +19,7 @@
    "sourceMap": true,
    "outDir": "./bin",
    "allowJs": true,
-   "target": "es6",
+   "target": "es2016",
    ```
 
 
@@ -34,18 +34,19 @@
 
 2. 断点调试
 
-   > 1. webstorm
+   > 1. webstorm：推荐使用
    >
    >    在ts代码里面打断点，然后启动bin目录下生成的js文件即可
    >
    >    ```shell
+   >    0.按照上面修改tsconfig.json的四个配置
    >    1.点击run
    >    2.点击Edit configurations
    >    3.设置JavaScript file:bin\index.js
    >    4.在ts里面打断点:比如在index.ts里面打断点就能调试了
    >    ```
    >
-   >    
+   > 
    >
    > 2. vscode
    >
@@ -267,13 +268,13 @@ npm install @types/node
    >    ```shell
    >    # 精确安装指定模块版本
    >    npm install gulp-concat --save-exact 或 npm install gulp-concat –E
-   >                
+   >                   
    >    # package.json文件里"dependencies"属性的
-   >                
+   >                   
    >    "dependencies": {
-   >                
+   >                   
    >        "gulp-concat": "2.6.1"   //注意此处：版本号没有 ^
-   >                
+   >                   
    >    }
    >    ```
    >
@@ -384,6 +385,7 @@ module.exports = {
 ## 方法一
 
 ```javascript
+//引入自己写的模块
 import {PI, Sum} from "./utility"
 
 console.log(PI)
@@ -403,6 +405,7 @@ console.log("...")
 
 ```javascript
 //需要先安装依赖:npm i --save-dev @types/node
+//引入自己写的模块
 const Helper = require("./utility") // 注意和方法一的区别
 console.log(Helper.PI)
 
@@ -419,6 +422,7 @@ console.log("...")
 
 ```javascript
 //npm install ws --save
+//引入nodejs或者npm install安装的模块
 const WS = require("ws"); //引入nodejs的模块
 
 
@@ -438,4 +442,38 @@ console.log("....")
 ```
 
 
+
+
+
+处理JSON
+
+```javascript
+//一般是发起http请求时用
+interface IPerson{
+    name ?: string;
+    age  ?: number;
+}
+
+let s2 : string = '{\"name\":\"powell\",\"age\":28,\"address\":\"/home/url/page.html\"}'
+let p : IPerson = JSON.parse(s2)
+console.log(p.name + " " + p.age)
+console.log("successful")
+```
+
+
+
+# Interface的用法
+
+```typescript
+interface IPerson{
+    name ?: string;
+    age  ?: number;
+}
+
+let p : IPerson = {}
+p.age = 1290;
+p.name = "trump";
+console.log(JSON.stringify(p))
+console.log("successful")
+```
 

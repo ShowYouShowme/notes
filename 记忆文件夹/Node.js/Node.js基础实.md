@@ -164,13 +164,25 @@ npm install @types/node
    npm config set proxy=http://127.0.0.1:8090
    ```
 
-4. 全局安装
+4. 查看包的版本信息
+
+   ```shell
+   #查看最新版本
+   npm view gulp version 
+   
+   #查看全部版本
+   npm view gulp versions
+   ```
+
+   
+
+5. 全局安装
 
    ```shell
    npm install ${包名} -g
    ```
 
-5. 安装
+6. 安装
 
    ```shell
    npm install ${包名}
@@ -184,7 +196,7 @@ npm install @types/node
    npm install
    ```
 
-6. 执行`package.json`里面的指令
+7. 执行`package.json`里面的指令
 
    ```shell
    npm run ${cmd}
@@ -196,29 +208,46 @@ npm install @types/node
      },
    npm run start
    npm run build
+   
+   #完整的package.json的配置
+   {
+     "name": "interface_demo",
+     "version": "1.0.0",
+     "description": "",
+     "main": "index.js",
+     "scripts": {
+       "build": "tsc",
+       "start": "node .\\bin\\index.js",
+       "test": "echo \"Error: no test specified\" && exit 1"
+     },
+     "keywords": [],
+     "author": "",
+     "license": "ISC"
+   }
+   
    ```
 
    
 
-7. 卸载
+8. 卸载
 
    ```shell
    npm uninstall ${包名}
    ```
 
-8. 更新
+9. 更新
 
    ```shell
    npm update ${包名}
    ```
 
-9. 检查包是否过时
+10. 检查包是否过时
 
    ```shell
    npm outdated
    ```
 
-10. 列出安装的全部包
+11. 列出安装的全部包
 
    ```shell
    npm ls
