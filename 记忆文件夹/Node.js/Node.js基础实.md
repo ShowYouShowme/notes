@@ -1799,3 +1799,176 @@ setInterval(function (){
 }, 1500)
 ```
 
+
+
+# 第十七章 异常处理
+
+1. nodejs没有main函数，因此无法try...catch整个main函数来捕获全部异常
+
+2. 捕获全部异常的方法
+
+   ```javascript
+   process.on('uncaughtException',function (err){
+       console.log("有一个未捕获的异常",err) // ws是否还能正常监听呢
+   })
+   ```
+
+3. 回调函数里面的异常不能在外面捕获
+
+
+
+
+
+# 第十八章 HTTP客户端
+
+
+
+## 18.1 安装
+
+```shell
+#website:https://github.com/request/request
+npm install request
+```
+
+
+
+## 18.2 GET请求
+
+```javascript
+request({
+    url: "http://192.168.2.110:8100",
+    method: "GET",
+},function(err : any, response : any,body : any){
+    if(err){
+        console.log(err)
+    }
+    console.log(response)
+    console.log(body)
+})
+```
+
+
+
+## 18.3 POST请求
+
+```javascript
+request({
+    url: "http://192.168.2.110:9002/server/login/checklogintoken",
+    method : "POST",
+    json : true,
+    headers:{
+        "content-type": "application/json"
+    },
+    body:{
+        "token" : "65bad951c31b8777d512d832bcc633d718a1411f"
+    }
+},function(err : any, response : any, body:any){
+    if(err){
+        console.log(err)
+    }
+    console.log(response)
+    console.log(body)
+})
+```
+
+
+
+
+
+# 第十九章  技巧
+
+
+
+## 19.1 对象合并
+
+```javascript
+let obj = {
+    name : "nash",
+    age  : 128
+};
+
+
+let person = {
+    uid : 99,
+    ...obj
+}
+
+console.log(person)
+```
+
+
+
+
+
+
+
+# 第二十章 日志
+
+
+
+## 20.1 安装
+
+```shell
+npm install log4js
+```
+
+
+
+
+
+## 20.2 用法
+
+
+
+### 20.2.1 打印日志到控制台
+
+```javascript
+var log4js = require("log4js");
+var logger = log4js.getLogger();
+logger.level = "debug";
+logger.debug("Some debug messages");
+```
+
+
+
+### 20.2.2 打印日志到文件
+
+```javascript
+const log4js = require("log4js");
+log4js.configure({
+  appenders: { cheese: { type: "file", filename: "cheese.log" } },
+  categories: { default: { appenders: ["cheese"], level: "error" } },
+});
+
+const logger = log4js.getLogger("cheese");
+logger.trace("Entering cheese testing");
+logger.debug("Got cheese.");
+logger.info("Cheese is Comté.");
+logger.warn("Cheese is quite smelly.");
+logger.error("Cheese is too ripe!");
+logger.fatal("Cheese was breeding ground for listeria.");
+```
+
+
+
+
+
+### 20.2.3 按日期滚动
+
+```javascript
+import * as log4js from 'log4js';
+log4js.configure({
+    appenders: { cheese: { type: "dateFile", filename: "cheese", pattern:'yyyy-MM-dd.log', alwaysIncludePattern: true,} },
+    categories: { default: { appenders: ["cheese"], level: "error" } },
+})
+
+let logger = log4js.getLogger();
+logger.trace("this is trace");
+logger.debug('this is debug');
+logger.info('this is info');
+logger.warn('this is warn');
+logger.error('this is error[]');
+logger.fatal('this is fatal');
+console.log(".......")
+```
+

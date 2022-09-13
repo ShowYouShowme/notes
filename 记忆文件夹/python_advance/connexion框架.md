@@ -164,6 +164,7 @@
    + POST请求，数据用json序列化
 
      ```yaml
+       # def sign_up(data: str) -> str:
        /sign_up:
          post:
            summary: 注册
@@ -205,5 +206,5 @@
              minLength: 1
              maxLength: 100
      ```
-
+     
      
