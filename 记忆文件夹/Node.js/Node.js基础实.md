@@ -1683,55 +1683,91 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 
 1. 函数体内部出现`await`关键词时，要在function前加`async`
 
-2. 函数返回值为`Promise`时，调用该函数时加上`await`；在`Promise`里面使用`resolve`传出参数
+2. 函数返回值为`Promise`时，调用该函数时加上`await`；在`Promise`里面使用resolve或者reject传出参数
 
 3. 示例代码
 
-   + 示例一
-
-     ```javascript
-     function __settimeout(ms : number):Promise<void>{
-         return new Promise<void>((resolve, reject)=>{
-             setTimeout(()=>{
-                 resolve();
-             }, ms);
-         })
-     }
-     
-     async function sync_time_out(){
-         await __settimeout(2000);
-         console.log("after 2 s!");
-     }
-     
-
-  // 最简单的方法
-     async function t1(){
-      console.log("begin...")
-         await new Promise((resolve, reject)=>{
-             setTimeout(resolve,2000)
-         })
-         console.log("after 2 seconds")
-     }
-     ```
-
-   + 示例二
+   ```javascript
+   //利用promise + await 将回调改为顺序执行
+   async function httpGet(){
+       let [err,response, body] = await new Promise(function(resolve, reject){
+           request({
+               url: "http://127.0.0.1:8000/person.json",
+               method: "GET",
+           },function(err , response : any,body : any){
+               resolve([err, response, body])
+           })
+       }) as [any,any,string] ;
+       console.log(`err : ${err}`);
+       console.log(`response : ${response}`);
+       console.log(`body:${body}`);
    
-     ```javascript
-     // 函数声明: keys(pattern: string, cb?: Callback<string[]>): R;
-     function __keys(pattern : string):Promise<string[]>{
-         return new Promise<string[]>((resolve , reject) => {
-             redis_client.keys(pattern,(err: Error | null, reply: string[]) : void =>{
-                 if (err) {
-                     reject(err);
-                 }else{
-                     resolve(reply);
-                 }
-             });
-         })
-     }
-     ```
-
-
+       return body;
+   }
+   
+   async function t1() {
+       let val = await httpGet();
+       console.log('val = ',val);
+   }
+   t1();
+   ```
+   
+   ```javascript
+   //等待多个任务执行完成
+   async function check() {
+       let v = await testPromise();
+       console.log('v = ',v);
+   
+       let p1 = new Promise(function(resolve, reject){
+           setTimeout(()=>{
+               console.log('promise 1 finished');
+               resolve(128);
+           },3000)
+       })
+   
+       let p2 = new Promise(function(resolve, reject){
+           setTimeout(()=>{
+               console.log('promise 2 finished');
+               throw new Error('fuck you!')
+               reject(329);
+           },7000)
+       })
+   
+       Promise.all([p1,p2]).then(res =>{
+           console.log('res : ', res);
+       }, reason =>{
+           console.log(`捕获异常:${reason}`);
+       })
+   }
+   ```
+   
+   ```javascript
+   //await 与分支
+   async function testReturn(params:number) {
+       let val = params % 2;
+       if(val == 0){
+           let v2 = await new Promise(function(resolve, reject){
+               setTimeout(function(){
+                   resolve(120);
+               },3000)
+           }) as number;
+           val = val + v2;
+       }else{
+           val += 50;
+       }
+       val += 12;
+       return val;
+   }
+   
+   async function getBranchRes(params:number) {
+       let v = await testReturn(params);
+       console.log('v = ',v);
+   }
+   
+   getBranchRes(2);
+   ```
+   
+   
 
 
 

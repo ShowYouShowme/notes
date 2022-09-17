@@ -103,6 +103,9 @@ sudo docker run --name test3  --hostname test3  -d  centos:centos7.9.2009 /path/
 
 # 方法三： 命令如果执行完毕了，或者叫指定的应用终结时，容器会自动停止，加上-t 后阻止容器终止
 sudo docker run --name test3  --hostname test3  -td  centos:centos7.9.2009 /bin/bash
+
+#将端口映射到环回网卡
+docker run -it -d -p 127.0.0.1:5000:5000 docker.io/centos:latest /bin/bash
 ```
 
 
@@ -293,7 +296,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                     
+   >                                        
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
