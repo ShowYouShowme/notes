@@ -374,6 +374,8 @@ $username ALL=(ALL) NOPASSWD:/bin/mkdir,/bin/rmdir
   切换到非登录用户shell
   
   ```shell
+  #创建非登录用户
+  useradd -s /sbin/nologin ftp
   # 切换到非登录用户ftp的shell
   su -s /bin/bash ftp
   
@@ -1019,6 +1021,12 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >    ```shell
   >    nc -l 9999
+  >    
+  >    nc -l 127.0.0.1 5900
+  >    
+  >    nc -l 172.31.2.68 5900
+  >    
+  >    nc -l 0.0.0.0 5900
   >    ```
   >
   > 2. 监听UDP端口
@@ -1042,7 +1050,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                                            
+  >          
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1066,7 +1074,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                                            
+  >          
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1084,14 +1092,14 @@ tcp的客户端，测试端口是否处于监听状态。
   >    # 输入时,按下回车数据才会发送;Telnet 按下任意键都会发送数据
   >    nc ${host} ${port}
   >    ```
-  >    
+  >
   > 7. 连接unix 域套接字
   >
   >    ```shell
   >    nc -U ./sample-socket
   >    ```
   >
-  >    
+  > 
   >
   > 
   >
@@ -1589,18 +1597,34 @@ ssh-copy-id -p 22 root@192.168.1.2
 
 1. 配置文件：/etc/ssh/sshd_config
 
-1. 禁止root登录
+2. 禁止root登录
 
    ```shell
    PermitRootLogin no
    ```
 
-2. 禁止密码登录
+3. 禁止密码登录
 
    ```shell
    AuthorizedKeysFile   .ssh/authorized_keys   //公钥公钥认证文件
    PubkeyAuthentication yes   //可以使用公钥登录
    PasswordAuthentication no  //不允许使用密码登录
+   ```
+
+4. 限制用户只能执行sftp连接，不能ssh登录
+
+   ```shell
+   Subsystem sftp internal-sftp
+   Match User fu           # 匹配用户
+   X11Forwarding no        # 禁止X11转发
+   AllowTcpForwarding no   # 禁止tcp转发
+   ForceCommand internal-sftp
+   
+   
+   # ChrootDirectory  不需要配置,配置这个需要copy大量的动态链接库，非常麻烦
+   ```
+
+   
 
 
 
@@ -2666,6 +2690,14 @@ cd .ssh && touch authorized_keys  # 把公钥粘贴到里面即可
 #创建用户并指定其家目录
 mkdir /home/second
 useradd fuck -d /home/second/fuck
+```
+
+
+
+## 删除用户
+
+```shell
+userdel -r nash
 ```
 
 

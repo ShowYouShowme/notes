@@ -221,4 +221,29 @@ db.dropDatabase()
    db.serverStatus().connections
    ```
 
+
+
+
+
+
+
+
+# 第三章  备份
+
+
+
+## 3.1 导出
+
+1. 导出为json文件
+
+   ```shell
+   mongoexport --uri="mongodb://127.0.0.1:27017/test" --collection=runoob --out=my.json --pretty
+   ```
+
+2. 导出为BSON
+
+   ```shell
+   mongodump -d test -o /home/roglic/mongo  --collection runoob
+   ```
+
    

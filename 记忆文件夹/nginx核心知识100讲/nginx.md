@@ -108,6 +108,16 @@ def post_greeting(term: str) -> str:
     return response
 ```
 
+```javascript
+//cocos-creator跨域处理
+//1--nginx要像上面那样配置
+//2--代码要如下面
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://example.com/', true);
+xhr.withCredentials = false; //注意这里
+xhr.send(null);
+```
+
 
 
 ## 利用反向代理解决跨域

@@ -268,13 +268,13 @@ npm install @types/node
    >    ```shell
    >    # 精确安装指定模块版本
    >    npm install gulp-concat --save-exact 或 npm install gulp-concat –E
-   >                   
+   >                      
    >    # package.json文件里"dependencies"属性的
-   >                   
+   >                      
    >    "dependencies": {
-   >                   
+   >                      
    >        "gulp-concat": "2.6.1"   //注意此处：版本号没有 ^
-   >                   
+   >                      
    >    }
    >    ```
    >
@@ -407,6 +407,9 @@ console.log("...")
 //需要先安装依赖:npm i --save-dev @types/node
 //引入自己写的模块
 const Helper = require("./utility") // 注意和方法一的区别
+
+//或者   效果和上面的一样
+//import  Helper = require("./utility")
 console.log(Helper.PI)
 
 let a : number = 12

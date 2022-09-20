@@ -644,7 +644,47 @@ let server = app.listen(8081);
      
      ```
 
-     
+
+
+
+# 第三章  express 4
+
+```javascript
+// 处理带json数据的post请求代码和express 3不一样了
+
+// 版本 4.18.1
+
+// 安装:npm install  express@4.18.1 --save
+import express = require('express');
+import bodyParser = require("body-parser");
+const port = 3001;
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.get('/', (req, res)=>{
+    res.send('hello world!');
+});
+
+app.post('/user', (req, res)=>{
+    interface Request{
+        name : string,
+        age  : number,
+        money: number
+    };
+    let ask : Request = req.body;
+    console.log(`BODY : ${ask}`);
+    res.send(JSON.stringify(req.body));
+});
+
+
+
+app.listen(port, '127.0.0.1', ()=>{
+    console.log(`Example app listening on port ${port}`);
+});
+```
+
+
 
 
 
