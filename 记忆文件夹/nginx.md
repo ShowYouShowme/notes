@@ -1017,7 +1017,27 @@ st->op2->op3->op4->op5->op6
 
 # 第六章 性能优化
 
+1. 设置最大连接数
 
+   ```shell
+   #工作进程数，一般和cpu个数一致
+   worker_processes  1;
+   
+   #一个进程允许最大连接数，可以设置为 65536
+   worker_connections  1024;
+   
+   #查看系统级和用户级最大限制
+   cat /proc/sys/fs/file-max
+   
+   ulimit -n  # 这里默认是1024，要设置为65536
+   
+   
+   #php-fpm最大连接数设置
+   pm = static
+   pm.max_children = 100  #启动时即生成 100个工作进程，一般来讲可以设置为cpu的个数
+   ```
+
+   
 
 # 第七章 Nginx与Openresty
 
