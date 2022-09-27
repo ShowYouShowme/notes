@@ -2,28 +2,87 @@
 
 ## 1.1 yum安装
 
-```shell
-# 不管是redis还是mysql或者gcc这种工具，尽量用yum安装，源码编译安装太麻烦！
-# 如果C++开发过程需要用到对应sdk，比如openssl-devel之类，也可以考虑用yum安装，编译安装太麻烦了，或者干脆更换编程语言！
-# centos7
-yum install -y mariadb-server
+1. mariadb
 
-#启动
-systemctl start mariadb
+   ```shell
+   # 不管是redis还是mysql或者gcc这种工具，尽量用yum安装，源码编译安装太麻烦！
+   # 如果C++开发过程需要用到对应sdk，比如openssl-devel之类，也可以考虑用yum安装，编译安装太麻烦了，或者干脆更换编程语言！
+   # centos7
+   yum install -y mariadb-server
+   
+   #启动
+   systemctl start mariadb
+   
+   #开机启动
+   systemctl enable mariadb
+   
+   # 初始化
+   mysql_secure_installation
+   
+   ## 
+   0. 设置root密码(设置不设置都可以)  n
+   1. 去除匿名用户 y
+   2. 去除root远程登陆权限 y
+   3. 删除test库 y
+   4. 重新加载权限表 y
+   ```
 
-#开机启动
-systemctl enable mariadb
+2. mysql
 
-# 初始化
-mysql_secure_installation
+   ```shell
+   #下载yum源
+   wget https://dev.mysql.com/get/mysql80-community-release-el7-7.noarch.rpm
+   
+   #安装源
+   yum localinstall mysql80-community-release-el7-7.noarch.rpm
+   
+   #安装工具
+   sudo yum install -y yum-utils
+   
+   #查看所有的mysql
+   yum repolist all | grep mysql
+   
+   #查看当前激活的mysql
+   yum repolist enabled | grep "mysql.*-community.*"
+   
+   
+   #启用指定版本的mysql
+   yum-config-manager --disable mysql80-community
+   yum-config-manager --enable mysql57-community
+   
+   #检查当前启用版本是否为5.7
+   yum repolist enabled | grep mysql
+   
+   #安装mysql
+   yum install -y mysql-community-server
+   
+   #启动服务
+   systemctl  start mysqld
+   
+   #初始化设置
+   
+   ##获取初始密码
+   grep 'temporary password' /var/log/mysqld.log
+   
+   
+   ##初始化
+   mysql_secure_installation
+   
+   ## 注意:新密码必须包含大写字母、小写字母、数字、标点符号，且密码长度至少为 8
+   ## 这里会要求你输入初始密码
+   0. 设置root密码(设置不设置都可以)  n
+   1. 去除匿名用户 y
+   2. 去除root远程登陆权限 y
+   3. 删除test库 y
+   4. 重新加载权限表 y
+   
+   
+   
+   #查看mysql的全部安装文件
+   rpm -ql mysql-community-server | less
+   ```
 
-## 
-0. 设置root密码(设置不设置都可以)  n
-1. 去除匿名用户 y
-2. 去除root远程登陆权限 y
-3. 删除test库 y
-4. 重新加载权限表 y
-```
+   
 
 
 
