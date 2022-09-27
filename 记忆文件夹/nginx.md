@@ -206,7 +206,8 @@ worker_processes  1;
 
 
 events {
-    worker_connections  1024;
+    worker_connections  1024; # 最大连接数配置  同时链接超过后会链接失败,生产上要改大
+							  # 同时还要修改ulimit 的参数 和  Mysql的最大连接数
 }
 
 http{
@@ -721,6 +722,18 @@ st->op2->op3->op4->op5->op6
    }
    ```
 
+   ```nginx
+   #利用try_files返回配置文件给client
+       server{
+            listen 8200;
+            root game_config/;
+            location /getShopConfig{
+                   default_type application/json;
+                   try_files /shop.json /error.json;
+           }   
+       }  
+   ```
+
    
 
 2. ngx_http_mirror_module
@@ -1036,8 +1049,6 @@ st->op2->op3->op4->op5->op6
    pm = static
    pm.max_children = 100  #启动时即生成 100个工作进程，一般来讲可以设置为cpu的个数
    ```
-
-   
 
 # 第七章 Nginx与Openresty
 
