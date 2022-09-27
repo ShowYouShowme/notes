@@ -1,6 +1,6 @@
-# 安装
+# 第一章 安装
 
-## yum安装
+## 1.1 yum安装
 
 ```shell
 # 不管是redis还是mysql或者gcc这种工具，尽量用yum安装，源码编译安装太麻烦！
@@ -27,13 +27,19 @@ mysql_secure_installation
 
 
 
-## docker安装
+## 1.2 docker安装
+
+```shell
+docker pull mysql:5.7
+```
 
 
 
+# 第二章 常见操作
 
 
-#  导出数据
+
+##  2.1 导出数据
 
 1. 只导出表结构
 
@@ -69,9 +75,7 @@ mysql_secure_installation
 
 
 
-
-
-# 导入数据
+## 2.2 导入数据
 
 1. 创建数据库
 
@@ -87,6 +91,9 @@ mysql_secure_installation
    mysql -u${user} -p${passwd} ${dbName} < ${sqlFile}
    
    mysql -uroot -proot@appinside db_tars < db_tars.sql
+   
+   #也可以不指定DB
+   mysql -uroot -ptars2015 < tables_xxl_job.sql
    ```
 
 3. 删除数据库
@@ -98,100 +105,44 @@ mysql_secure_installation
 
 
 
-# 增加字段
 
-> 用Navicat Premium增加字段，提示Incorrect column name 'aa' 的原因:字段里面包含空格
-
-
-
-
-
-# 常用命令
+## 2.3 服务管理
 
 1. 重启
 
    ```shell
-   # 第一种方法
-   service mysqld restart 
-   
-   # 第二种方法
-   /etc/init.d/mysql restart
+   systemctl restart mariadb
    ```
 
-2. 登录
+2. 停止服务
 
    ```shell
-   /usr/local/mysql-5.6.26/bin/mysql -uroot -p
+   systemctl stop mariadb
    ```
 
-3. 停止服务
+3. 启动服务
 
    ```shell
-   service mysqld stop
+   systemctl start mariadb
    ```
 
-4. 启动服务
+4. 查看服务状态
 
    ```shell
-   service mysqld start
+   systemctl status mariadb
    ```
 
-5. 列出全部数据库
+5. 设置开机启动
 
    ```shell
-   SHOW DATABASES;
-   ```
-
-6. 使用数据库
-
-   ```shell
-   use ${dbName};
-   ```
-
-7. 列出全部表
-
-   ```shell
-   SHOW TABLES;
+   systemctl enable mariadb
    ```
 
    
 
 
 
-# 删除没有密码的用户
-
-```shell
-use mysql;
-# 查看用户的权限
-select host,user,password from user; # 5.6版本
-
-select user,authentication_string,host from user; # 5.7版本
-
-drop user 'zhangsan'@'%';
-
-drop user '${user}'@'${host}';
-
-# 没有名称的用户
-drop user ' '@'%';
-
-# 刷新权限
-flush  privileges;
-
-# 赋予权限
-grant all on *.* to 'tars'@'%' identified by 'tars2015' with grant option;
-```
-
-
-
-# 数据库连接数太多
-
-
-
-
-
-
-
-# 锁
+## 2.3 锁
 
 1. **写锁[排他锁]**
 
@@ -211,38 +162,63 @@ grant all on *.* to 'tars'@'%' identified by 'tars2015' with grant option;
 
 
 
-# 创建用户
+## 2.4 用户管理
 
-```mysql
->use mysql;
+1. 创建用户
 
->create user gitea identified by "123456";
+   ```mysql
+   >use mysql;
+   
+   >create user gitea identified by "123456";
+   
+   >flush privileges;
+   ```
 
->flush privileges;
-```
+2. 配置账户权限
+
+   ```mysql
+   mysql > GRANT ALL PRIVILEGES ON *.* TO '${账号}'@'%' IDENTIFIED BY '${访问密码}' WITH GRANT OPTION;
+   mysql > flush privileges;
+   
+   
+   ## 限定账号tars只能在10.10.10.23上面登录
+   grant all on *.* to 'tars'@'10.10.10.23' identified by 'tars2015';
+   
+   # 授予局域网172.31.31 里面的任何机器
+   grant all on db_tars.* to 'tars'@'172.31.31.%' identified by 'tars2015';
+   
+   
+   grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密码}";
+   ```
+
+3. 删除无密码用户
+
+   ```shell
+   use mysql;
+   # 查看用户的权限
+   select host,user,password from user; # 5.6版本
+   
+   select user,authentication_string,host from user; # 5.7版本
+   
+   drop user 'zhangsan'@'%';
+   
+   drop user '${user}'@'${host}';
+   
+   # 没有名称的用户
+   drop user ' '@'%';
+   
+   # 刷新权限
+   flush  privileges;
+   
+   # 赋予权限
+   grant all on *.* to 'tars'@'%' identified by 'tars2015' with grant option;
+   ```
+
+   
 
 
 
-# 配置账户权限
-
-```shell
-mysql > GRANT ALL PRIVILEGES ON *.* TO '${账号}'@'%' IDENTIFIED BY '${访问密码}' WITH GRANT OPTION;
-mysql > flush privileges;
-
-
-## 限定账号tars只能在10.10.10.23上面登录
-grant all on *.* to 'tars'@'10.10.10.23' identified by 'tars2015';
-
-# 授予局域网172.31.31 里面的任何机器
-grant all on db_tars.* to 'tars'@'172.31.31.%' identified by 'tars2015';
-
-
-grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密码}";
-```
-
-
-
-# 连接数
+## 2.5 连接数
 
 1. 查看配置的最大连接数
 
@@ -263,6 +239,9 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 
    ```shell
    show  processlist;
+   
+   # 杀死指定任务
+   kill ${id};
    ```
 
 4. 查看MySQL服务器状态
@@ -277,7 +256,7 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 
 
 
-# 登录
+## 2.6 登录
 
 1. 登录命令
 
@@ -310,122 +289,82 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
 
 
 
-# 日志
-
-## 1 日志类型
-
-> 1. 重做日志(redo log)
->
->    ```
->    InnoDB的事务日志
->    ```
->
-> 2. 回滚日志(undo log)
->
->    ```
->    InnoDB的事务日志
->    ```
->
-> 3. 二进制日志(binlog)
->
->    ```
->    记录DDL(数据定义语言)和DML(数据操作语言)语句并包含语句执行时间
->    ```
->
-> 4. 错误日志(errorlog)
->
-> 5. 慢查询日志(slow query log)
->
-> 6. 一般查询日志(general log)
->
-> 7. 中继日志(relay log)
->
->    ```
->    MySQL通过binlog和relay log进行主从数据同步，binlog由主库产生，从库通过复制io线程拉取binlog，写入到relay log中，sql线程读取relay log中的事务信息，并进行应用！
->    ```
->
->    
+## 2.7 日志
 
 
 
-## 2 查看日志路径
+### 2.7.1 日志类型
 
-> 1. general_log_file
->
-> ```shell
-> mysql> show variables like 'general_log_file';
-> 
-> # /usr/local/mysql/data/localhost.log
-> ```
->
-> 2. log_error
->
-> ```shell
-> mysql> show variables like 'log_error';
-> 
-> # /usr/local/mysql/data/localhost.localdomain.err
-> ```
->
-> 3. slow_query_log_file
->
-> ```shell
-> mysql> show variables like 'slow_query_log_file';
-> 
-> # /usr/local/mysql/data/localhost-slow.log
-> ```
+ 1. 重做日志(redo log)
+
+    ```
+    InnoDB的事务日志
+    ```
+
+ 2. 回滚日志(undo log)
+
+    ```
+    InnoDB的事务日志
+    ```
+
+ 3. 二进制日志(binlog)
+
+    ```
+    记录DDL(数据定义语言)和DML(数据操作语言)语句并包含语句执行时间
+    ```
+
+ 4. 错误日志(errorlog)
+
+ 5. 慢查询日志(slow query log)
+
+ 6. 一般查询日志(general log)
+
+ 7. 中继日志(relay log)
+
+    ```
+    MySQL通过binlog和relay log进行主从数据同步，binlog由主库产生，从库通过复制io线程拉取binlog，写入到relay log中，sql线程读取relay log中的事务信息，并进行应用！
+    ```
 
 
 
 
+### 2.7.2 日志路径
 
-# Length和decimals
+ 1. general_log_file
 
-+ 细节
+ ```shell
+ mysql> show variables like 'general_log_file';
+ 
+ # /usr/local/mysql/data/localhost.log
+ ```
 
-  1. 字段数据类型为CHAR,VARCHAR时Length指字符串的长度
+ 2. log_error
 
-  2. 数据类型为TINYINT、SMALLINT、MEDIUMINT、INT和BIGINT时，Length指**显示宽度**，不用填写！
+ ```shell
+ mysql> show variables like 'log_error';
+ 
+ # /usr/local/mysql/data/localhost.localdomain.err
+ ```
 
-  3. 小数
+ 3. slow_query_log_file
 
-     + 浮点数
-
-       ```shell
-       # FLOAT 4 字节
-       
-       # DOUBLE 8 字节
-       
-       # 定义浮点数时不用指定Length和decimals,否则无法迁移到其它数据库
-       ```
-
-     + 定点数
-
-       ```shell
-       
-       # DECIMAL 用于存放精确的小数,定义时必须填写Length和decimals
-       
-       # 定义
-       # P是表示有效数字数的精度(即Length)，P范围为1〜65
-       # D是表示小数点后的位数,范围是(0~30)
-       column_name  DECIMAL(P,D);
-       
-       # 例子
-       amount DECIMAL(6,2);
-       
-       # amount的范围是-9999.99到9999.99
-       ```
-
-       
-
-+ 总结
-
-  > 数据库里使用小数的情况很少，只有字段为CHAR和VARCHAR时需要关注Length，decimals不用管！
+ ```shell
+ mysql> show variables like 'slow_query_log_file';
+ 
+ # /usr/local/mysql/data/localhost-slow.log
+ ```
 
 
 
 
 
-# 数据类型
+
+
+
+
+
+
+## 2.8 数据类型
 
 1. 日期和时间类型
 
@@ -501,93 +440,446 @@ grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密�
    LONGBLOB 														可变长二进制，最多2^32-1个字节
    ```
 
+5. Length和decimals
+
+   + 字段数据类型为CHAR,VARCHAR时Length指字符串的长度
+
+   + 数据类型为TINYINT、SMALLINT、MEDIUMINT、INT和BIGINT时，Length指**显示宽度**，不用填写！
+
+   + 小数
+
+     + 浮点数
+
+       ```shell
+       #FLOAT 4 字节
+       
+       #DOUBLE 8 字节
+       
+       #定义浮点数时不用指定Length和decimals,否则无法迁移到其它数据库
+       ```
+
+     + 定点数
+
+       ```shell
+       #DECIMAL 用于存放精确的小数,定义时必须填写Length和decimals
+       
+       #定义
+       #P是表示有效数字数的精度(即Length)，P范围为1〜65
+       #D是表示小数点后的位数,范围是(0~30)
+       column_name  DECIMAL(P,D);
+       
+       #例子
+       amount DECIMAL(6,2);
+       
+       #amount的范围是-9999.99到9999.99
+       ```
+
+   + 数据库里使用小数的情况很少，只有字段为CHAR和VARCHAR时需要关注Length，decimals不用管！
+
+
+
+
+## 2.9 统计
+
+```mysql
+# 获取当前日期和时间
+SELECT NOW();
+
+SELECT CURDATE(); # 获取当前日期
+
+SELECT CURTIME(); # 返回当前时间
+
+SELECT * FROM plot_statistics WHERE DATE(log_time) = "2021-07-07";  # 统计某一天
+
+
+SELECT * FROM plot_statistics WHERE DATE(log_time) = CURDATE();  # 统计当天
+
+select * from plot_statistics where date(log_time) = date_sub(CURDATE()  ,interval 1 day); # 统计前一天
+
+
+select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # 统计昨天和今天的
+```
+
+
+
+## 2.10 时区
+
+
+
+### 2.10.1 查看时区
+
+```shell
+show variables like "%time_zone%";
+```
+
+
+
+
+
+### 2.10.2 设置时区
+
+```shell
+#配置文件路径/etc/my.cnf
+[mysqld] 
+default-time-zone='+08:00'
+```
+
+
+
+
+
+### 2.10.3 临时修改时区
+
+```shell
+set time_zone = '+8:00';
+set global time_zone='+08:00';
+```
+
+
+
+### 2.10.4 时区转换函数
+
+```shell
+CONVERT_TZ
+```
+
+
+
+
+
+## 2.11 常用SQL语句
+
+
+
+
+### 2.11.1 清空表
+
+   ```mysql
+   TRUNCATE TABLE tb_student_course;
+   ```
+
+### 2.11.2 查询
+
+   ```mysql
+   SELECT * FROM tb_student_course;
+   ```
+
+### 2.11.3 插入数据
+
+   ```mysql
+   INSERT INTO tb_courses \
+             (course_id,course_name,course_grade,course_info) \
+       	  VALUES(1,'Network',3,'Computer Network');
+   ```
+
+### 2.11.4 修改数据
+
+   ```mysql
+   UPDATE tb_courses_new \
+       SET course_name='DB',course_grade=3.5 \
+       WHERE course_id=2;
+   ```
+
+### 2.11.5 删除数据
+
+   ```mysql
+   -- 删除全部数据
+   DELETE FROM tb_courses_new;
+   
+   -- 删除指定数据
+   DELETE FROM tb_courses
+       WHERE course_id=4;
+   ```
+
+### 2.11.6 创建表
+
+   ```mysql
+   CREATE TABLE tb_courses \
+       ( \
+       course_id INT NOT NULL AUTO_INCREMENT, \
+       course_name CHAR(40) NOT NULL,\
+       course_grade FLOAT NOT NULL,\
+       course_info CHAR(100) NULL,\
+       PRIMARY KEY(course_id)\
+       );
+   ```
+
+### 2.11.7 创建数据库
+
+   ```mysql
+   CREATE DATABASE test_db;
+   ```
+
+### 2.11.8 查看数据库
+
+   ```mysql
+   SHOW DATABASES;
+   ```
+
+### 2.11.9 选择数据库
+
+   ```mysql
+   USE test_db;
+   ```
+
+   
+
+### 2.11.10 查看表
+
+```mysql
+SHOW TABLES;
+```
+
+### 2.11.11 查看表结构
+
+```mysql
+DESC tb_courses;
+```
+
+### 2.11.12 查看表结构和注释
+
+```mysql
+select table_schema,table_name,column_name,column_type,column_key,is_nullable,column_default,column_comment,character_set_name
+
+from information_schema.columns where table_schema='库名' and table_name='表名';
+```
+
+### 2.11.13 普通索引
+
+```mysql
+mysql> CREATE TABLE tb_stu_info
+    -> (
+    -> id INT NOT NULL,
+    -> name CHAR(45) DEFAULT NULL,
+    -> dept_id INT DEFAULT NULL,
+    -> age INT DEFAULT NULL,
+    -> height INT DEFAULT NULL,
+    -> INDEX(height)
+    -> );
+```
+
+
+​    
+
+### 2.11.14 唯一索引
+
+```mysql
+mysql> CREATE TABLE tb_stu_info2
+    -> (
+    -> id INT NOT NULL,
+    -> name CHAR(45) DEFAULT NULL,
+    -> dept_id INT DEFAULT NULL,
+    -> age INT DEFAULT NULL,
+    -> height INT DEFAULT NULL,
+    -> UNIQUE INDEX(height)
+    -> );
+```
+
+### 2.11.15 约束
+
+1. 主键约束
+
+   ```mysql
+       mysql> CREATE TABLE tb_emp3
+           -> (
+               -> id INT(11) PRIMARY KEY,
+               -> name VARCHAR(25),
+               -> deptId INT(11),
+               -> salary FLOAT
+               -> );
+   ```
+
+2. 外键约束
+
+   ```mysql
+       mysql> CREATE TABLE tb_dept1
+           -> (
+           -> id INT(11) PRIMARY KEY,
+           -> name VARCHAR(22) NOT NULL,
+           -> location VARCHAR(50)
+           -> );
+           
+           
+           mysql> CREATE TABLE tb_emp6
+           -> (
+           -> id INT(11) PRIMARY KEY,
+           -> name VARCHAR(25),
+           -> deptId INT(11),
+           -> salary FLOAT,
+           -> CONSTRAINT fk_emp_dept1
+           -> FOREIGN KEY(deptId) REFERENCES tb_dept1(id)
+           -> );
+   ```
+
+3. 唯一约束
+
+   ```mysql
+       mysql> CREATE TABLE tb_dept2
+           -> (
+           -> id INT(11) PRIMARY KEY,
+           -> name VARCHAR(22) UNIQUE,
+           -> location VARCHAR(50)
+           -> );
+   ```
+
+4. 检查约束
+
+   ```mysql
+       mysql> CREATE TABLE tb_emp7
+           -> (
+           -> id INT(11) PRIMARY KEY,
+           -> name VARCHAR(25),
+           -> deptId INT(11),
+           -> salary FLOAT,
+           -> CHECK(salary>0 AND salary<100),
+           -> FOREIGN KEY(deptId) REFERENCES tb_dept1(id)
+           -> );
+   ```
+
+5. 非空约束
+
+   ```mysql
+       mysql> CREATE TABLE tb_dept4
+           -> (
+           -> id INT(11) PRIMARY KEY,
+           -> name VARCHAR(22) NOT NULL,
+           -> location VARCHAR(50)
+           -> );
+   ```
+
+6. 默认值约束
+
+   ```mysql
+       mysql> CREATE TABLE tb_dept3
+           -> (
+           -> id INT(11) PRIMARY KEY,
+           -> name VARCHAR(22),
+           -> location VARCHAR(50) DEFAULT 'Beijing'
+           -> );
+   ```
+
    
 
 
 
+### 2.11.16 查看默认引擎
 
-# mysql 客户端
+```mysql
+show engines \G;
+```
 
-***
 
 
 
-## phpmysqladmin
+## 2.12 压力测试
 
-***
+
+
+### 2.12.1 安装
 
 ```shell
-# 使用docker安装 登录界面使用mysql的账号和密码登录
-docker run --name myadmin -d -e PMA_HOST=178.128.61.189 -e PMA_PORT=8306 -p 8080:80 phpmyadmin/phpmyadmin:5.0.2
+yum -y install epel-release
+yum -y install sysbench
+```
 
 
-docker run --name myadmin -d -e PMA_HOST=${mysqlHost} -e PMA_PORT=${mysqlPort} -p 8080:80 phpmyadmin/phpmyadmin:5.0.2
+
+### 2.12.2 压测
+
+```shell
+#创建数据库
+create database sbtest;
+
+#准备数据
+
+sysbench --mysql-host=127.0.0.1 \
+--mysql-port=3306 \
+--mysql-user=root \
+--mysql-password=tars2015 \
+/usr/share/sysbench/oltp_common.lua \
+--tables=10 \
+--table_size=100000 \
+prepare
+
+
+#测试一:测试读写性能
+#测试
+sysbench --threads=4 \
+--time=20 \
+ --report-interval=5 \
+ --mysql-host=127.0.0.1 \
+--mysql-port=3306 \
+--mysql-user=root \
+--mysql-password=tars2015 \
+/usr/share/sysbench/oltp_read_write.lua \
+--tables=10 \
+ --table_size=100000 \
+run
+
+
+#测试二：测试只读的性能
+sysbench --threads=4 \
+--time=20 \
+ --report-interval=5 \
+ --mysql-host=127.0.0.1 \
+--mysql-port=3306 \
+--mysql-user=root \
+--mysql-password=tars2015 \
+/usr/share/sysbench/oltp_read_only.lua \
+--tables=10 \
+ --table_size=100000 \
+run
+
+
+#测试三:测试只写的性能
+sysbench --threads=4 \
+--time=20 \
+ --report-interval=5 \
+ --mysql-host=127.0.0.1 \
+--mysql-port=3306 \
+--mysql-user=root \
+--mysql-password=tars2015 \
+/usr/share/sysbench/oltp_write_only.lua \
+--tables=10 \
+ --table_size=100000 \
+run
+```
+
+
+
+```shell
+#io性能压测
+
+#创建文件
+sysbench fileio --file-num=5 --file-total-size=2G prepare
+
+#运行
+sysbench --events=5000 \
+--threads=16 \
+fileio \
+--file-num=5 \
+--file-total-size=2G \
+--file-test-mode=rndrw \
+--file-fsync-freq=0 \
+--file-block-size=16384 \
+run
+```
+
+
+
+```shell
+#CPU性能测试
+sysbench cpu --threads=40 --events=10000 --cpu-max-prime=20000 run
 ```
 
 
 
 
 
-## navicat
-
-***
-
-```shell
-mac 上面使用有bug
-
-# 防止自动断开
-编辑链接 --> 高级 --> 保持连接间隔 --> 30s
-```
 
 
+# 第三章 附录
 
-
-
-## mysql-clinet
-
-***
-
-```shell
-mysql 自带的客户端
-```
-
-
-
-
-
-## Mycli
-
-***
-
-```shell
-自带补全功能
-```
-
-
-
-# 常见命令
-
-***
-
-1. 显示正在运行的线程[会话session]
-
-   ```shell
-   show processlist;
-   ```
-
-2. 杀死某个线程
-
-   ```shell
-   kill ${线程id}
-   ```
-
-
-
-
-
-# 常见问题
-
-***
 
 1. Waiting for table metadata lock：后续对该表任何操作都会阻塞
 
@@ -637,297 +929,3 @@ mysql 自带的客户端
    ```shell
    performance_schema.events_statements_current找到其sid, kill 掉该session. 也可以 kill 掉DDL所在的session
    ```
-
-
-
-
-# 统计相关
-
-```mysql
-# 获取当前日期和时间
-SELECT NOW();
-
-SELECT CURDATE(); # 获取当前日期
-
-SELECT CURTIME(); # 返回当前时间
-
-SELECT * FROM plot_statistics WHERE DATE(log_time) = "2021-07-07";  # 统计某一天
-
-
-SELECT * FROM plot_statistics WHERE DATE(log_time) = CURDATE();  # 统计当天
-
-select * from plot_statistics where date(log_time) = date_sub(CURDATE()  ,interval 1 day); # 统计前一天
-
-
-select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # 统计昨天和今天的
-```
-
-
-
-# 时区
-
-
-
-## 查看时区
-
-***
-
-```shell
-show variables like "%time_zone%";
-```
-
-
-
-## 设置时区
-
-```shell
-#配置文件路径/etc/mysql/mysql.conf.d/mysqld.cnf
-[mysqld] 
-default-time-zone='+08:00'
-```
-
-
-
-## 临时修改时区
-
-```shell
-set time_zone = '+8:00';
-set global time_zone='+08:00';
-```
-
-
-
-## 时区转换函数
-
-```shell
-CONVERT_TZ
-```
-
-
-
-
-
-# 常用SQL语句
-
-***
-
-1. 清空表
-
-   ```mysql
-   TRUNCATE TABLE tb_student_course;
-   ```
-
-2. 查询
-
-   ```mysql
-   SELECT * FROM tb_student_course;
-   ```
-
-3. 插入数据
-
-   ```mysql
-   INSERT INTO tb_courses \
-             (course_id,course_name,course_grade,course_info) \
-       	  VALUES(1,'Network',3,'Computer Network');
-   ```
-
-4. 修改数据
-
-   ```mysql
-   UPDATE tb_courses_new \
-       SET course_name='DB',course_grade=3.5 \
-       WHERE course_id=2;
-   ```
-
-5. 删除数据
-
-   ```mysql
-   -- 删除全部数据
-   DELETE FROM tb_courses_new;
-   
-   -- 删除指定数据
-   DELETE FROM tb_courses
-       WHERE course_id=4;
-   ```
-
-6. 创建表
-
-   ```mysql
-   CREATE TABLE tb_courses \
-       ( \
-       course_id INT NOT NULL AUTO_INCREMENT, \
-       course_name CHAR(40) NOT NULL,\
-       course_grade FLOAT NOT NULL,\
-       course_info CHAR(100) NULL,\
-       PRIMARY KEY(course_id)\
-       );
-   ```
-
-7. 创建数据库
-
-   ```mysql
-   CREATE DATABASE test_db;
-   ```
-
-8. 查看数据库
-
-   ```mysql
-   SHOW DATABASES;
-   ```
-
-9. 选择数据库
-
-   ```mysql
-   USE test_db;
-   ```
-
-   
-
-10. 查看表
-
-    ```mysql
-    SHOW TABLES;
-    ```
-
-11. 查看表结构
-
-    ```mysql
-    DESC tb_courses;
-    ```
-
-12. 查看表结构和注释
-
-    ```mysql
-    select table_schema,table_name,column_name,column_type,column_key,is_nullable,column_default,column_comment,character_set_name
-    
-    from information_schema.columns where table_schema='库名' and table_name='表名';
-    ```
-
-13. 普通索引
-
-    ```mysql
-    mysql> CREATE TABLE tb_stu_info
-        -> (
-        -> id INT NOT NULL,
-        -> name CHAR(45) DEFAULT NULL,
-        -> dept_id INT DEFAULT NULL,
-        -> age INT DEFAULT NULL,
-        -> height INT DEFAULT NULL,
-        -> INDEX(height)
-        -> );
-    ```
-
-    
-
-14. 唯一索引
-
-    ```mysql
-    mysql> CREATE TABLE tb_stu_info2
-        -> (
-        -> id INT NOT NULL,
-        -> name CHAR(45) DEFAULT NULL,
-        -> dept_id INT DEFAULT NULL,
-        -> age INT DEFAULT NULL,
-        -> height INT DEFAULT NULL,
-        -> UNIQUE INDEX(height)
-        -> );
-    ```
-
-15. 约束
-
-    > 1. 主键约束
-    >
-    >    ```mysql
-    >    mysql> CREATE TABLE tb_emp3
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(25),
-    >        -> deptId INT(11),
-    >        -> salary FLOAT
-    >        -> );
-    >    ```
-    >
-    >    
-    >
-    > 2. 外键约束
-    >
-    >    ```mysql
-    >    mysql> CREATE TABLE tb_dept1
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(22) NOT NULL,
-    >        -> location VARCHAR(50)
-    >        -> );
-    >        
-    >        
-    >        mysql> CREATE TABLE tb_emp6
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(25),
-    >        -> deptId INT(11),
-    >        -> salary FLOAT,
-    >        -> CONSTRAINT fk_emp_dept1
-    >        -> FOREIGN KEY(deptId) REFERENCES tb_dept1(id)
-    >        -> );
-    >    ```
-    >
-    >    
-    >
-    > 3. 唯一约束
-    >
-    >    ```mysql
-    >    mysql> CREATE TABLE tb_dept2
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(22) UNIQUE,
-    >        -> location VARCHAR(50)
-    >        -> );
-    >    ```
-    >
-    >    
-    >
-    > 4. 检查约束
-    >
-    >    ```mysql
-    >    mysql> CREATE TABLE tb_emp7
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(25),
-    >        -> deptId INT(11),
-    >        -> salary FLOAT,
-    >        -> CHECK(salary>0 AND salary<100),
-    >        -> FOREIGN KEY(deptId) REFERENCES tb_dept1(id)
-    >        -> );
-    >
-    > 5. 非空约束
-    >
-    >    ```mysql
-    >    mysql> CREATE TABLE tb_dept4
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(22) NOT NULL,
-    >        -> location VARCHAR(50)
-    >        -> );
-    >    ```
-    >
-    >    
-    >
-    > 6. 默认值约束
-    >
-    >    ```mysql
-    >    mysql> CREATE TABLE tb_dept3
-    >        -> (
-    >        -> id INT(11) PRIMARY KEY,
-    >        -> name VARCHAR(22),
-    >        -> location VARCHAR(50) DEFAULT 'Beijing'
-    >        -> );
-    >    ```
-    >
-
-16. 查看默认引擎
-
-    ```shell
-    show engines \G;
-    ```
-
-    

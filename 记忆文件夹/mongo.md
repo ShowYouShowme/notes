@@ -237,7 +237,11 @@ db.dropDatabase()
 1. 导出为json文件
 
    ```shell
-   mongoexport --uri="mongodb://127.0.0.1:27017/test" --collection=runoob --out=my.json --pretty
+   #导出全部字段
+   mongoexport --uri="mongodb://127.0.0.1:27017/test" --collection=runoob --out=my.json --pretty --jsonArray 
+   
+   #导出部分字段
+   mongoexport --uri="mongodb://127.0.0.1:27017/game" --collection=roles -f "UserID,Gold"--out=my2.json --pretty --jsonArray
    ```
 
 2. 导出为BSON

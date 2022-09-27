@@ -15,6 +15,8 @@
    > [root@xiesshavip002 ~]# netstat -lt  # 显示监听TCP端口
    > [root@xiesshavip002 ~]# netstat -lu  # 显示监听UDP端口
    > [root@xiesshavip002 ~]# netstat -lx  # 显示监听UNIX端口
+   > 
+   > netstat -ltpnae  #显示对应用户
    > ```
 
 3. 显示每个协议的统计信息
@@ -932,16 +934,20 @@ rz -y ${fileName}
 
      ```shell
      curl -b "name=Daniel" www.sillypage.com
+     
+     
+     #或者
+     curl http://192.168.2.117:3001/ --cookie "someCookie"
      ```
 
    + 存放响应的Cookies
-
+   
      1. 方式一
 
         ```shell
         curl --dump-header headers www.example.com
         ```
-
+   
      2. 方式二
 
         ```shell
@@ -949,13 +955,13 @@ rz -y ${fileName}
         ```
 
         
-
+   
    + 使用存放在文件里面的Cookies信息访问网站
 
      ```shell
      curl -b headers www.example.com
      ```
-
+   
      
 
 
@@ -1050,7 +1056,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >          
+  >                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1074,7 +1080,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >          
+  >                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2073,6 +2079,9 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
        docker images | sed -n "${n1},${n2}p" | awk '{print "rm -f " $1}'
        
        docker images | sed -n "2,6p"
+       
+       #选取第二行到最后一行
+       docker ps -a | sed -n "2,$"p | awk '{print "rm -f " $1}'
        ```
   
      + 选取1,2,5行

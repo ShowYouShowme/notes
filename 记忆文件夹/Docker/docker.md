@@ -296,7 +296,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                        
+   >                                           
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -521,6 +521,24 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
 ```
 
 
+
+
+
+## 2.20 删除容器
+
+1. 删除一个容器
+
+   ```shell
+   docker rm ${containerID}
+   ```
+
+2. 删除全部容器
+
+   ```shell
+   docker ps -a | sed -n "2,$"p | awk '{print "docker rm " $1}' | sh
+   ```
+
+   
 
 
 

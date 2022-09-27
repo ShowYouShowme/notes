@@ -268,13 +268,13 @@ npm install @types/node
    >    ```shell
    >    # 精确安装指定模块版本
    >    npm install gulp-concat --save-exact 或 npm install gulp-concat –E
-   >                      
+   >                            
    >    # package.json文件里"dependencies"属性的
-   >                      
+   >                            
    >    "dependencies": {
-   >                      
+   >                            
    >        "gulp-concat": "2.6.1"   //注意此处：版本号没有 ^
-   >                      
+   >                            
    >    }
    >    ```
    >
@@ -478,5 +478,53 @@ p.age = 1290;
 p.name = "trump";
 console.log(JSON.stringify(p))
 console.log("successful")
+```
+
+
+
+
+
+
+
+# 导入模块的方式
+
+1. js的方式
+
+   ```javascript
+   const child_process = require('child_process')
+   ```
+
+2. ts的方式
+
+   ```javascript
+   // 等价于 const exec = require('child_process')
+   // child_process 里面必须有默认导出
+   import exec from 'child_process';
+   ```
+   
+   ```javascript
+   // 直接导入模块中的符号
+   import {PI, Sum} from "./utility"
+   ```
+   
+
+
+
+# 导出模块
+
+```javascript
+//普通导出
+// 需要 import {...} from './...' 导入
+export class PlayerManager{
+    
+}
+```
+
+```javascript
+// 默认导出
+// 导入方式  import Raking from './rank';
+export default class Raking{
+    
+}
 ```
 

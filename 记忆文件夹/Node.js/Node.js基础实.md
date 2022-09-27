@@ -6,6 +6,15 @@
 sudo apt install nodejs npm
 ```
 
+指定版本安装
+
+```shell
+wget https://nodejs.org/dist/v16.17.0/node-v16.17.0-linux-x64.tar.xz
+tar -xf node-v16.17.0-linux-x64.tar.xz
+mv node-v16.17.0-linux-x64 ~/local/
+#配置环境变量即可
+```
+
 
 
 
@@ -32,7 +41,7 @@ sudo apt install nodejs npm
    "sourceMap": true,
    "outDir": "./bin",
    "allowJs": true,
-   "target": "es6",
+   "target": "es2016",
    ```
 
 ## 1.2 调试项目
@@ -1685,7 +1694,11 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 
 2. 函数返回值为`Promise`时，调用该函数时加上`await`；在`Promise`里面使用resolve或者reject传出参数
 
-3. 示例代码
+3. promise 在new的时候就开始执行了
+
+4. promise([...]).then(res =>{}) 里面的res的结果次序和传入的promise一致
+
+5. 示例代码
 
    ```javascript
    //利用promise + await 将回调改为顺序执行
@@ -1711,7 +1724,7 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
    }
    t1();
    ```
-   
+
    ```javascript
    //等待多个任务执行完成
    async function check() {
@@ -1740,7 +1753,7 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
        })
    }
    ```
-   
+
    ```javascript
    //await 与分支
    async function testReturn(params:number) {
@@ -1766,7 +1779,30 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
    
    getBranchRes(2);
    ```
+
+   ```javascript
+   // promise 和 await 一起使用
+   async function test(){
+     let p1 = new Promise((resolve, reject)=>{
+       setTimeout(() => {
+         console.log('p1 finished...');
+         resolve(1);
+       }, 5000);
+     })
    
+     let p2 = new Promise((resolve, reject)=>{
+       setTimeout(() => {
+         console.log('p22 finished...');
+         resolve(2);
+       }, 2000);
+     })
+   
+   
+     let result = await Promise.all([p1,p2]);
+     console.log(`result : ${result}`);
+   };
+   ```
+
    
 
 
@@ -1851,6 +1887,8 @@ setInterval(function (){
 
 3. 回调函数里面的异常不能在外面捕获
 
+4. try...catch await 函数，只能捕获reject，不能捕获promise的异常。
+
 
 
 
@@ -1888,6 +1926,7 @@ request({
 ## 18.3 POST请求
 
 ```javascript
+const request = require('request')
 request({
     url: "http://192.168.2.110:9002/server/login/checklogintoken",
     method : "POST",
@@ -1959,8 +1998,9 @@ npm install log4js
 ### 20.2.1 打印日志到控制台
 
 ```javascript
-var log4js = require("log4js");
-var logger = log4js.getLogger();
+import log4js from "log4js";
+
+const logger = log4js.getLogger();
 logger.level = "debug";
 logger.debug("Some debug messages");
 ```
@@ -2006,5 +2046,173 @@ logger.warn('this is warn');
 logger.error('this is error[]');
 logger.fatal('this is fatal');
 console.log(".......")
+```
+
+
+
+## 20.2.4 配置vscode debug时显示
+
+```shell
+#在launch.json 里面增加
+"outputCapture": "std"
+```
+
+
+
+
+
+# 第二十一章 websocket
+
+
+
+## 21.1 安装
+
+```shell
+npm install --save ws
+npm install @types/ws
+```
+
+
+
+
+
+## 21.2 使用
+
+注意：ws触发close事件后，会自动close文件描述符，不需要在代码里写ws.close()
+
+
+
+
+
+# 第二十二章 类型断言
+
+
+
+## 22.1 内置数据类型
+
+```javascript
+typeof "John"                // 返回 string
+typeof 3.14                  // 返回 number
+typeof false                 // 返回 boolean
+typeof [1,2,3,4]             // 返回 object
+typeof {name:'John', age:34} // 返回 object
+typeof null                  // 返回 object
+typeof undefined             // 返回 undefined
+```
+
+
+
+
+
+
+
+# 第二十三章  执行shell
+
+
+
+```javascript
+var exec = require('child_process').exec;
+ 
+exec('ls -al', function(error, stdout, stderr){
+    if(error) {
+        console.error('error: ' + error);
+        return;
+    }
+    console.log('stdout: ' + stdout);
+    console.log('stderr: ' + typeof stderr);
+}
+```
+
+
+
+
+
+# 第二十四章  登录鉴权
+
+
+
+## 24.1 使用JWT
+
+```javascript
+//token具有过期时间,任何client得到这个token都可以发起请求
+import express = require('express');
+import bodyParser = require("body-parser");
+import jwt from 'jsonwebtoken';
+const port = 3001;
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+
+let secretKey : string = 'Nh+xUwT@VYv9F_yT';
+
+app.post('/login', (req, res) => {
+    let token = jwt.sign({username : 'wxs'}, secretKey, {expiresIn : '100s'});
+    res.json({
+        code : 0,
+        msg : '登录成功',
+        token
+    })
+});
+
+app.get('/getUserInfo', (req, res)=>{
+    try {
+        let query = req.query as any;
+        let info = jwt.verify(query.token, secretKey) as any;
+        console.log('info : ', info['username']);
+        res.send('一个get请求想获取用户信息');
+    } catch (error) {
+        res.send('过期了,请重新登录!');
+    }
+})
+
+
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Example app listening on port ${port}`);
+});
+```
+
+
+
+
+
+## 24.2 使用session
+
+原理：客户端登录时，服务器产生一个session对象，存到map里面；key是cookie，将它返回给客户端。客户端下次请求时头部加上Cookie即可，任何http客户端只要带上这个头部都可以访问。其实和token差不多，建议用jwt替换！
+
+
+
+```javascript
+//install: npm install express-session
+
+import express = require('express');
+import bodyParser = require("body-parser");
+var session = require('express-session')
+const port = 3001;
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}))
+
+// Access the session as req.session
+app.get('/', function(req, res, next) {
+  let session  = (req as any).session;
+  if (session.views) {
+    session.views++
+    res.setHeader('Content-Type', 'text/html')
+    res.write('<p>views: ' + session.views + '</p>')
+    res.write('<p>expires in: ' + (session.cookie.maxAge / 1000) + 's</p>')
+    res.end()
+  } else {
+    session.views = 1
+    res.end('welcome to the session demo. refresh!')
+  }
+})
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Example app listening on port ${port}`);
+});
 ```
 
