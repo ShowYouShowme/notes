@@ -299,6 +299,8 @@ docker pull mysql:5.7
    ```shell
    show  processlist;
    
+   #command列: Sleep 空闲链接
+   
    # 杀死指定任务
    kill ${id};
    ```
@@ -829,6 +831,27 @@ show engines \G;
 
 
 
+### 2.11.17 查看索引
+
+```mysql
+show index from tuser \G;
+```
+
+
+
+### 2.11.18 增加索引
+
+```mysql
+#语法
+alter table ${tb_name} add index(${col_name});
+
+alter table tuser add index(name);
+```
+
+
+
+
+
 
 ## 2.12 压力测试
 
@@ -933,6 +956,15 @@ sysbench cpu --threads=40 --events=10000 --cpu-max-prime=20000 run
 
 
 
+## 2.13 查看变量值
+
+```shell
+#transaction_isolation 是配置
+show variables like 'transaction_isolation';
+```
+
+
+
 
 
 
@@ -988,3 +1020,25 @@ sysbench cpu --threads=40 --events=10000 --cpu-max-prime=20000 run
    ```shell
    performance_schema.events_statements_current找到其sid, kill 掉该session. 也可以 kill 掉DDL所在的session
    ```
+
+4. 常见配置项
+
+   ```mysql
+   #每次事务的 redo log 都直接持久化到磁盘
+   innodb_flush_log_at_trx_commit = 1
+   
+   #每次事务的 binlog 都持久化到磁盘
+   sync_binlog = 1
+   
+   #事务隔离级别
+   read-uncommitted：读未提交，允许脏读
+   read-committed：读提交，不允许脏读，但允许不可重复读
+   repeatable-read：可重复读，不允许脏读、不可重复读，但允许幻读
+   serializable：串行化，以上都不允许
+   
+   #建议设置为读提交
+   transaction_isolation=read-committed
+   ```
+   
+   
+
