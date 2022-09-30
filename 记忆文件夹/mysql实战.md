@@ -610,6 +610,10 @@ insert into t(id,k) values(id1,k1),(id2,k2);
    [innodb_io_capacity]
    desc = 刷脏页速度,默认200,推荐设置为max的50-70%
    
+   [innodb_flush_neighbors]
+   desc = 刷一个脏页的时候，如果这个数据页旁边的数据页刚好是脏页，就会把这个“邻居”也带着一起刷掉；而且这个把“邻居”拖下水的逻辑还可以继续蔓延，也就是对于每个邻居数据页，如果跟它相邻的数据页也还是脏页的话，也会被放到一起刷
+   默认值 = 1(开启),建议设置为0
+   
    [测试磁盘iops]
    install = yum install -y fio
    
@@ -628,4 +632,151 @@ insert into t(id,k) values(id1,k1),(id2,k2);
    O_DIRECT = 
    ```
 
-   
+
+
+# 第七章 MySQL选错索引
+
+
+
+慢查询日志
+
+```ini
+[slow_query_log]
+desc = 慢查询开启状态
+
+[slow_query_log_file]
+desc = 慢查询日志存放位置
+
+[long_query_time]
+desc = 超过多少秒才记录,设置为0会记录全部
+
+[查看值cmd]
+SHOW VARIABLES LIKE 'slow_query_log';
+SHOW VARIABLES LIKE 'long_query_time';
+SHOW VARIABLES LIKE 'slow_query_log_file';
+
+[临时开启慢查询日志]
+set global slow_query_log=on;
+
+[临时设置时间]
+set long_query_time = 0;
+```
+
+
+
+
+
+分析sql语句执行过程[选择哪些索引，扫描了多少行]
+
+```mysql
+explain select * from t where a between 10000 and 20000
+```
+
+
+
+## 7.1 优化器的逻辑
+
+优化器会根据扫描行数，是否使用临时表，是否排序来综合判断选择哪个索引。
+
+
+
+### 7.1.1 如何判断扫描行数
+
+通过索引基数判断。
+
+
+
+### 7.1.2 查看索引基数
+
+```mysql
+#Cardinality 那一列就是基数
+show index from t;
+```
+
+
+
+### 7.1.3 如何得到索引基数
+
+选择 N 个数据页，统计这些页面上的不同值，得到一个平均值，然后乘以这个索引的页面数，就得到了这个索引的基数。当变更的数据行数超过 1/M 的时候，会自动触发重新做一次索引统计
+
+
+
+### 7.1.4 修正索引统计信息
+
+```mysql
+analyze table t
+```
+
+
+
+
+
+## 7.2 索引选择异常处理
+
+
+
+### 7.2.1 force index
+
+```mysql
+#强制选择索引a
+select * from t force index(a) where (a between 1 and 1000) and (b between 50000 and 100000) order by b limit 1;
+```
+
+
+
+
+
+### 7.2.2 删掉多余的索引
+
+在这个例子中把索引b删掉
+
+
+
+
+
+
+
+# 第八章 给字符串加索引
+
+
+
+## 8.1 完整索引
+
+比较占用空间，索引选取的越长，占用的磁盘空间就越大，相同的数据页能放下的索引值就越少，搜索的效率也就会越低。扫描行数少。
+
+
+
+## 8.2 前缀索引
+
++ 节约空间
+
++ 增加了扫描次数
+
++ 如何确定前缀位数
+
+  ```mysql
+  #算出这个列上有多少个不同值
+  select count(distinct email) as L from SUser;
+  
+  #选择不同前缀查看这个值
+  select 
+    count(distinct left(email,4)）as L4,
+    count(distinct left(email,5)）as L5,
+    count(distinct left(email,6)）as L6,
+    count(distinct left(email,7)）as L7,
+  from SUser;
+          
+  #在返回的 L4~L7 中，找出不小于 L * 95% 的值
+  ```
+
+  
+
+## 8.3 倒序存储
+
+
+
+
+
+## 8.4 使用hash
+
+在表上再创建一个整数字段，来保存身份证的hash值，同时在这个字段上创建索引，推荐使用crc32算法。

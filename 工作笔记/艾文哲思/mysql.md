@@ -854,7 +854,7 @@ alter table tuser add index(name);
 
 ```mysql
 #启动事务
-begin 或 start transaction
+begin 或 start transaction 或者 start transaction with consistent snapshot;
 
 #提交事务
 commit
