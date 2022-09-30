@@ -2216,3 +2216,49 @@ app.listen(port, '0.0.0.0', () => {
 });
 ```
 
+
+
+
+
+
+
+# 第二十五章 EXCEL
+
+将excel转化为json是游戏开发常见的一个需求。
+
+
+
+1. 安装依赖
+
+   ```shell
+   npm install excel
+   ```
+
+2. 代码
+
+   ```javascript
+   // 增加声明
+   // declare module 'excel';
+   
+   import parseXlsx from 'excel';
+    
+   parseXlsx('excel_mac_2011-basic.xlsx').then((data : any) => {
+     console.log(`data: ${data}` );
+   
+     let result = [];
+     let fields = data[0];
+     for(let i = 1; i < (data as Array<any>).length; ++i){
+       let item = {} as any;
+       for(let j = 0; j < fields.length; ++j){
+         let key   = fields[j] as string;
+         let value =  data[i][j];
+         item[key] = value;
+         result.push(item);
+       }
+     }
+   
+     console.log(JSON.stringify(result));
+   });
+   ```
+
+   

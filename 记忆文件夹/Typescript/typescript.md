@@ -1,4 +1,4 @@
-## 创建项目
+# 第一章 创建项目
 
 1. 初始化npm包管理器
 
@@ -24,7 +24,7 @@
 
 
 
-## 调试项目
+# 第二章 调试项目
 
 1. 编译生成javascript代码
 
@@ -83,203 +83,6 @@
 
 
 
-## 第三方包安装
-
-### redis安装
-
-***
-
-1. 普通redis
-
-   1. 安装redis包
-
-      ```shell
-      npm install redis --save
-      ```
-
-   2. 安装声明文件
-
-      ```shell
-      npm install @types/redis
-      ```
-
-2. ioredis：可以直接await操作
-
-   1. 安装ioredis
-
-      ```shell
-      npm install ioredis
-      ```
-
-   2. 安装声明文件
-
-      ```shell
-      npm install @types/ioredis
-      ```
-
-      
-
-### MySQL安装
-
-***
-
-1. 普通MySQL
-
-   1. 安装MySQL包
-
-      ```shell
-      npm install mysql --save
-      ```
-
-   2. 安装MySQL声明文件
-
-      ```shell
-      npm install @types/mysql
-      ```
-
-2. typeorm
-
-   1. 安装orm
-
-      ```shell
-      npm install typeorm 
-      ```
-
-3. sequelize
-
-   1. 安装sequelize
-
-      ```shell
-      npm install sequelize
-      ```
-
-      
-
-
-### typescript安装
-
-***
-
-```shell
-npm install typescript -g
-```
-
-### 安装node声明文件
-
-***
-
-```shell
-npm install @types/node
-```
-
-## npm教程
-
-1. 配置代理
-
-   ```shell
-   npm config set proxy=http://127.0.0.1:8090
-   ```
-
-2. 全局安装
-
-   ```shell
-   npm install ${包名} -g
-   ```
-
-3. 安装
-
-   ```shell
-   npm install ${包名}
-   
-   # 安装指定版本的包
-   npm install ${包名}@${version}
-   # 例子
-   npm install  gulp@3.9.1
-   ```
-
-4. 卸载
-
-   ```shell
-   npm uninstall ${包名}
-   ```
-
-5. 更新
-
-   ```shell
-   npm update ${包名}
-   ```
-
-6. 检查包是否过时
-
-   ```shell
-   npm outdated
-   ```
-
-7. 列出安装的全部包
-
-   ```shell
-   npm ls
-   ```
-
-8. 参数说明
-
-   > 1. --save 或者-S
-   >
-   >    ```shell
-   >    # 安装模块后，模块的名称将加入到dependencies（生产阶段的依赖）
-   >    npm install gulp --save 或 npm install gulp –S
-   >    
-   >    # package.json内容
-   >    "dependencies": {
-   >        "gulp": "^3.9.1"
-   >    }
-   >    ```
-   >
-   > 2. --save-dev 或者-D
-   >
-   >    ```shell
-   >    # 安装模块后，模块名称将加入到devDependencies（开发阶段的依赖）
-   >    npm install gulp --save-dev 或 npm install gulp –D
-   >    
-   >    # package.json 的devDependencies属性：
-   >    "devDependencies": {
-   >    
-   >        "gulp": "^3.9.1"
-   >    
-   >    }
-   >    ```
-   >
-   > 3. --save-optional 或者-O
-   >
-   >    ```shell
-   >    # 安装模块后，模块名称将加入到optionalDependencies（可选阶段的依赖）
-   >    npm install gulp --save-optional 或 npm install gulp -O
-   >    
-   >    # package.json 文件的optionalDependencies属性：
-   >    "optionalDependencies": {
-   >    
-   >        "gulp": "^3.9.1"
-   >    
-   >           }
-   >    ```
-   >
-   > 4. --save-exact 或者 -E 
-   >
-   >    ```shell
-   >    # 精确安装指定模块版本
-   >    npm install gulp-concat --save-exact 或 npm install gulp-concat –E
-   >                            
-   >    # package.json文件里"dependencies"属性的
-   >                            
-   >    "dependencies": {
-   >                            
-   >        "gulp-concat": "2.6.1"   //注意此处：版本号没有 ^
-   >                            
-   >    }
-   >    ```
-   >
-   >    
-
 ## 示例代码
 
 ```js
@@ -305,11 +108,11 @@ server.listen( 9999, "0.0.0.0" );
 
 
 
-# 使用Protobuf
+# 第三章 使用Protobuf
 
 
 
-## 安装pbjs
+## 3.1 安装pbjs
 
 ```ini
 ; https://www.npmjs.com/package/pbjs
@@ -318,7 +121,7 @@ npm install pbjs
 
 
 
-## 生成ts文件
+## 3.2 生成ts文件
 
 ```ini
 pbjs wire-format.proto --ts wire-format.ts
@@ -326,7 +129,7 @@ pbjs wire-format.proto --ts wire-format.ts
 
 
 
-## 示例代码
+## 3.3 示例代码
 
 ```typescript
 import * as proto from "./cmd_net"
@@ -353,7 +156,7 @@ console.log("......")
 
 
 
-# 引入js的模块
+# 第四章 引入js的模块
 
 模块代码utility.js
 
@@ -448,7 +251,7 @@ console.log("....")
 
 
 
-处理JSON
+# 第五章 JSON
 
 ```javascript
 //一般是发起http请求时用
@@ -465,7 +268,7 @@ console.log("successful")
 
 
 
-# Interface的用法
+# 第五章 Interface
 
 ```typescript
 interface IPerson{
@@ -486,15 +289,19 @@ console.log("successful")
 
 
 
-# 导入模块的方式
+# 第六章 模块
 
-1. js的方式
+
+
+## 6.1 导入
+
+1. 导入js模块
 
    ```javascript
    const child_process = require('child_process')
    ```
 
-2. ts的方式
+2. 导入ts模块
 
    ```javascript
    // 等价于 const exec = require('child_process')
@@ -510,21 +317,79 @@ console.log("successful")
 
 
 
-# 导出模块
+## 6.2 导出
 
-```javascript
-//普通导出
-// 需要 import {...} from './...' 导入
-export class PlayerManager{
-    
-}
-```
+1. 普通导出
 
-```javascript
-// 默认导出
-// 导入方式  import Raking from './rank';
-export default class Raking{
-    
-}
-```
+   ```javascript
+   // 导入 import {...} from './...'
+   export class PlayerManager{}
+   ```
 
+   
+
+2. 默认导出
+
+   ```javascript
+   // 导入  import Raking from './rank';
+   export default class Raking{}
+   ```
+
+
+
+
+
+
+
+# 第七章 声明文件
+
+1. 声明文件可以提供代码补全的功能
+
+2. 项目根目录下创建main.d.ts(相同目录下不能存在文件main.js 或者main.ts)
+
+3. 编写声明
+
+   ```javascript
+   //声明js模块,可以使用import导入
+   declare module 'excel';
+   
+   //模块声明
+   declare module 'cmd_pb'{
+       export class requestModel{
+           msg : string;
+           code : string;
+   
+           toObject() : any;
+   
+           serializeBinary() : any;
+   
+           getMsg(): string;
+   
+           setMsg(param : string) : void;
+   
+           getCode() : string;
+   
+           setCode(param : string) : void;
+       }
+   }
+   
+   
+   //声明函数
+   declare function giveMeMoney(str: string): void;
+   
+   //声明变量
+   declare var ant:string
+   
+   
+   
+   //声明命名空间
+   declare namespace space {
+   
+       function func(str: string): string;
+     
+       let num: number;
+     
+     }
+   ```
+
+   

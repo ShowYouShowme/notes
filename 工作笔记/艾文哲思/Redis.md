@@ -156,6 +156,18 @@ appendonly yes
 
 
 
+### 3.6.3 混合持久化
+
+```shell
+#配置项  redis 4 以后才支持
+aof-use-rdb-preamble yes
+
+#触发重写AOF
+bgwriteaof
+```
+
+
+
 ## 3.7 非交互式执行命令
 
 ***

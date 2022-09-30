@@ -397,11 +397,235 @@ lock tables 会限制其它线程和本线程对表的操作
 
 ### 5.3.1 两阶段锁
 
+在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放
+
 
 
 ### 5.3.2 死锁和死锁检测
 
 
 
+死锁：当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态，称为死锁
 
 
+
+解决策略：
+
+1. 直接等待，直到超时。超时时间通过innodb_lock_wait_timeout 设置，超时时间过长，业务无法接受；超时时间太短，会造成误伤。
+
+2. 发起死锁检测。死锁检测会消耗大量CPU。配置参数innodb_deadlock_detect
+
+   ```ini
+   [解决死锁检测消耗大量CPU的问题]
+   
+   A=关闭死锁检测
+   
+   B=控制客户端的并发
+   
+   C=更改MySQL的源码
+   
+   D=一条记录改用几条记录保存
+   ```
+
+   
+
+# 第六章 普通索引和唯一索引
+
+
+
+## 6.1 查询过程
+
+
+
+```mysql
+select id from T where k=5
+```
+
+普通索引和唯一索引查询性能差距不大。
+
+
+
+
+
+## 6.2 更新
+
+
+
+### 6.2.1 change buffer
+
+当需要更新一个数据页时，如果数据页在内存中就直接更新，而如果这个数据页还没有在内存中的话，在不影响数据一致性的前提下，InnoDB 会将这些更新操作缓存在 change buffer 中，这样就不需要从磁盘中读入这个数据页了。在下次查询需要访问这个数据页的时候，将数据页读入内存，然后执行 change buffer 中与这个页有关的操作。
+
+
+
+**change buffer 只有普通索引可以使用，唯一索引不能用**
+
+
+
+
+
+### 6.2.2 InnoDB插入流程
+
++ 记录所在目标页在内存中，直接插入
+
++ 记录所在目标页不在内存中
+
+  ```ini
+  [唯一索引]
+  将数据页读入内存，判断是否有冲突，插入值，语句执行结束
+  
+  [普通索引]
+  将更新记录在 change buffer，语句执行就结束了
+  
+  [结论]
+  change buffer 因为减少了随机磁盘访问，所以对更新性能的提升是会很明显的
+  ```
+
+
+
+## 6.3 change buffer 使用场景
+
+对于写多读少的业务来说，页面在写完以后马上被访问到的概率比较小，此时 change buffer 的使用效果最好。这种业务模型常见的就是账单类、日志类的系统
+
+
+
+
+
+## 6.4 索引选择
+
+尽量选择普通索引。如果所有的更新后面，都马上伴随着对这个记录的查询，那么你应该关闭 change buffer。而在其他情况下，change buffer 都能提升更新性能。
+
+
+
+
+
+## 6.5 change buffer 和 redo log
+
+
+
+假设k1 所在的数据页在内存 (InnoDB buffer pool) 中，k2 所在的数据页不在内存中
+
+```mysql
+insert into t(id,k) values(id1,k1),(id2,k2);
+```
+
+
+
+### 6.5.1 change buffer 更新过程
+
+1. Page 1 在内存中，直接更新内存
+2. Page 2 没有在内存中，就在内存的 change buffer 区域，记录下“我要往 Page 2 插入一行”这个信息
+3. 将上述两个动作记入 redo log 中
+
+
+
+
+
+### 6.5.2 change buffer的读取过程
+
+1. 读 Page 1 的时候，直接从内存返回
+2. 要读 Page 2 的时候，需要把 Page 2 从磁盘读入内存中，然后应用 change buffer 里面的操作日志，生成一个正确的版本并返回结果
+
+
+
+
+
+## 6.6 缓存
+
+1. buffer pool：位于存储引擎层
+
+   ```ini
+   [缓冲池大小]
+   innodb_buffer_pool_size = innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances
+   
+   [查看参数]
+   SELECT @@innodb_buffer_pool_chunk_size;
+   
+   SELECT @@innodb_buffer_pool_instances;
+   
+   SELECT @@innodb_buffer_pool_size;
+   
+   [默认]
+   innodb_buffer_pool_instances = 1；
+   innodb_buffer_pool_size = 128M;
+   innodb_buffer_pool_chunk_size = 128;
+   
+   [推荐配置]
+   # 内存多的话可以配置更大,innodb_buffer_pool_chunk_size不应太大,容易产生竞争
+   
+   # innodb缓冲池大小
+   innodb_buffer_pool_size=4G
+    
+   # innodb缓冲池块大小
+   innodb_buffer_pool_chunk_size=128M
+    
+   # innodb缓冲池实例数
+   innodb_buffer_pool_instances=32
+   
+   
+   [buffer change配置]
+   # 占用 buffer pool 的 50%,默认是25
+   innodb_change_buffer_max_size = 50;
+   ```
+
+   
+
+2. query cache：查询缓存，位于server层，mysql8.0已经删除
+
+3. redo
+
+   ```ini
+   [innodb_log_files_in_group]
+   desc = redo log 文件的个数,默认为2，推荐设置为4
+   
+   [innodb_log_file_size]
+   desc = 默认48M, 推荐设置为1G
+   
+   [innodb_log_group_home_dir]
+   desc = 文件存放路径
+   
+   [innodb_log_buffer_size]
+   desc = Redo Log缓冲区,默认8M
+   
+   [innodb_flush_log_at_trx_commit]
+   desc = redo log 刷新策略
+   
+   #每隔1s刷新一次到文件,最极端的情况是丢失1 秒时间的数据变更,速度最快,比设置为1时快10倍
+   innodb_flush_log_at_trx_commit = 0
+   
+   #默认设置,每次事务结束都刷新到磁盘,速度最慢,最安全,数据不会丢失
+   innodb_flush_log_at_trx_commit = 1
+   
+   #每次事务结束，调用文件系统的文件写入操作。而我们的文件系统都是有缓存机制的
+   #MySQL Crash 并不会造成数据的丢失，但是OS Crash会导致数据丢失
+   #速度比设置为0时稍微慢,但是更加安全
+   innodb_flush_log_at_trx_commit = 2
+   ```
+
+4. innodb_io_capacity
+
+   ```ini
+   [innodb_io_capacity_max]
+   desc = 最大刷脏页速度,默认2000,推荐用fio 压测磁盘iops,然后再设置为磁盘最大iops
+   
+   [innodb_io_capacity]
+   desc = 刷脏页速度,默认200,推荐设置为max的50-70%
+   
+   [测试磁盘iops]
+   install = yum install -y fio
+   
+   # 先设置变量filename,比如filename=bench_buck.tmp
+   bench = fio -filename=$filename -direct=1 -iodepth 1 -thread -rw=randrw -ioengine=psync -bs=16k -size=500M -numjobs=10 -runtime=10 -group_reporting -name=mytest
+   ```
+
+5. innodb_flush_method
+
+   ```ini
+   [可选值]
+   fdatasync =  默认
+   
+   O_DSYNC = 
+   
+   O_DIRECT = 
+   ```
+
+   

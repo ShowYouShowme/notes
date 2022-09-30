@@ -37,7 +37,7 @@
    yum localinstall mysql80-community-release-el7-7.noarch.rpm
    
    #安装工具
-   sudo yum install -y yum-utils
+   yum install -y yum-utils
    
    #查看所有的mysql
    yum repolist all | grep mysql
@@ -846,6 +846,21 @@ show index from tuser \G;
 alter table ${tb_name} add index(${col_name});
 
 alter table tuser add index(name);
+```
+
+
+
+### 2.11.19 事务
+
+```mysql
+#启动事务
+begin 或 start transaction
+
+#提交事务
+commit
+
+#事务回滚
+rollback
 ```
 
 
