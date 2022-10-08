@@ -138,6 +138,19 @@ export PATH=$PATH:/opt/bin
 
 
 
+# 列出文件
+
+```shell
+ls -lh
+
+#自动显示颜色,比如文件夹颜色,软连接颜色,docker里面默认全是白色
+ls --color=auto -lh
+```
+
+
+
+
+
 # ansible
 
 作用：批量操作机器
@@ -1056,7 +1069,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                   
+  >                      
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1080,7 +1093,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                   
+  >                      
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

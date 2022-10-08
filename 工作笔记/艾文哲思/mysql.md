@@ -865,6 +865,14 @@ rollback
 
 
 
+### 2.11.20 删除数据库
+
+```mysql
+drop database test;
+```
+
+
+
 
 
 
