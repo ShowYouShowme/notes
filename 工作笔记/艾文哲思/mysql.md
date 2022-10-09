@@ -873,6 +873,25 @@ drop database test;
 
 
 
+### 2.11.21 explain
+
+```ini
+[possible_keys]
+desc = 可能使用的索引
+
+[key]
+desc = 实际使用的索引,如果没事使用索引,值是NULL
+
+[Extra]
+desc = 额外信息
+
+Using filesort  = 需要排序
+Using temporary = 使用临时表
+Using index = 直接访问索引就足够获取到所需要的数据，不需要通过索引回表
+Using index condition = 索引下压,部分where条件在Innodb引擎层判断,满足的记录才发送到server层,等价于 using index + 回表 + where 过滤
+Using where = 优化器需要通过索引回表查询数据
+```
+
 
 
 
@@ -985,6 +1004,41 @@ sysbench cpu --threads=40 --events=10000 --cpu-max-prime=20000 run
 #transaction_isolation 是配置
 show variables like 'transaction_isolation';
 ```
+
+
+
+
+
+## 2.14 乱码配置
+
+1. 配置
+
+   ```ini
+   [mysqld]
+   character_set_server=utf8
+   collation-server=utf8_general_ci
+   skip-character-set-client-handshake
+   #init_connect='SET NAMES utf8'
+   #[client]
+   #default-character-set=utf8
+   ```
+
+   
+
+2. 查看编码
+
+   ```mysql
+   mysql> show variables like '%char%';
+   ```
+
+3. docker 里面的MySQL终端无法输入中文
+
+   ```shell
+   #先设置shell环境变量，再链接即可
+   export LANG=en_US.UTF-8
+   ```
+
+   
 
 
 

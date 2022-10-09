@@ -71,7 +71,7 @@ mv node-v16.17.0-linux-x64 ~/local/
 
 ## 1.4 第三方包安装
 
-
+安装时，加上选项-E，精确版本
 
 ### 1.4.1 redis安装
 
@@ -106,6 +106,9 @@ mv node-v16.17.0-linux-x64 ~/local/
    
    # 安装声明文件
    npm install @types/mysql
+   
+   
+   #可以使用Promise Promise.all await async 将回调改写为同步的模式
    ```
 
 2. typeorm
@@ -1694,11 +1697,13 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 
 2. 函数返回值为`Promise`时，调用该函数时加上`await`；在`Promise`里面使用resolve或者reject传出参数
 
-3. promise 在new的时候就开始执行了
+3. resolve 和reject 后面的代码还能执行，如果不希望它们执行直接在resolve或者reject后面return
 
-4. promise([...]).then(res =>{}) 里面的res的结果次序和传入的promise一致
+4. promise 在new的时候就开始执行了
 
-5. 示例代码
+5. promise([...]).then(res =>{}) 里面的res的结果次序和传入的promise一致
+
+6. 示例代码
 
    ```javascript
    //利用promise + await 将回调改为顺序执行

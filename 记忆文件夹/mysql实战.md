@@ -24,6 +24,98 @@
 
 
 
+## 2.1 binary log
+
+
+
+### 2.1.1 常用命令
+
+```mysql
+#查看日志开启状态 
+SHOW VARIABLES LIKE 'log_bin';
+
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| log_bin       | OFF   |
++---------------+-------+
+
+
+#查看所有binlog日志列表
+show master logs;
+#查看最新一个binlog日志的编号名称，及其最后一个操作事件结束点 
+show master status;
+#刷新log日志，立刻产生一个新编号的binlog日志文件，跟重启一个效果 
+flush logs;
+#清空所有binlog日志 
+reset master;
+```
+
+
+
+### 2.1.2 配置
+
+```ini
+[mysqld]
+#设置日志三种格式：STATEMENT、ROW、MIXED 。
+binlog_format = mixed
+#设置日志路径，注意路经需要mysql用户有权限写
+log-bin = /data/mysql/logs/mysql-bin.log
+#设置binlog清理时间
+expire_logs_days = 7
+#binlog每个日志文件大小
+max_binlog_size = 100m
+#binlog缓存大小
+binlog_cache_size = 4m
+#最大binlog缓存大小
+max_binlog_cache_size = 512m
+
+#配置binary log 同步到磁盘的频率,为0时性能最好,1性能最差,也可以配置为100或者1000
+sync_binlog = 0
+
+# sync_binlog=0，当事务提交之后，MySQL不做fsync之类的磁盘同步指令刷新binlog_cache中的信息到磁盘，而让Filesystem自行决定什么时候来做同步，或者cache满了之后才同步到磁盘。这个是性能最好的。
+
+# sync_binlog=1，当每进行1次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。
+
+# sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。
+```
+
+
+
+
+
+### 2.1.3 三种模式对比
+
+1. STATEMENT
+
+   ```
+   基于SQL语句的复制(statement-based replication, SBR)，每一条会修改数据的sql语句会记录到binlog中
+   ```
+
+2. ROW
+
+   ```
+   基于行的复制(row-based replication, RBR)格式：不记录每一条SQL语句的上下文信息，仅需记录哪条数据被修改了，修改成了什么样子了
+   ```
+
+3. MIXED
+
+   ```
+   混合模式复制(mixed-based replication, MBR)：以上两种模式的混合使用
+   ```
+
+   
+
+
+
+
+
+
+
+## 2.2 redo log
+
+
+
 
 
 # 第三章 事务隔离
@@ -659,7 +751,7 @@ SHOW VARIABLES LIKE 'slow_query_log_file';
 set global slow_query_log=on;
 
 [临时设置时间]
-set long_query_time = 0;
+set global long_query_time = 0;
 ```
 
 
@@ -909,9 +1001,345 @@ InnoDB 的事务设计有关系，可重复读是它默认的隔离级别，在�
 
 ## 11.4 不同count对比
 
-count(字段)<count(主键 id)<count(1)≈count(*)，所以我建议你，尽量使用 count(*)
+count(字段)<count(主键 id)<count(1)≈count(\*)，所以我建议你，尽量使用 count(\*)
 
 
 
 
+
+# 第十二章 Order by排序
+
+表结构
+
+```mysql
+CREATE TABLE `t` (
+  `id` int(11) NOT NULL,
+  `city` varchar(16) NOT NULL,
+  `name` varchar(16) NOT NULL,
+  `age` int(11) NOT NULL,
+  `addr` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `city` (`city`)
+) ENGINE=InnoDB;
+```
+
+
+
+查询语句
+
+```mysql
+select city,name,age from t where city='杭州' order by name limit 1000  ;
+```
+
+
+
+
+
+## 12.1 全字段排序
+
+
+
+### 12.1.1 排序过程
+
+1. 初始化 sort_buffer，确定放入 name、city、age 这三个字段；
+2. 从索引 city 找到第一个满足 city='杭州’条件的主键 id，也就是图中的 ID_X；
+3. 到主键 id 索引取出整行，取 name、city、age 三个字段的值，存入 sort_buffer 中；
+4. 从索引 city 取下一个记录的主键 id；
+5. 重复步骤 3、4 直到 city 的值不满足查询条件为止，对应的主键 id 也就是图中的 ID_Y；
+6. 对 sort_buffer 中的数据按照字段 name 做快速排序；
+7. 按照排序结果取前 1000 行返回给客户端。
+
+
+
+### 12.1.2 确定是否使用临时表
+
+```mysql
+
+/* 打开optimizer_trace，只对本线程有效 */
+SET optimizer_trace='enabled=on'; 
+
+/* @a保存Innodb_rows_read的初始值 */
+select VARIABLE_VALUE into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read';
+
+/* 执行语句 */
+select city, name,age from t where city='杭州' order by name limit 1000; 
+
+/* 查看 OPTIMIZER_TRACE 输出 */
+SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
+
+/* @b保存Innodb_rows_read的当前值 */
+select VARIABLE_VALUE into @b from performance_schema.session_status where variable_name = 'Innodb_rows_read';
+
+/* 计算Innodb_rows_read差值 */
+select @b-@a;
+```
+
+
+
+结果：number_of_tmp_files表示使用的临时文件个数。如果 sort_buffer_size 超过了需要排序的数据量的大小，number_of_tmp_files 就是 0，表示排序可以直接在内存中完成。否则就需要放在临时文件中排序。可以在配置文件里面配置sort_buffer_size 的大小
+
+```json
+            "filesort_execution": [
+            ],
+            "filesort_summary": {
+              "rows": 16781,
+              "examined_rows": 16781,
+              "number_of_tmp_files": 35,
+              "sort_buffer_size": 32760,
+              "sort_mode": "<sort_key, packed_additional_fields>"
+            }
+
+```
+
+
+
+
+
+## 12.2 rowid排序
+
+MySQL 认为排序的单行长度太大，就只将要排序的列和主键id放入sort_buffer进行排序。
+
+
+
+### 12.2.1 设置
+
+```mysql
+/*单行的长度超过这个值，MySQL 就认为单行太大，要换一个算法*/
+SET max_length_for_sort_data = 16;
+```
+
+
+
+### 12.2.2 排序过程
+
+1. 初始化 sort_buffer，确定放入两个字段，即 name 和 id；
+2. 从索引 city 找到第一个满足 city='杭州’条件的主键 id，也就是图中的 ID_X；
+3. 到主键 id 索引取出整行，取 name、id 这两个字段，存入 sort_buffer 中；
+4. 从索引 city 取下一个记录的主键 id；
+5. 重复步骤 3、4 直到不满足 city='杭州’条件为止，也就是图中的 ID_Y；
+6. 对 sort_buffer 中的数据按照字段 name 进行排序；
+7. 遍历排序结果，取前 1000 行，并按照 id 的值回到原表中取出 city、name 和 age 三个字段返回给客户端。
+
+
+
+## 12.3 两种排序对比
+
+rowid 排序会要求回表多造成磁盘读，因此不会被优先选择，所以业务有很多order by 操作时，可以把sort_buffer_size 设置得大一些。
+
+
+
+## 12.4 Order by语句优化
+
+
+
+
+
+### 12.4.1 创建city和 name的联合索引
+
+```mysql
+alter table t add index city_user(city, name);
+```
+
+
+
+查询流程
+
+1. 从索引 (city,name) 找到第一个满足 city='杭州’条件的主键 id；
+2. 到主键 id 索引取出整行，取 name、city、age 三个字段的值，作为结果集的一部分直接返回；
+3. 从索引 (city,name) 取下一个记录主键 id；
+4. 重复步骤 2、3，直到查到第 1000 条记录，或者是不满足 city='杭州’条件时循环结束。
+
+
+
+### 12.4.2 创建city、name和age的联合索引
+
+```mysql
+alter table t add index city_user_age(city, name, age);
+```
+
+流程和上面类似，但是不需要回表，速度更快
+
+
+
+
+
+# 第十三章 随机显示单词
+
+
+
+建表
+
+```sql
+CREATE TABLE `words` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `word` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+delimiter ;;
+create procedure idata()
+begin
+  declare i int;
+  set i=0;
+  while i<10000 do
+    insert into words(word) values(concat(char(97+(i div 1000)), char(97+(i % 1000 div 100)), char(97+(i % 100 div 10)), char(97+(i % 10))));
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+
+call idata();
+```
+
+
+
+## 13.1 内存临时表
+
+
+
+### 13.1.1 查询语句
+
+```sql
+select word from words order by rand() limit 3;
+```
+
+
+
+### 13.1.2 查看语句执行情况
+
+```sql
+explain select word from words order by rand() limit 3;
+
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+---------------------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                           |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+---------------------------------+
+|  1 | SIMPLE      | words | NULL       | ALL  | NULL          | NULL | NULL    | NULL | 9980 |   100.00 | Using temporary; Using filesort |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+---------------------------------+
+
+
+#Using temporary，表示的是需要使用临时表；Using filesort，表示的是需要执行排序操作。
+```
+
+
+
+### 13.1.3 排序方式
+
+内存表使用rowid排序，回表过程只是简单地根据数据行的位置，直接访问内存得到数据，根本不会导致多访问磁盘。
+
+
+
+
+
+### 13.1.4 执行流程
+
+1. 创建一个临时表。这个临时表使用的是 memory 引擎，表里有两个字段，第一个字段是 double 类型，为了后面描述方便，记为字段 R，第二个字段是 varchar(64) 类型，记为字段 W。并且，这个表没有建索引
+2. 从 words 表中，按主键顺序取出所有的 word 值。对于每一个 word 值，调用 rand() 函数生成一个大于 0 小于 1 的随机小数，并把这个随机小数和 word 分别存入临时表的 R 和 W 字段中，到此，扫描行数是 10000。
+3. 现在临时表有 10000 行数据了，接下来你要在这个没有索引的内存临时表上，按照字段 R 排序。
+4. 初始化 sort_buffer。sort_buffer 中有两个字段，一个是 double 类型，另一个是整型。
+5. 从内存临时表中一行一行地取出 R 值和位置信息（我后面会和你解释这里为什么是“位置信息”），分别存入 sort_buffer 中的两个字段里。这个过程要对内存临时表做全表扫描，此时扫描行数增加 10000，变成了 20000。
+6. 在 sort_buffer 中根据 R 的值进行排序。注意，这个过程没有涉及到表操作，所以不会增加扫描行数。
+7. 排序完成后，取出前三个结果的位置信息，依次到内存临时表中取出 word 值，返回给客户端。这个过程中，访问了表的三行数据，总扫描行数变成了 20003。
+
+
+
+## 13.2 磁盘临时表
+
+
+
+问题：是不是所有的临时表都是内存表呢
+
+答案：tmp_table_size 这个配置限制了内存临时表的大小，默认值是 16M。如果临时表大小超过了 tmp_table_size，那么内存临时表就会转成磁盘临时表
+
+
+
+复现使用磁盘临时表
+
+```sql
+
+set tmp_table_size=1024;
+set sort_buffer_size=32768;
+set max_length_for_sort_data=16;
+/* 打开 optimizer_trace，只对本线程有效 */
+SET optimizer_trace='enabled=on'; 
+
+/* 执行语句 */
+select word from words order by rand() limit 3;
+
+/* 查看 OPTIMIZER_TRACE 输出 */
+SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
+```
+
+
+
+问题：number_of_tmp_files 的值为什么是0
+
+答案：filesort_priority_queue_optimization 这个部分的 chosen=true，就表示使用了优先队列排序算法，这个过程不需要临时文件，因此对应的 number_of_tmp_files 是 0。就是大顶堆的排序方式。
+
+
+
+问题：下面语句为什么不用优先对了排序
+
+```sql
+select city,name,age from t where city='杭州' order by name limit 1000  ;
+```
+
+答案：堆的大小超过了sort_buffer_size 
+
+
+
+## 13.3 随机排序法
+
+
+
+### 13.3.1 方法一
+
+1. 取得这个表的主键 id 的最大值 M 和最小值 N;
+2. 用随机函数生成一个最大值到最小值之间的数 X = (M-N)*rand() + N;
+3. 取不小于 X 的第一个 ID 的行。
+
+
+
+问题：如果id中间有空洞，不同行的概率会不一样。
+
+
+
+### 13.3.2 方法二
+
+1. 取得整个表的行数，并记为 C。
+2. 取得 Y = floor(C * rand())。 floor 函数在这里的作用，就是取整数部分。
+3. 再用 limit Y,1 取得一行。
+
+
+
+## 13.4 随机取三个单词
+
+1. 取得整个表的行数，记为 C；
+2. 根据相同的随机方法得到 Y1、Y2、Y3；
+3. 再执行三个 limit Y, 1 语句得到三行数据。
+
+
+
+## 13.5 总结
+
+如果你直接使用 order by rand()，这个语句需要 Using temporary 和 Using filesort，查询的执行代价往往是比较大的。所以，在设计的时候你要尽量避开这种写法。尽量将业务逻辑写在业务代码中，让数据库只做“读写数据”的事情
+
+
+
+
+
+
+
+# 第十四章 相同逻辑SQL语句性能分析
+
+
+
+
+
+# 第十五章 只查一行也很慢
+
+
+
+
+
+# 第十六章 幻读
 
