@@ -1331,11 +1331,397 @@ select city,name,age from t where city='杭州' order by name limit 1000  ;
 
 # 第十四章 相同逻辑SQL语句性能分析
 
+在 MySQL 中，有很多看上去逻辑相同，但性能却差异巨大的 SQL 语句。今天挑选了三个这样的案例和你分享
 
+
+
+## 14.1 条件字段函数操作
+
+
+
+### 14.1.1 表结构
+
+```sql
+CREATE TABLE `tradelog` (
+  `id` int(11) NOT NULL,
+  `tradeid` varchar(32) DEFAULT NULL,
+  `operator` int(11) DEFAULT NULL,
+  `t_modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `tradeid` (`tradeid`),
+  KEY `t_modified` (`t_modified`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+
+
+### 14.1.2 查询语句
+
+```sql
+select count(*) from tradelog where month(t_modified)=7;
+```
+
+explain之后，发现扫描了索引的全部值。对索引字段做函数操作，可能会破坏索引值的有序性，因此优化器就决定放弃走树搜索功能。
+
+
+
+### 14.1.3 正确sql语句
+
+```sql
+select count(*) from tradelog where
+(t_modified >= '2016-7-1' and t_modified<'2016-8-1') or
+(t_modified >= '2017-7-1' and t_modified<'2017-8-1') or 
+(t_modified >= '2018-7-1' and t_modified<'2018-8-1');
+```
+
+
+
+
+
+## 14.2 隐式类型转换
+
+
+
+### 14.2.1 查询语句
+
+```sql
+select * from tradelog where tradeid=110717;
+```
+
+tradeid 的字段类型是 varchar(32)，而输入的参数却是整型，所以需要做类型转换。这条语句触发了我们上面说到的规则：对索引字段做函数操作，优化器会放弃走树搜索功能。
+
+
+
+
+
+## 14.3 隐式字符编码转换
+
+两个表的字符集不同，一个是 utf8，一个是 utf8mb4，所以做表连接查询的时候用不上关联字段的索引。
+
+
+
+### 14.3.1 表结构
+
+```sql
+
+CREATE TABLE `trade_detail` (
+  `id` int(11) NOT NULL,
+  `tradeid` varchar(32) DEFAULT NULL,
+  `trade_step` int(11) DEFAULT NULL, /*操作步骤*/
+  `step_info` varchar(32) DEFAULT NULL, /*步骤信息*/
+  PRIMARY KEY (`id`),
+  KEY `tradeid` (`tradeid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert into tradelog values(1, 'aaaaaaaa', 1000, now());
+insert into tradelog values(2, 'aaaaaaab', 1000, now());
+insert into tradelog values(3, 'aaaaaaac', 1000, now());
+
+insert into trade_detail values(1, 'aaaaaaaa', 1, 'add');
+insert into trade_detail values(2, 'aaaaaaaa', 2, 'update');
+insert into trade_detail values(3, 'aaaaaaaa', 3, 'commit');
+insert into trade_detail values(4, 'aaaaaaab', 1, 'add');
+insert into trade_detail values(5, 'aaaaaaab', 2, 'update');
+insert into trade_detail values(6, 'aaaaaaab', 3, 'update again');
+insert into trade_detail values(7, 'aaaaaaab', 4, 'commit');
+insert into trade_detail values(8, 'aaaaaaac', 1, 'add');
+insert into trade_detail values(9, 'aaaaaaac', 2, 'update');
+insert into trade_detail values(10, 'aaaaaaac', 3, 'update again');
+insert into trade_detail values(11, 'aaaaaaac', 4, 'commit');
+```
+
+
+
+### 14.3.2 查询语句
+
+```sql
+select d.* from tradelog l, trade_detail d where d.tradeid=l.tradeid and l.id=2; /*语句Q1*/
+```
+
+
+
+explain结果
+
+```sql
+explain select d.* from tradelog l, trade_detail d where d.tradeid=l.tradeid and l.id=2; /*Q1*/
+
+
++----+-------------+-------+------------+-------+-----------------+---------+---------+-------+------+----------+-------------+
+| id | select_type | table | partitions | type  | possible_keys   | key     | key_len | ref   | rows | filtered | Extra       |
++----+-------------+-------+------------+-------+-----------------+---------+---------+-------+------+----------+-------------+
+|  1 | SIMPLE      | l     | NULL       | const | PRIMARY,tradeid | PRIMARY | 4       | const |    1 |   100.00 | NULL        |
+|  1 | SIMPLE      | d     | NULL       | ALL   | NULL            | NULL    | NULL    | NULL  |   11 |   100.00 | Using where |
++----+-------------+-------+------------+-------+-----------------+---------+---------+-------+------+----------+-------------+
+```
+
+explain 的结果里面第二行的 key=NULL 表示的就是，这个过程是通过遍历主键索引的方式，一个一个地判断 tradeid 的值是否匹配
 
 
 
 # 第十五章 只查一行也很慢
+
+主题：在一个简单的表上，执行“查一行”，可能会出现的被锁住和执行慢的例子
+
+
+
+构造表
+
+```sql
+CREATE TABLE `t` (
+  `id` int(11) NOT NULL,
+  `c` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+delimiter ;;
+create procedure idata5()
+begin
+  declare i int;
+  set i=1;
+  while(i<=100000) do
+    insert into t values(i,i);
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+
+call idata5();
+```
+
+
+
+## 15.1 查询长时间不返回
+
+
+
+查询语句
+
+```sql
+select * from t where id=1;
+```
+
+
+
+
+
+### 15.1.1 等MDL锁
+
+使用 show processlist 命令查看显示 Waiting for table metadata lock
+
+```
+mysql> show processlist;
++----+------+-----------+------+---------+------+---------------------------------+------------------------------+
+| Id | User | Host      | db   | Command | Time | State                           | Info                         |
++----+------+-----------+------+---------+------+---------------------------------+------------------------------+
+| 33 | root | localhost | test | Sleep   |   35 |                                 | NULL                         |
+| 34 | root | localhost | test | Query   |   24 | Waiting for table metadata lock | select * from t where id = 1 |
+| 35 | root | localhost | test | Query   |    0 | starting                        | show processlist             |
++----+------+-----------+------+---------+------+---------------------------------+------------------------------+
+```
+
+
+
+解决方案：就是找到谁持有 MDL 写锁，然后把它 kill 掉
+
+
+
+```sql
+select blocking_pid from sys.schema_table_lock_waits;
+
+kill connection ${blocking_pid};
+```
+
+
+
+注意：该功能需要先开启与MDL锁等待事件相关的instruments:
+
+```sql
+update performance_schema.setup_instruments set  ENABLED='no',timed='no' where name like 'wait/lock/metadata/sql/mdl';
+
+call sys.ps_setup_enable_instrument('wait/lock/metadata/sql/mdl');
+
++-----------------------+
+
+| summary               |
+
++-----------------------+
+
+| Enabled 1 instruments |
+
++-----------------------+
+
+#显示1表示未开启
+update performance_schema.setup_instruments set  ENABLED='yes',timed='yes' where name like 'wait/lock/metadata/sql/mdl';
+
+select * from performance_schema.setup_instruments where name like 'wait/lock/metadata/sql/mdl';
+
++----------------------------+---------+-------+
+
+| NAME                       | ENABLED | TIMED |
+
++----------------------------+---------+-------+
+
+| wait/lock/metadata/sql/mdl | YES     | YES   |
+
++----------------------------+---------+-------+
+-----------------------------------
+
+call sys.ps_setup_enable_instrument('wait/lock/metadata/sql/mdl');
+
++-----------------------+
+
+| summary               |
+
++-----------------------+
+
+| Enabled 0 instruments |
+
++-----------------------+
+```
+
+
+
+
+
+### 15.1.2 等flush
+
+flush表的操作有两个，正常这两个语句执行起来都很快，除非它们也被别的线程堵住了
+
+```sql
+
+flush tables t with read lock;
+
+flush tables with read lock;
+```
+
+
+
+复现
+
+| session A               | session B       | session C                     |
+| ----------------------- | --------------- | ----------------------------- |
+| select sleep(1) from t; |                 |                               |
+|                         | flush tables t; |                               |
+|                         |                 | select * from t where id = 1; |
+
+
+
+```shell
+mysql> show processlist;
++----+------+-----------+------+---------+------+-------------------------+------------------------------+
+| Id | User | Host      | db   | Command | Time | State                   | Info                         |
++----+------+-----------+------+---------+------+-------------------------+------------------------------+
+| 34 | root | localhost | test | Query   |   28 | Waiting for table flush | flush tables t               |
+| 35 | root | localhost | test | Query   |   24 | Waiting for table flush | select * from t where id = 1 |
+| 36 | root | localhost | test | Query   |   32 | User sleep              | select sleep(1) from t       |
+| 37 | root | localhost | test | Query   |    0 | starting                | show processlist             |
++----+------+-----------+------+---------+------+-------------------------+------------------------------+
+```
+
+
+
+线程状态是：Waiting for table flush
+
+把关键线程kill即可。
+
+
+
+### 15.1.3 等行锁
+
+
+
+复现
+
+| session A                                 | session B                                        |
+| ----------------------------------------- | ------------------------------------------------ |
+| begin; update t set c = c+1 where id = 1; |                                                  |
+|                                           | select * from t where id = 1 lock in share mode; |
+
+
+
+show processlist
+
+```shell
+mysql> show processlist;
++----+------+-----------+------+---------+------+------------+-------------------------------------------------+
+| Id | User | Host      | db   | Command | Time | State      | Info                                            |
++----+------+-----------+------+---------+------+------------+-------------------------------------------------+
+| 34 | root | localhost | test | Query   |   24 | statistics | select * from t where id = 1 lock in share mode |
+| 37 | root | localhost | test | Query   |    0 | starting   | show processlist                                |
+| 42 | root | localhost | test | Sleep   |  154 |            | NULL                                            |
++----+------+-----------+------+---------+------+------------+-------------------------------------------------+
+
+```
+
+状态是：statistics
+
+
+
+解决方案：查出谁占了写锁，然后kill即可
+
+```sql
+select * from sys.innodb_lock_waits where locked_table = '`test`.`t`' \G
+```
+
+
+
+
+
+## 15.2 查询慢
+
+
+
+### 15.2.1 无索引，全表扫描
+
+```sql
+select * from t where c=50000 limit 1;
+```
+
+
+
+慢查询日志，扫描了5000行
+
+```shell
+# Time: 2022-10-10T08:23:28.690504Z
+# User@Host: root[root] @ localhost []  Id:    43
+# Query_time: 0.019780  Lock_time: 0.000119 Rows_sent: 1  Rows_examined: 50000
+SET timestamp=1665390208;
+select * from t where c=50000 limit 1;
+```
+
+
+
+
+
+### 15.2.2 一致性读多次执行undo log
+
+
+
+复现
+
+| session A                                        | session B                                |
+| ------------------------------------------------ | ---------------------------------------- |
+| start transaction with consistent snapshot；     |                                          |
+|                                                  | update t set c=c+1 where id=1;执行一万次 |
+| select * from t where id=1;                      |                                          |
+| select * from t where id = 1 lock in share mode; |                                          |
+
+
+
+带 lock in share mode 的 SQL 语句，是当前读，因此会直接读到 1000001 这个结果，所以速度很快；而 select * from t where id=1 这个语句，是一致性读，因此需要从 1000001 开始，依次执行 undo log，执行了 100 万次以后，才将 1 这个结果返回
+
+
+
+```
+select * from t where id=1 扫描行数为1,时间却长达30ms
+
+# Query_time: 0.030567  Lock_time: 0.000159 Rows_sent: 1  Rows_examined: 1
+SET timestamp=1665391329;
+select * from t where id=1;
+
+```
+
+
 
 
 
@@ -1343,3 +1729,188 @@ select city,name,age from t where city='杭州' order by name limit 1000  ;
 
 # 第十六章 幻读
 
+
+
+
+
+# 第十七章 行锁
+
+
+
+
+
+# 第十八章 临时提升MySQL性能
+
+
+
+## 18.1 短连接风暴
+
+短连接超过这个max_connections，系统就会拒绝接下来的连接请求，并报错提示“Too many connections。
+
+
+
+会话
+
+|         | session A                       | session B                     | session C         |
+| ------- | ------------------------------- | ----------------------------- | ----------------- |
+| T       | begin;insert into t values(1,1) | select * from t where id = 1; |                   |
+| T + 30s |                                 |                               | show processlist; |
+
+
+
+### 18.1.1 处理掉空闲线程
+
+1. 查看线程状态，其中Command 为 Sleep的是空闲线程
+
+   ```shell
+   +----+------+-----------+------+---------+------+----------+------------------+
+   | Id | User | Host      | db   | Command | Time | State    | Info             |
+   +----+------+-----------+------+---------+------+----------+------------------+
+   | 22 | root | localhost | test | Sleep   |   52 |          | NULL             |
+   | 23 | root | localhost | test | Sleep   |   27 |          | NULL             |
+   | 24 | root | localhost | test | Query   |    0 | starting | show processlist |
+   +----+------+-----------+------+---------+------+----------+------------------+
+   ```
+
+2. 优先断开像 session B 这样的事务外空闲的连接
+
+   ```sql
+   #查看事务内空闲线程
+   select * from information_schema.innodb_trx \G
+   
+   *************************** 1. row ***************************
+                       trx_id: 362790
+                    trx_state: RUNNING
+                  trx_started: 2022-10-10 03:26:09
+        trx_requested_lock_id: NULL
+             trx_wait_started: NULL
+                   trx_weight: 2
+          trx_mysql_thread_id: 22
+                    trx_query: NULL
+          trx_operation_state: NULL
+            trx_tables_in_use: 0
+            trx_tables_locked: 1
+             trx_lock_structs: 1
+        trx_lock_memory_bytes: 1136
+              trx_rows_locked: 0
+            trx_rows_modified: 1
+      trx_concurrency_tickets: 0
+          trx_isolation_level: REPEATABLE READ
+            trx_unique_checks: 1
+       trx_foreign_key_checks: 1
+   trx_last_foreign_key_error: NULL
+    trx_adaptive_hash_latched: 0
+    trx_adaptive_hash_timeout: 0
+             trx_is_read_only: 0
+   trx_autocommit_non_locking: 0
+   
+   trx_mysql_thread_id: 22 表示22号线程处于事务中,所以先断开23号线程
+   ```
+
+3. 断开线程
+
+   ```shell
+    kill connection + id 
+   ```
+
+   
+
+
+
+### 18.1.2 减少连接过程的消耗
+
+跳过权限验证的方法是：重启数据库，并使用–skip-grant-tables 参数启动
+
+
+
+
+
+### 18.1.3 调高 max_connections 的值
+
+max_connections 这个参数的目的是想保护 MySQL，如果我们把它改得太大，让更多的连接都可以进来，那么系统的负载可能会进一步加大，大量的资源耗费在权限验证等逻辑上，结果可能是适得其反，已经连接的线程拿不到 CPU 资源去执行业务的 SQL 请求
+
+
+
+## 18.2 慢查询
+
+
+
+
+
+### 18.2.1 索引没设计好
+
+紧急创建索引来解决。假设服务是一主一备，主库 A、备库 B，这个方案的大致流程是这样的
+
+1. 在备库 B 上执行 set sql_log_bin=off，也就是不写 binlog，然后执行 alter table 语句加上索引；
+2. 执行主备切换；
+3. 这时候主库是 B，备库是 A。在 A 上执行 set sql_log_bin=off，然后执行 alter table 语句加上索引。
+
+
+
+### 18.2.2 SQL语句没写好
+
+MySQL 5.7 提供了 query_rewrite 功能，可以把输入的一种语句改写成另外一种模式。比如下面的语句可以将如下sql修改
+
+```sql
+ select * from t where id + 1 = 10000
+```
+
+
+
+修改方法
+
+```sql
+insert into query_rewrite.rewrite_rules(pattern, replacement, pattern_database) values ("select * from t where id + 1 = ?", "select * from t where id = ? - 1", "db1");
+
+call query_rewrite.flush_rewrite_rules();
+```
+
+
+
+注意：query_rewrite 是MySQL 5.7.6之后的版本才支持的功能。
+
+安装query_rewrite 
+
+```shell
+mysql -uroot -p'tars2015' < /usr/share/mysql/install_rewriter.sql
+```
+
+
+
+
+
+
+
+
+
+### 18.2.3 MySQL选错索引
+
+使用查询重写功能，给原来的语句加上 force index
+
+
+
+
+
+### 18.2.4 预先发现问题
+
+1. 上线前，在测试环境，把慢查询日志（slow log）打开，并且把 long_query_time 设置成 0，确保每个语句都会被记录入慢查询日志
+2. 在测试表里插入模拟线上的数据，做一遍回归测试
+3. 观察慢查询日志里每类语句的输出，特别留意 Rows_examined 字段是否与预期一致
+
+
+
+
+
+
+
+## 18.3 QPS突增
+
+线上新功能，该功能有Bug导致QPS突增。
+
+
+
+解决方案：下架新功能
+
++ 一种是由全新业务的 bug 导致的。假设你的 DB 运维是比较规范的，也就是说白名单是一个个加的。这种情况下，如果你能够确定业务方会下掉这个功能，只是时间上没那么快，那么就可以从数据库端直接把白名单去掉
++ 如果这个新功能使用的是单独的数据库用户，可以用管理员账号把这个用户删掉，然后断开现有连接。这样，这个新功能的连接不成功，由它引发的 QPS 就会变成 0。
++ 如果这个新增的功能跟主体功能是部署在一起的，那么我们只能通过处理语句来限制。这时，我们可以使用上面提到的查询重写功能，把压力最大的 SQL 语句直接重写成"select 1"返回。

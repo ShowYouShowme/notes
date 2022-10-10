@@ -273,6 +273,44 @@ docker pull mysql:5.7
    grant all on *.* to 'tars'@'%' identified by 'tars2015' with grant option;
    ```
 
+4. 白名单配置MySQL5.7
+
+   ```ini
+   [step-1]
+   desc = 登录
+   cmd = mysql -uroot -pmysql
+   
+   [step-2]
+   desc = 切换至mysql库
+   cmd = use mysql;
+   
+   [step-3]
+   desc = 查看有白名单权限的用户
+   cmd = select Host,User from user;
+   
+   [step-4]
+   desc = 指定ip有权限访问mysql
+   cmd = GRANT ALL ON *.* to root@'192.168.1.4' IDENTIFIED BY 'your-root-password';
+   #如果无密码
+   cmd = GRANT ALL ON *.* to root@'192.168.1.4' ;
+   
+   ;允许一个网段登录
+   cmd = GRANT ALL PRIVILEGES ON *.* TO root@'192.168.192.%' IDENTIFIED BY 'root' WITH GRANT OPTION;
+   
+   ;或者
+   cmd = GRANT ALL PRIVILEGES ON *.* TO root@'192.168.%.%' IDENTIFIED BY 'root' WITH GRANT OPTION;
+   
+   [step-5]
+   desc = 删除白名单用户的权限
+   cmd = DELETE FROM user WHERE User='username' and Host='host';
+   
+   [step-6]
+   desc = 刷新权限
+   cmd = FLUSH PRIVILEGES;
+   ```
+
+   
+
    
 
 
@@ -435,6 +473,22 @@ docker pull mysql:5.7
    DATE                                  3 个字节,日期"1949-10-01"
    DATETIME                              8 个字节,日期和时间"1949-10-01 11:11:11" 用NOW()输入当前日期和时间
    TIMESTAMP                             4 个字节,日期和时间"1949-10-01 11:11:11" 用CURRENT_TIMESTAMP 输入当前日期和时间
+   
+   
+   在创建时间字段的时候
+   
+   DEFAULT CURRENT_TIMESTAMP
+   表示当插入数据的时候，该字段默认值为当前时间
+   
+   ON UPDATE CURRENT_TIMESTAMP
+   表示每次更新这条数据的时候，该字段都会更新成当前时间
+   
+   
+   CREATE TABLE `mytest` (
+       `text` varchar(255) DEFAULT '' COMMENT '内容',
+       `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
    ```
 
 2. 字符串类型
@@ -853,6 +907,8 @@ alter table tuser add index(name);
 ### 2.11.19 事务
 
 ```mysql
+#START TRANSACTION是在第一条select执行完后，才得到事务的一致性快照。而START TRANSACTION with consistent snapshot则是立即得到事务的一致性快照。
+
 #启动事务
 begin 或 start transaction 或者 start transaction with consistent snapshot;
 
@@ -1038,9 +1094,177 @@ show variables like 'transaction_isolation';
    export LANG=en_US.UTF-8
    ```
 
+
+
+
+## 2.15 字符集
+
+myslq 可以设置数据库级别，表级别，列级别 字符集编码；
+
+**优先级顺序为：数据库字符集 < 表字符集 < 列字符集；**
+
+也就是 上面三个级别 字符集不一致时，以 更小范围的配置为准；
+
+例如：数据库字符集为utf8 表字符集不设置的情况下 会默认 utf8 ，如果表主动设置了编码 utf8mb4;那么表的字符集编码就为utf8MB4;
+
+
+
+### 2.15.1 创建库时指定编码
+
+```sql
+-- 创建数据库时,设置数据库的编码方式 
+-- CHARACTER SET:指定数据库采用的字符集,utf8不能写成utf-8
+-- COLLATE:指定数据库字符集的排序规则,utf8的默认排序规则为utf8_general_ci（通过show character set查看）
+drop database if EXISTS dbtest;
+create database dbtest CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
+
+
+
+### 2.15.2 修改数据库编码
+
+```sql
+-- 修改数据库编码
+alter database dbtest CHARACTER SET GBK COLLATE gbk_chinese_ci;
+alter database dbtest CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
+
+
+
+
+
+### 2.15.3 创建表时指定编码
+
+```sql
+-- 创建表时，设置表、字段编码
+use dbtest;
+drop table if exists tbtest;
+create table tbtest(
+id int(10) auto_increment,
+user_name varchar(60) CHARACTER SET GBK COLLATE gbk_chinese_ci,
+email varchar(60),
+PRIMARY key(id)
+)CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
+
+
+
+### 2.15.4 修改表编码
+
+```sql
+-- 修改表编码
+alter table tbtest character set utf8 COLLATE utf8_general_ci;
+-- 修改字段编码
+ALTER TABLE tbtest MODIFY email VARCHAR(60) CHARACTER SET utf8 COLLATE utf8_general_ci;
+```
+
+
+
+### 2.15.5 查看数据库编码
+
+```sql
+-- 查看创建数据库的指令并查看数据库使用的编码
+show create database dbtest;
+```
+
+
+
+### 2.15.6 查看表编码
+
+```sql
+show create table t;
+```
+
+
+
+
+
+## 2.16 kill
+
+
+
+### 2.16.1 kill query + 线程id
+
+终止正在执行的语句，但是连接不断开。
+
+
+
+### 2.16.2 kill connection +线程id
+
+其中， connection可以省略。终止正在执行的语句，然后断开连接。
+
+
+
+
+
+
+
+## 2.17 版本查看
+
+1. 命令行客户端登录后信息包含版本
+
+   ```shell
+   mysql -uroot -p'tars2015'
    
+   mysql: [Warning] Using a password on the command line interface can be insecure.
+   Welcome to the MySQL monitor.  Commands end with ; or \g.
+   Your MySQL connection id is 30
+   Server version: 5.7.39 MySQL Community Server (GPL)
+   
+   Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+   
+   Oracle is a registered trademark of Oracle Corporation and/or its
+   affiliates. Other names may be trademarks of their respective
+   owners.
+   
+   Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+   ```
+
+2. 使用status命令
+
+   ```mysql
+   mysql> STATUS
+   ```
+
+3. 使用sql语句
+
+   ```sql
+   select version();
+   ```
 
 
+
+## 2.18 存储过程
+
+
+
+### 2.18.1 查看全部存储过程
+
+```sql
+select `name` from mysql.proc where db = '${your_db_name}' and `type` = 'PROCEDURE'
+
+#或者
+show procedure status;
+```
+
+
+
+### 2.18.2 查看存储过程创建代码
+
+```sql
+show create procedure proc_name;
+show create function func_name;
+```
+
+
+
+
+
+### 2.18.3 删除存储过程
+
+```sql
+DROP PROCEDURE [ IF EXISTS ] <过程名>
+```
 
 
 
