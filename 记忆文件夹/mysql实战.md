@@ -1727,13 +1727,13 @@ select * from t where id=1;
 
 
 
-# 第十六章 幻读
+# 第十六章 幻读[难点]
 
 
 
 
 
-# 第十七章 行锁
+# 第十七章 行锁[难点]
 
 
 
@@ -1914,3 +1914,208 @@ mysql -uroot -p'tars2015' < /usr/share/mysql/install_rewriter.sql
 + 一种是由全新业务的 bug 导致的。假设你的 DB 运维是比较规范的，也就是说白名单是一个个加的。这种情况下，如果你能够确定业务方会下掉这个功能，只是时间上没那么快，那么就可以从数据库端直接把白名单去掉
 + 如果这个新功能使用的是单独的数据库用户，可以用管理员账号把这个用户删掉，然后断开现有连接。这样，这个新功能的连接不成功，由它引发的 QPS 就会变成 0。
 + 如果这个新增的功能跟主体功能是部署在一起的，那么我们只能通过处理语句来限制。这时，我们可以使用上面提到的查询重写功能，把压力最大的 SQL 语句直接重写成"select 1"返回。
+
+
+
+
+
+# 第三十九章  自增主键不连续
+
+
+
+表结构
+
+```sql
+CREATE TABLE `t` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `c` int(11) DEFAULT NULL,
+  `d` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `c` (`c`)
+) ENGINE=InnoDB;
+```
+
+
+
+## 39.1 自增主键保存场所
+
+
+
+插入记录
+
+```sql
+insert into t values(null, 1, 1); 
+```
+
+
+
+查看
+
+```sql
+mysql> show  create table t \G;
+*************************** 1. row ***************************
+       Table: t
+Create Table: CREATE TABLE `t` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `c` int(11) DEFAULT NULL,
+  `d` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `c` (`c`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1
+1 row in set (0.00 sec)
+
+```
+
+
+
+保存位置
+
++ MyISAM 引擎的自增值保存在数据文件中
++ InnoDB 引擎的自增值，在 MySQL 5.7 及之前的版本，自增值保存在内存里，并没有持久化。每次重启后，第一次打开表的时候，都会去找自增值的最大值 max(id)，然后将 max(id)+1 作为这个表当前的自增值。在 MySQL 8.0 版本，将自增值的变更记录在了 redo log 中，重启的时候依靠 redo log 恢复重启之前的值
+
+
+
+
+
+## 39.2 自增值修改机制
+
+
+
+### 39.2.1 自增值行为
+
+1. 如果插入数据时 id 字段指定为 0、null 或未指定值，那么就把这个表当前的 AUTO_INCREMENT 值填到自增字段
+2. 如果插入数据时 id 字段指定了具体的值，就直接使用语句里指定的值
+
+
+
+### 39.2.2 自增值变更
+
+根据要插入的值和当前自增值的大小关系，自增值的变更结果也会有所不同。假设，某次要插入的值是 X，当前的自增值是 Y。
+
+1. 如果 X<Y，那么这个表的自增值不变
+2. 如果 X≥Y，就需要把当前自增值修改为新的自增值
+
+
+
+
+
+## 39.3 自增值修改时机
+
+假设，表 t 里面已经有了 (1,1,1) 这条记录，这时我再执行一条插入数据命令
+
+```sql
+insert into t values(null, 1, 1); 
+```
+
+1. 执行器调用 InnoDB 引擎接口写入一行，传入的这一行的值是 (0,1,1);
+2. InnoDB 发现用户没有指定自增 id 的值，获取表 t 当前的自增值 2；
+3. 将传入的行的值改成 (2,1,1);
+4. 将表的自增值改成 3；
+5. 继续执行插入数据操作，由于已经存在 c=1 的记录，所以报 Duplicate key error，语句返回。
+
+
+
+
+
+**结论：唯一键冲突是导致自增主键 id 不连续的第一种原因**
+
+
+
+事务回滚也会导致自增id不连续
+
+```sql
+insert into t values(null,1,1);
+begin;
+insert into t values(null,2,2);
+rollback;
+insert into t values(null,2,2);
+//插入的行是(3,2,2)
+```
+
+
+
+
+
+
+
+**结论：事务回滚是导致自增主键 id 不连续的第二种原因**
+
+
+
+
+
+## 39.4 自增锁的优化
+
+
+
+优化参数innodb_autoinc_lock_mode
+
+1. 这个参数的值被设置为 0 时，表示采用之前 MySQL 5.0 版本的策略，即语句执行结束后才释放锁
+2. 这个参数的值被设置为 1 时
+   + 普通 insert 语句，自增锁在申请之后就马上释放
+   + 类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放；
+3. 这个参数的值被设置为 2 时，所有的申请自增主键的动作都是申请后就释放锁
+
+**默认值是1。**
+
+
+
+自增id分配策略
+
+1. 在普通的 insert 语句里面包含多个 value 值的情况下，即使 innodb_autoinc_lock_mode 设置为 1，也不会等语句执行完成才释放锁。因为这类语句在申请自增 id 的时候，是可以精确计算出需要多少个 id 的，然后一次性申请，申请完成后锁就可以释放了
+
+2. 对于批量插入数据的语句，不知道要预先申请多少个 id，MySQL 有一个批量申请自增 id 的策略
+
+   + 语句执行过程中，第一次申请自增 id，会分配 1 个；
+
+   + 1 个用完以后，这个语句第二次申请自增 id，会分配 2 个；
+
+   + 2 个用完以后，还是这个语句，第三次申请自增 id，会分配 4 个；
+
+   + 依此类推，同一个语句去申请自增 id，每次申请到的自增 id 个数都是上一次的两倍。
+
+   + 例子
+
+     ```sql
+     insert into t values(null, 1,1);
+     insert into t values(null, 2,2);
+     insert into t values(null, 3,3);
+     insert into t values(null, 4,4);
+     create table t2 like t;
+     insert into t2(c,d) select c,d from t;
+     insert into t2 values(null, 5,5);
+     
+     由于这条语句实际只用上了 4 个 id，所以 id=5 到 id=7 就被浪费掉了。之后，再执行 insert into t2 values(null, 5,5)，实际上插入的数据就是（8,5,5)
+     ```
+
+
+
+**结论：批量插入数据会导致自增id不连续**
+
+
+
+
+
+## 39.5 自增主键不连续的原因
+
+1. 唯一键冲突
+
+2. 事务回滚
+
+3. 批量插入数据
+
+   ```ini
+   [sql-1]
+   state = insert … select、
+   
+   [sql-2]
+   state = replace … select
+   
+   [sql-3]
+   state = load data
+   ```
+
+
+
+建议：在生产上，尤其是有 insert … select 这种批量插入数据的场景时，从并发插入数据性能的角度考虑，我建议你这样设置：innodb_autoinc_lock_mode=2 ，并且 binlog_format=row
+

@@ -363,6 +363,9 @@ docker pull mysql:5.7
    # 登录命令
    mysql -h ${IP} -P ${PORT} -u ${ACCOUNT} -p
    mysql -h 127.0.0.1 -P 4406 -u tars -p
+   
+   #如果密码有特殊字符
+   mysql -uroot -p'tars2015'
    ```
 
 2. localhost和127.0.0.1的区别
