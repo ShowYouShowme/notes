@@ -1062,6 +1062,9 @@ sysbench cpu --threads=40 --events=10000 --cpu-max-prime=20000 run
 ```shell
 #transaction_isolation 是配置
 show variables like 'transaction_isolation';
+
+#或者
+select @@secure_file_priv;
 ```
 
 

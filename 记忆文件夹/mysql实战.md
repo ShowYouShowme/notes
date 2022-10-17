@@ -26,7 +26,7 @@
 
 ## 2.1 binary log
 
-
+redo log 是 InnoDB 引擎特有的日志，而 Server 层也有自己的日志，称为 binlog
 
 ### 2.1.1 常用命令
 
@@ -40,15 +40,27 @@ SHOW VARIABLES LIKE 'log_bin';
 | log_bin       | OFF   |
 +---------------+-------+
 
+#查看当前正在写入的binlog文件
+show master status \G;
+
+
+#查看指定binlog内容
+show binlog events in 'mysql-bin.000001';
+
 
 #查看所有binlog日志列表
 show master logs;
-#查看最新一个binlog日志的编号名称，及其最后一个操作事件结束点 
-show master status;
+
+
 #刷新log日志，立刻产生一个新编号的binlog日志文件，跟重启一个效果 
 flush logs;
+
+
 #清空所有binlog日志 
 reset master;
+
+#使用binlog恢复数据[未测试]
+/usr/bin/mysqlbinlog  –start-datetime=’2011-7-7 18:0:0′–stop-datetime=’2011-7-7 20:07:13′ data/mysql-bin.000008 |mysql -u root
 ```
 
 
@@ -57,10 +69,10 @@ reset master;
 
 ```ini
 [mysqld]
-#设置日志三种格式：STATEMENT、ROW、MIXED 。
-binlog_format = mixed
+#设置日志三种格式：statement、row、mixed 。
+binlog_format = statement
 #设置日志路径，注意路经需要mysql用户有权限写
-log-bin = /data/mysql/logs/mysql-bin.log
+log-bin = /var/lib/mysql/logs/mysql-bin
 #设置binlog清理时间
 expire_logs_days = 7
 #binlog每个日志文件大小
@@ -69,15 +81,38 @@ max_binlog_size = 100m
 binlog_cache_size = 4m
 #最大binlog缓存大小
 max_binlog_cache_size = 512m
+server-id=1
 
 #配置binary log 同步到磁盘的频率,为0时性能最好,1性能最差,也可以配置为100或者1000
 sync_binlog = 0
 
 # sync_binlog=0，当事务提交之后，MySQL不做fsync之类的磁盘同步指令刷新binlog_cache中的信息到磁盘，而让Filesystem自行决定什么时候来做同步，或者cache满了之后才同步到磁盘。这个是性能最好的。
 
-# sync_binlog=1，当每进行1次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。
+# sync_binlog=1，当每进行1次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘,这是默认值,性能最差
 
 # sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。
+```
+
+
+
+简单配置
+
+```shell
+#第一种方式:
+#开启binlog日志
+log_bin=ON
+#binlog日志的基本文件名
+log_bin_basename=/var/lib/mysql/mysql-bin
+#binlog文件的索引文件，管理所有binlog文件
+log_bin_index=/var/lib/mysql/mysql-bin.index
+#配置serverid
+server-id=1
+
+#第二种方式:
+#此一行等同于上面log_bin三行
+log-bin=/var/lib/mysql/mysql-bin
+#配置serverid
+server-id=1
 ```
 
 
@@ -104,7 +139,27 @@ sync_binlog = 0
    混合模式复制(mixed-based replication, MBR)：以上两种模式的混合使用
    ```
 
-   
+
+
+
+### 2.1.4 对比
+
+1. redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用
+2. redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID=2 这一行的 c 字段加 1 ”
+3. redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志
+
+
+
+### 2.1.5 更新语句执行流程
+```SQL
+update T set c=c+1 where ID=2;
+```
+
+1. 执行器先找引擎取 ID=2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID=2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回
+2. 执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据
+3. 引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，此时 redo log 处于 prepare 状态。然后告知执行器执行完成了，随时可以提交事务
+4. 执行器生成这个操作的 binlog，并把 binlog 写入磁盘
+5. 执行器调用引擎的提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成
 
 
 
@@ -114,7 +169,58 @@ sync_binlog = 0
 
 ## 2.2 redo log
 
+原理：当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log（粉板）里面，并更新内存，这个时候更新就算完成了。同时，InnoDB 引擎会在适当的时候，将这个操作记录更新到磁盘里面，而这个更新往往是在系统比较空闲的时候做，这就像打烊以后掌柜做的事。
 
+
+
+### 2.2.1 配置
+
+```ini
+[innodb_log_files_in_group]
+desc = redo log 文件的个数,默认为2，推荐设置为4
+
+[innodb_log_file_size]
+desc = 默认48M, 推荐设置为1G
+
+[innodb_log_group_home_dir]
+desc = 文件存放路径
+
+[innodb_log_buffer_size]
+desc = Redo Log缓冲区,默认8M
+
+[innodb_flush_log_at_trx_commit]
+desc = redo log 刷新策略
+
+#每隔1s刷新一次到文件,最极端的情况是丢失1 秒时间的数据变更,速度最快,比设置为1时快10倍
+innodb_flush_log_at_trx_commit = 0
+
+#默认设置,每次事务结束都刷新到磁盘,速度最慢,最安全,数据不会丢失
+innodb_flush_log_at_trx_commit = 1
+
+#每次事务结束，调用文件系统的文件写入操作。而我们的文件系统都是有缓存机制的
+#MySQL Crash 并不会造成数据的丢失，但是OS Crash会导致数据丢失
+#速度比设置为0时稍微慢,但是更加安全
+innodb_flush_log_at_trx_commit = 2
+```
+
+
+
+
+
+## 2.3 两阶段提交
+
+定义：将 redo log 的写入拆成了两个步骤：prepare 和 commit，这就是"两阶段提交"。
+
+
+
+### 2.3.1 数据恢复过程
+
+1. 首先，找到最近的一次全量备份，如果你运气好，可能就是昨天晚上的一个备份，从这个备份恢复到临时库
+2. 然后，从备份的时间点开始，将备份的 binlog 依次取出来，重放到中午误删表之前的那个时刻
+
+
+
+结论：如果不使用“两阶段提交”，那么数据库的状态就有可能和用它的日志恢复出来的库的状态不一致
 
 
 
@@ -2119,3 +2225,187 @@ insert into t values(null,2,2);
 
 建议：在生产上，尤其是有 insert … select 这种批量插入数据的场景时，从并发插入数据性能的角度考虑，我建议你这样设置：innodb_autoinc_lock_mode=2 ，并且 binlog_format=row
 
+
+
+
+
+
+
+# 第四十一章 快速复制一张表
+
+
+
+表结构
+
+```sql
+create database db1;
+use db1;
+
+create table t(id int primary key, a int, b int, index(a))engine=innodb;
+delimiter ;;
+  create procedure idata()
+  begin
+    declare i int;
+    set i=1;
+    while(i<=1000)do
+      insert into t values(i,i,i);
+      set i=i+1;
+    end while;
+  end;;
+delimiter ;
+call idata();
+
+create database db2;
+create table db2.t like db1.t
+```
+
+
+
+
+
+## 41.1 mysqldump
+
+
+
+### 41.1.1 导出数据
+
+```sql
+mysqldump -h$host -P$port -u$user -p --add-locks=0 --no-create-info --single-transaction  --set-gtid-purged=OFF db1 t --where="a>900" --result-file=/client_tmp/t.sql
+```
+
+1. --single-transaction 的作用是，在导出数据的时候不需要对表 db1.t 加表锁，而是使用 START TRANSACTION WITH CONSISTENT SNAPSHOT 的方法；
+2. --add-locks 设置为 0，表示在输出的文件结果里，不增加" LOCK TABLES t WRITE;" 
+3. --no-create-info 的意思是，不需要导出表结构；
+4. --set-gtid-purged=off 表示的是，不输出跟 GTID 相关的信息；
+5. --result-file 指定了输出文件的路径，其中 client 表示生成的文件是在客户端机器上的。
+6. --where指定了过滤条件
+
+
+
+### 41.1.2 导入数据
+
+```sql
+mysql -h127.0.0.1 -P13000  -uroot db2 -e "source /client_tmp/t.sql"
+```
+
+1. 打开文件，默认以分号为结尾读取一条条的 SQL 语句；
+2. 将 SQL 语句发送到服务端执行。
+
+
+
+
+
+
+
+
+
+## 41.2 csv
+
+
+
+相关参数
+
+```ini
+[secure_file_priv ]
+desc = 指定csv文件生成的根目录
+;select @@secure_file_priv;
+default value = /var/lib/mysql-files/
+```
+
+
+
+### 41.2.1 导出数据
+
+```sql
+select * from db1.t where a>900 into outfile '/var/lib/mysql-files/t.csv';
+```
+
+说明
+
+1. 这条语句会将结果保存在服务端。
+2. into outfile 指定了文件的生成位置，这个位置必须受参数 secure_file_priv 的限制
+   + 如果设置为 empty，表示不限制文件生成的位置，这是不安全的设置
+   + 如果设置为一个表示路径的字符串，就要求生成的文件只能放在这个指定的目录，或者它的子目录，默认是/var/lib/mysql-files/
+   + 如果设置为 NULL，就表示禁止在这个 MySQL 实例上执行 select … into outfile 操作
+3. 这条命令不会帮你覆盖文件，因此你需要确保 /server_tmp/t.csv 这个文件不存在，否则执行语句时就会因为有同名文件的存在而报错
+
+
+
+注意：select …into outfile 方法不会生成表结构文件, 所以我们导数据时还需要单独的命令得到表结构定义
+
+```sql
+mysqldump -h$host -P$port -u$user ---single-transaction  --set-gtid-purged=OFF db1 t --where="a>900" --tab=$secure_file_priv
+```
+
+
+
+### 41.2.2 导入数据
+
+```sql
+load data infile '/var/lib/mysql-files/t.csv' into table db2.t;
+```
+
+
+
+
+
+### 41.2.3 load data的用法
+
+1. 不加“local”，是读取服务端的文件，这个文件必须在 secure_file_priv 指定的目录或子目录下；
+2. 加上“local”，读取的是客户端的文件，只要 mysql 客户端有访问这个文件的权限即可。这时候，MySQL 客户端会先把本地文件传给服务端，然后执行上述的 load data 流程。
+
+
+
+
+
+
+
+## 41.3 物理拷贝
+
+
+
+问题：直接把 db1.t 表的.frm 文件和.ibd 文件拷贝到 db2 目录下，是否可行呢？
+
+答案：不行。一个 InnoDB 表，除了包含这两个物理文件外，还需要在数据字典中注册。直接拷贝这两个文件的话，因为数据字典中没有 db2.t 这个表，系统是不会识别和接受它们的。MySQL  5.6引入了可传输表空间(transportable tablespace) 的方法，可以通过导出 + 导入表空间的方式，实现物理拷贝表的功能
+
+
+
+
+
+假设我们现在的目标是在 db1 库下，复制一个跟表 t 相同的表 r，具体的执行步骤如下
+
+1. 执行 create table r like t，创建一个相同表结构的空表
+2. 执行 alter table r discard tablespace，这时候 r.ibd 文件会被删除
+3. 执行 flush table t for export，这时候 db1 目录下会生成一个 t.cfg 文件
+4. 在 db1 目录下执行 cp t.cfg r.cfg; cp t.ibd r.ibd；这两个命令，修改文件权限chown mysql:mysql r.ibd + chown mysql:mysql r.cfg
+5. 执行 unlock tables，这时候 t.cfg 文件会被删除
+6. 执行 alter table r import tablespace，将这个 r.ibd 文件作为表 r 的新的表空间，由于这个文件的数据内容和 t.ibd 是相同的，所以表 r 中就有了和表 t 相同的数据
+
+
+
+
+
+
+
+## 41.4 总结
+
+1. 物理拷贝的方式速度最快，尤其对于大表拷贝来说是最快的方法。但是使用也有一定的局限性
+   + 必须是全表拷贝，不能只拷贝部分数据
+   + 需要到服务器上拷贝数据，在用户无法登录数据库主机的场景下无法使用
+   + 由于是通过拷贝物理文件实现的，源表和目标表都是使用 InnoDB 引擎时才能使用
+2. 用 mysqldump 生成包含 INSERT 语句文件的方法，可以在 where 参数增加过滤条件，来实现只导出部分数据。这个方式的不足之一是，不能使用 join 这种比较复杂的 where 条件写法
+3. 用 select … into outfile 的方法是最灵活的，支持所有的 SQL 写法。但，这个方法的缺点之一就是，每次只能导出一张表的数据，而且表结构也需要另外的语句单独备份，必须登录到服务器。
+
+
+
+
+
+
+
+## 41.5 导出整个数据库
+
+```shell
+mysqldump -h$host -P$port -u$user -p --add-locks=0 --no-create-info --single-transaction  --set-gtid-purged=OFF $db --result-file=/opt/$db.sql
+```
+
+上面的命令不导出表结构，如果需要导出表结构把参数--no-create-info 去掉。
