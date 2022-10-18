@@ -72,7 +72,7 @@ reset master;
 #设置日志三种格式：statement、row、mixed 。
 binlog_format = statement
 #设置日志路径，注意路经需要mysql用户有权限写
-log-bin = /var/lib/mysql/logs/mysql-bin
+log-bin = /var/lib/mysql/mysql-bin
 #设置binlog清理时间
 expire_logs_days = 7
 #binlog每个日志文件大小
@@ -258,7 +258,7 @@ show variables like 'transaction_isolation';
 + 显示启动事务语句
 
   ```mysql
-  begin 或 start transaction。配套的提交语句是 commit，回滚语句是 rollback
+  begin 或 start transaction 或 start transaction with consistent snapshot;。配套的提交语句是 commit，回滚语句是 rollback
   ```
 
 + set autocommit
@@ -591,6 +591,32 @@ lock tables 会限制其它线程和本线程对表的操作
 
 ## 5.3 行锁
 
+加锁语句
+
+```ini
+[共享锁]
+sql = select * from test lock in share mode;
+
+[排他锁]
+sql-1 = select * from test for update;
+sql-2 = insert into test values(…);
+sql-3 = update test set …;
+sql-4 = delete from test …;
+
+[快照读]
+sql  = select * from test;
+desc = InnoDB不加任何锁
+
+[当前读]
+sql-1 = select * from test lock in share mode;
+
+;使用场景:假设有A、B两个用户同时各购买一件 id=1 的商品，使用可重复读,用户A获取到的库存量为 1000，用户B获取到的库存量也为 1000，用户A完成购买后修改该商品的库存量为 999，用户B完成购买后修改该商品的库存量为 999，此时库存量数据产生了不一致
+sql-2 = select * from test for update;
+desc  = 当前读会加锁
+```
+
+
+
 
 
 ### 5.3.1 两阶段锁
@@ -732,6 +758,7 @@ insert into t(id,k) values(id1,k1),(id2,k2);
 1. buffer pool：位于存储引擎层
 
    ```ini
+   ;问题:如果一台服务器只跑MySQL,buffer pool的大小设置为主机的百分之多少合适
    [缓冲池大小]
    innodb_buffer_pool_size = innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances
    
@@ -985,7 +1012,102 @@ select * from t force index(a) where (a between 1 and 1000) and (b between 50000
 
 # 第九章 MySQL抖动
 
+问题：一条 SQL 语句，正常执行的时候特别快，但是有时也不知道怎么回事，它就会变得特别慢，并且这样的场景很难复现，它不只随机，而且持续时间还很短
 
+
+
+
+
+## 9.1 更新语句流程
+
+
+
+### 9.1.1 流程
+
+1. 更新内存
+2. 写redo log
+3. 返回给客户端
+
+
+
+### 9.1.2 脏页
+
+内存数据页跟磁盘数据页内容不一致的时候，我们称这个内存页为“脏页”
+
+
+
+### 9.1.3 干净页
+
+内存数据写入到磁盘后，内存和磁盘上的数据页的内容就一致了，称为“干净页”
+
+
+
+
+
+## 9.2 引发flush的情况
+
+1. InnoDB 的 redo log 写满了。这时候系统会停止所有更新操作，把 checkpoint 往前推进，redo log 留出空间可以继续写
+2. 系统内存不足。当需要新的内存页，而内存不够用的时候，就要淘汰一些数据页，空出内存给别的数据页使用。如果淘汰的是“脏页”，就要先将脏页写到磁盘。
+3. MySQL 认为系统“空闲”的时候
+4. MySQL 正常关闭
+
+
+
+## 9.3 上面四种场景对性能影响
+
+1. 更新全部堵住，写性能跌为 0，这种情况对敏感业务来说，是不能接受的
+2. 一个查询要淘汰的脏页个数太多，会导致查询的响应时间明显变长
+
+
+
+## 9.4 刷脏页控制策略
+
+1. InnoDB 你的磁盘能力。这个值我建议你设置成磁盘的 IOPS
+
+   ```ini
+   [innodb_io_capacity] 
+   desc = InnoDB后台任务每秒可用的I/O操作数（IOPS），例如用于从buffer pool中刷新脏页和从change buffer中合并数据,建议为innodb_io_capacity_max 的 50 -75%
+   
+   ;默认200,单盘SATA的配置,如果是固态硬盘可以配置到5000或者压测后配置
+   default value = 200
+   
+   [innodb_io_capacity_max]
+   desc = InnoDB后台任务每秒可用的最大I/O操作数（IOPS）
+   ```
+
+   磁盘iops压测工具
+
+   ```shell
+   fio -filename=$filename -direct=1 -iodepth 1 -thread -rw=randrw -ioengine=psync -bs=16k -size=500M -numjobs=10 -runtime=10 -group_reporting -name=mytest 
+   ```
+
+   
+
+2. 监控脏页比例
+
+   ```sql
+   
+   mysql> select VARIABLE_VALUE into @a from global_status where VARIABLE_NAME = 'Innodb_buffer_pool_pages_dirty';
+   select VARIABLE_VALUE into @b from global_status where VARIABLE_NAME = 'Innodb_buffer_pool_pages_total';
+   select @a/@b;
+   ```
+
+3. 禁止刷邻居脏页
+
+   ```shell
+   innodb_flush_neighbors = 0
+   ```
+
+   
+
+
+
+## 9.5 结论
+
+SQL语句变慢主要是以下两个原因
+
+1. redo log写满导致刷脏页（配置redo log的大小）
+2. 查询时系统内存不足，需要新的内存页时，要淘汰一些数据页，淘汰的数据页正好是脏页（增加buffer pool）
 
 
 
