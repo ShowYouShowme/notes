@@ -167,6 +167,9 @@ db.dropDatabase()
    ; 查询全部
    db.collection.find()
    
+   ;比如
+   db.roles.find({'UserID' : 100129});
+   
    ; and 条件
    db.collection.find({k1:v1, k2:v2})
    
@@ -220,6 +223,14 @@ db.dropDatabase()
    ```ini
    db.serverStatus().connections
    ```
+
+9. 查看一个表里文档的数量
+
+   ```ini
+   db.roles.count();
+   ```
+
+   
 
 
 

@@ -32,3 +32,12 @@ sudo systemctl enable gitlab-runsvdir.service
 sudo systemctl disable gitlab-runsvdir.service
 ```
 
+
+
+
+
+# 第二章 gitea
+
+
+
+配置文件：app.ini

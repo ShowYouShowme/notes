@@ -20,6 +20,8 @@
    "outDir": "./bin",
    "allowJs": true,
    "target": "es2016",
+   //true:严格空值检查模式，此模式下null和undefined无法赋值给其他类型的变量,比如自定义类,为了开发方便可以设置为false
+   "strictNullChecks": true,
    ```
 
 
@@ -116,7 +118,23 @@ server.listen( 9999, "0.0.0.0" );
 
 ```ini
 ; https://www.npmjs.com/package/pbjs
+; 推荐使用proto2 ,因为 proto3 如果int32 等类型不传值,客户端解析能得到0; proto2 可以判断是否为undefined
 npm install pbjs
+
+[常用数据类型]
+;枚举
+T1 = enum
+;整数
+T2 = int32/int64
+;字符串
+T3 = string
+;二进制数组
+T4 = bytes
+;数组,map也用数组表示
+T5 = repeated 
+
+; 浮点数几乎用不到,浮点数有三种表示方式 1: string  2： 整数(带单位) 3: float/double
+; 浮点数在运算过程中会导致精度丢失
 ```
 
 

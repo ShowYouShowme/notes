@@ -2107,6 +2107,23 @@ typeof undefined             // 返回 undefined
 
 
 
+## 22.2 值类型和引用类型
+
+```ini
+[值类型]
+v1 = string
+v2 = number
+v3 = boolean
+
+[引用类型]
+v1 = Object
+v2 = array
+v3 = Map
+v3 = Set
+```
+
+
+
 
 
 
