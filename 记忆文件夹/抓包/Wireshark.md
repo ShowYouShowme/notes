@@ -6,6 +6,15 @@
    (ip.src == 18.163.100.26 and tcp.srcport == 443) or (ip.dst == 18.163.100.26 and tcp.dstport == 443)
    
    #然后 右键一个包,追踪流 --- TCP流
+   
+   #c-s模式下, 可以用CLIENT_IP:CLIENT_PORT 区分一个连接
+   #1--先用tcp.port==server_port 找到全部链接到server的链接
+   #2--用客户端连接server
+   #3--根据客户端的ip和port来跟踪流即可
+   
+   
+   #设置时间显示格式：
+   #视图--时间显示格式--时间
    ```
 
    
