@@ -197,6 +197,10 @@ npm install @types/node
 6. 安装
 
    ```shell
+   #建议的安装方式,不改变大版本号和小版本号
+   npm install protobufjs --save --save-prefix=~
+   
+   #默认的安装方式
    npm install ${包名}
    
    # 安装指定版本的包
@@ -343,6 +347,108 @@ let server:http.Server = http.createServer((req: http.IncomingMessage, res: http
 
 server.listen( 9999, "0.0.0.0" );
 ```
+
+
+
+### 1.4.7 版本前缀
+
+1. 版本格式：X.Y.Z
+
+   ```
+   大版本号.次要版本号.小版本
+   ```
+
+2. version
+
+   ```shell
+   必须匹配某个版本
+   
+   如: 2.2.1, 表示必须依赖2.2.1版的依赖包
+   ```
+
+3. **\>version**
+
+   ```
+   必须大于某个版本
+   
+   如: >2.2.1, 表示必须依赖大于 >2.2.1版的依赖包
+   ```
+
+4. \>=version
+
+   ```
+   必须大于或等于某个版本
+   
+   如: >=2.2.1, 表示必须依赖大于或等于 >=2.2.1版的依赖包
+   ```
+
+5. \<version
+
+   ```
+   必须小于某个版本
+   
+   如: <2.2.1, 表示必须依赖小于 <2.2.1版的依赖包
+   ```
+
+6. **\<=version**
+
+   ```
+   必须小于或等于某个版本
+   
+   如: >=2.2.1, 表示必须依赖小于或等于 >=2.2.1版的依赖包
+   ```
+
+7. **\~version**
+
+   ```
+   不改变大版本号和次要版本号,小版本号随意
+   
+   注意:
+   
+   如果按照版本号格式,X.Y.Z,那么小版本号就是随意
+   如: ~2.2.1, 表示 >=2.2.1 <2.3.0 版的依赖包 (可以是2.2.1, 2.2.2, 2.2.3, …, 2.2.n)
+   如果版本号格式,X.Y,那么跟正规格式的意义相同
+   如果版本号格式,X,那么次要版本号和小版本号可以随意
+   如: ~2, 表示 >=2.0.0 < 3.0.0版的依赖包 (可以是2.0.0, 2.0.n, 2.1.0, …, 2.n.n)
+   ```
+
+8. **^version**
+
+   ```
+   版本号最左边非 0 数字的右侧可以任意
+   
+   如: ^2.2.1,表示 >=2.2.1 < 3.0.0版依赖包
+   
+   ^0.2.1,表示 >=0.2.1 <0.3.0版依赖包
+   
+   ^0.0,表示 >=0.0.0 <0.1.0版依赖包
+   ```
+
+9. **version号位置出现 X**
+
+   ```
+   X 的位置表示任意版本
+   
+   如: 2.2.x,表示 >=2.2.0 <2.3.0版依赖包
+   ```
+
+10. **version使用 \* 代替**
+
+    ```
+    任意版本, *""*也表示任意版本
+    
+    如: *, 表示 >=0.0.0版依赖包
+    ```
+
+11. **version(1) - version(2)**
+
+    ```
+    大于等于version(1),小于等于version(2)
+    
+    如: 2.2.1 - 2.3.1, 表示 >=2.2.1 <=2.3.1版依赖包
+    ```
+
+    
 
 
 
@@ -1818,7 +1924,11 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 
 
 
-## 16.1 安装依赖
+## 16.1 google实现的protobuf
+
+
+
+### 16.1.1 安装依赖
 
 ```ini
 npm install google-protobuf
@@ -1826,7 +1936,7 @@ npm install google-protobuf
 
 
 
-## 16.2 安装protoc
+### 16.1.2 安装protoc
 
 ```ini
 ; 21.5的版本不能生成js的文件
@@ -1835,7 +1945,7 @@ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/proto
 
 
 
-## 16.3 生成文件
+### 16.1.3 生成文件
 
 ```ini
 protoc --js_out=import_style=commonjs,binary:. cmd_net.proto
@@ -1843,7 +1953,7 @@ protoc --js_out=import_style=commonjs,binary:. cmd_net.proto
 
 
 
-## 16.4 示例代码
+### 16.1.4 示例代码
 
 ```javascript
 //webstorm里面是不能代码补全的
@@ -1875,6 +1985,71 @@ setInterval(function (){
     console.log('....')
 }, 1500)
 ```
+
+
+
+
+
+## 16.2 protobufjs
+
+完全用js实现的protobuf。
+
+
+
+### 16.2.1 安装
+
+```ini
+[安装包]
+cmd = npm install protobufjs --save --save-prefix=~
+url = https://www.npmjs.com/package/protobufjs
+
+[安装命令行]
+cmd = npm install protobufjs-cli --save --save-prefix=~
+url = https://www.npmjs.com/package/protobufjs-cli
+
+[生成js和ts文件]
+cmd-1 = ./node_modules/protobufjs-cli/bin/pbjs -t static-module -w commonjs -o compiled.js msg.proto
+cmd-2 = ./node_modules/protobufjs-cli/bin/pbts -o compiled.d.ts compiled.js
+```
+
+
+
+## 16.2.2 示例代码
+
+
+
+1. proto
+
+   ```protobuf
+   syntax = "proto3";
+   
+   package ns;
+   
+   message Login {
+       string name = 1;
+       string pwd = 2;
+   }
+   message Address{
+       string province = 1;
+       string city = 2;
+       string country = 3;
+   }
+   ```
+
+2. 代码
+
+   ```typescript
+   import {ns} from './compiled'
+   let message : ns.ILogin = {};
+   message.name = 'nash';
+   message.pwd  = '123456';
+   let msg : ns.Login = ns.Login.create(message);
+   let buffer = ns.Login.encode(msg).finish();
+   var decodedMessage = ns.Login.decode(buffer);
+   console.log(`decode data : ${JSON.stringify(decodedMessage.toJSON())}`);
+   ```
+
+   
 
 
 
