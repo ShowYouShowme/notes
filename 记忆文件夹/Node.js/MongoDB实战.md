@@ -306,15 +306,15 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >   ```javascript
 >   import Mongodb = require("mongodb");
 >   import {MongoClient, MongoError} from "mongodb";
->       
+>         
 >   let url = "mongodb://localhost:27017/testdb";
->       
+>         
 >   // 连接数据库,不存在则创建
 >   Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >       if (err) throw err;
->       
+>         
 >       let dbase = db.db("testdb");
->       
+>         
 >       let myInfo  = [
 >           {name:"jim", age:18},
 >           {name:"lilei", age:26},
@@ -326,7 +326,7 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >           db.close();
 >       })
 >   });
->       
+>         
 >   ```
 >
 
@@ -581,3 +581,23 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
   ```
 
   
+
+# 第四章 游戏数据库设计
+
+
+
+## 4.1 方案一
+
+用json存入mongodb
+
+
+
+
+
+## 4.2 方案二
+
+用protobuf 序列化后再存入mongodb；当然也可以使用redis。
+
+存的时候可以使用批量执行命令的方式。
+
+从数据库load数据，进行反序列化时，如果属性为undefined，给属性一个初始值。

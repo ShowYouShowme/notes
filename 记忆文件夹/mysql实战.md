@@ -2531,3 +2531,302 @@ mysqldump -h$host -P$port -u$user -p --add-locks=0 --no-create-info --single-tra
 ```
 
 上面的命令不导出表结构，如果需要导出表结构把参数--no-create-info 去掉。
+
+
+
+
+
+# 第四十二章 权限配置
+
+
+
+## 42.1 问题
+
++ grant 之后真的需要执行 flush privileges 吗
++ 如果没有执行这个 flush 命令的话，赋权语句真的不能生效吗
+
+
+
+创建用户
+
+```ini
+[创建用户]
+cmd  = create user 'ua'@'%' identified by 'pa';
+desc = 在 MySQL 里面，用户名 (user)+ 地址 (host) 才表示一个用户，因此 ua@ip1 和 ua@ip2 代表的是两个不同的用户。%表示所有Ip地址
+```
+
+
+
+
+
+## 42.2 全局权限
+
+全局权限保存在mysql.user中
+
+```mysql
+select * from mysql.user where user = 'ua' \G
+```
+
+
+
+
+
+### 42.2.1 赋予权限
+
+```mysql
+grant all privileges on *.* to 'ua'@'%' with grant option;
+```
+
+1. grant 命令对于全局权限，同时更新了磁盘和内存。命令完成后即时生效，接下来新创建的连接会使用新的权限
+2. 对于一个已经存在的连接，它的全局权限不受 grant 命令的影响
+3. 在生产环境上要合理控制用户权限的范围，如果一个用户有所有权限，一般就不应该设置为所有 IP 地址都可以访问。
+
+
+
+### 42.2.2 移除权限
+
+```mysql
+revoke all privileges on *.* from 'ua'@'%';
+```
+
+
+
+
+
+## 42.3 DB权限
+
+除了全局权限，MySQL 也支持库级别的权限定义。如果要让用户 ua 拥有库 db1 的所有权限，可以执行下面这条命令
+
+```mysql
+grant all privileges on db1.* to 'ua'@'%' with grant option;
+```
+
+
+
+基于库的权限记录保存在 mysql.db 表中
+
+```mysql
+select * from mysql.db where user = 'ua' \G
+```
+
+
+
+
+
+
+
+## 42.4 表权限和列权限
+
+表权限定义存放在表 mysql.tables_priv 中，列权限定义存放在表 mysql.columns_priv 中。这两类权限，组合起来存放在内存的 hash 结构 column_priv_hash 中
+
+
+
+赋予权限的命令
+
+```mysql
+
+create table db1.t1(id int, a int);
+
+grant all privileges on db1.t1 to 'ua'@'%' with grant option;
+GRANT SELECT(id), INSERT (id,a) ON mydb.mytbl TO 'ua'@'%' with grant option;
+```
+
+
+
+## 42.5 结论
+
+1. 如果我们都是用 grant/revoke 语句来执行的话，内存和数据表本来就是保持同步更新的，不需要执行 flush privileges
+2. flush privileges 命令会清空 acl_users 数组，然后从 mysql.user 表中读取数据重新加载，重新构造一个 acl_users 数组。也就是说，以数据表中的数据为准，会将全局权限内存数组重新加载一遍
+
+
+
+
+
+## 42.6 flush privileges的使用场景
+
+当数据表中的权限数据跟内存中的权限数据不一致的时候，flush privileges 语句可以用来重建内存数据，达到一致状态
+
+
+
+比如直接修改表的数据管理权限
+
+```mysql
+delete from mysql.user where user='ua';
+flush privileges;
+```
+
+
+
+
+
+## 42.7 其它命令
+
+
+
+删除用户
+
+```mysql
+DROP USER 'api@localhost';
+```
+
+
+
+
+
+
+
+# 第四十三章 分区表
+
+
+
+
+
+## 43.1 分区类型
+
+| 分区类型   | 使用频率                        |
+| ---------- | ------------------------------- |
+| RANGE 分区 | 较多                            |
+| HASH 分区  | 较多，适合游戏开发，根据uid分区 |
+| LIST 分区  | 一般                            |
+| KEYS 分区  | 一般                            |
+
+
+
+range分区
+
+```mysql
+CREATE TABLE `t` (
+  `ftime` datetime NOT NULL,
+  `c` int(11) DEFAULT NULL,
+  KEY (`ftime`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
+PARTITION BY RANGE (YEAR(ftime))
+(PARTITION p_2017 VALUES LESS THAN (2017) ENGINE = InnoDB,
+ PARTITION p_2018 VALUES LESS THAN (2018) ENGINE = InnoDB,
+ PARTITION p_2019 VALUES LESS THAN (2019) ENGINE = InnoDB,
+PARTITION p_others VALUES LESS THAN MAXVALUE ENGINE = InnoDB);
+insert into t values('2017-4-1',1),('2018-4-1',1);
+```
+
+
+
+hash分区
+
+```mysql
+#常规的hash分区使用的是取模的算法
+CREATE TABLE employees (
+    id INT NOT NULL,
+    fname VARCHAR(30),
+    lname VARCHAR(30),
+    hired DATE NOT NULL DEFAULT '1970-01-01',
+    separated DATE NOT NULL DEFAULT '9999-12-31',
+    job_code INT,
+    store_id INT
+)
+PARTITION BY HASH(store_id)
+PARTITIONS 4;
+```
+
+
+
+
+
+## 43.2 分区表的引擎层行为
+
+
+
+### 43.2.1 Innodb
+
+|      | Session A                                            | Session B                                    |
+| ---- | ---------------------------------------------------- | -------------------------------------------- |
+| T1   | begin;                                               |                                              |
+| T2   | select * from t wherer ftime = '2017-5-1' for update |                                              |
+| T3   |                                                      | insert into t values('2018-2-1',1); [ok]     |
+|      |                                                      |                                              |
+|      |                                                      | insert into t values('2017-12-1',1); [block] |
+
+
+
+结论：在Innodb引擎层，认为分区表是两个表，不是一个单独的表。
+
+
+
+
+
+### 43.2.2 MyISAM
+
+
+
+| Session A                                         | Session B                                         |
+| ------------------------------------------------- | ------------------------------------------------- |
+| alter table t engine = myisam;                    |                                                   |
+| update t set c=sleep(100) where ftime='2017-4-1'; |                                                   |
+|                                                   | select * from t where ftime='2018-4-1'; [OK]      |
+|                                                   | select * from t where ftime='2017-5-1'; [blocked] |
+
+结论：在myisam引擎层，认为分区表是两个表，不是一个单独的表。
+
+
+
+
+
+
+
+## 43.3 手动分表和分区表的区别
+
+
+
+### 43.3.1 分区策略
+
+每当第一次访问一个分区表的时候，MySQL 需要把所有的分区都访问一遍。一个典型的报错情况是这样的：如果一个分区表的分区很多，比如超过了 1000 个，而 MySQL 启动的时候，open_files_limit 参数使用的是默认值 1024，那么就会在访问这个表的时候，由于需要打开所有的文件，导致打开表文件的个数超过了上限而报错。注意：**InnoDB 引擎不存在这个问题**
+
+
+
+
+
+### 43.3.2 分区表的server层行为
+
+|      | Session A                               | Session B                                        |
+| ---- | --------------------------------------- | ------------------------------------------------ |
+| T1   | begin;                                  |                                                  |
+| T2   | select * from t where ftime='2018-4-1'; |                                                  |
+| T3   |                                         | alter table t truncate partition p_2017; [block] |
+
+当需要truncate 一个分表的时候，会出现MDL锁冲突。
+
+
+
+
+
+### 43.3.3 总结
+
+1. MySQL 在第一次打开分区表的时候，需要访问所有的分区
+2. 在 server 层，认为这是同一张表，因此所有分区共用同一个 MDL 锁
+3. 在引擎层，认为这是不同的表，因此 MDL 锁之后的执行过程，会根据分区表规则，只访问必要的分区
+
+
+
+
+
+## 43.4 分区表的应用场景
+
+
+
+优点：
+
+1. 对业务透明，相对于用户分表来说，使用分区表的业务代码更简洁
+2. 很方便的清理历史数据
+
+
+
+应用场景：
+
+1. 游戏存放角色数据，根据uid分区
+2. 统计流水，按照月分区
+
+
+
+分区原则
+
+1. 单表或者单分区的数据一千万行，只要没有特别大的索引，对于现在的硬件能力来说都已经是小表了
+2. 分区也不要提前预留太多，在使用之前预先创建即可。比如，如果是按月分区，每年年底时再把下一年度的 12 个新分区创建上即可。对于没有数据的历史分区，要及时的 drop 掉
