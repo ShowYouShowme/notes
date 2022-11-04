@@ -90,7 +90,7 @@ sync_binlog = 0
 
 # sync_binlog=1，当每进行1次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘,这是默认值,性能最差
 
-# sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。
+# sync_binlog=n，当每进行n次事务提交之后，MySQL将进行一次fsync之类的磁盘同步指令来将binlog_cache中的数据强制写入磁盘。[推荐配置为1000]
 ```
 
 
@@ -199,7 +199,7 @@ innodb_flush_log_at_trx_commit = 1
 
 #每次事务结束，调用文件系统的文件写入操作。而我们的文件系统都是有缓存机制的
 #MySQL Crash 并不会造成数据的丢失，但是OS Crash会导致数据丢失
-#速度比设置为0时稍微慢,但是更加安全
+#速度比设置为0时稍微慢,但是更加安全[推荐的配置]
 innodb_flush_log_at_trx_commit = 2
 ```
 
@@ -2173,11 +2173,253 @@ mysql -uroot -p'tars2015' < /usr/share/mysql/install_rewriter.sql
 
 # 第三十四章 到底可不可以使用join
 
+问题：
+
+1. DBA 不让使用 join，使用 join 有什么问题呢
+2. 如果有两个大小不同的表做 join，应该用哪个表做驱动表呢
+
+
+
+建表
+
+```sql
+CREATE TABLE `t2` (
+  `id` int(11) NOT NULL,
+  `a` int(11) DEFAULT NULL,
+  `b` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `a` (`a`)
+) ENGINE=InnoDB;
+
+drop procedure idata;
+delimiter ;;
+create procedure idata()
+begin
+  declare i int;
+  set i=1;
+  while(i<=1000)do
+    insert into t2 values(i, i, i);
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+call idata();
+
+create table t1 like t2;
+insert into t1 (select * from t2 where id<=100);
+```
+
+
+
+
+
+## 34.1 Index Nested-Loop Join
+
+查询语句
+
+```sql
+/*straight_join 让 MySQL 使用固定的连接方式执行查询*/
+select * from t1 straight_join t2 on (t1.a=t2.a);
+```
+
+
+
+执行流程
+
+1. 从表 t1 中读入一行数据 R
+2. 从数据行 R 中，取出 a 字段到表 t2 里去查找
+3. 取出表 t2 中满足条件的行，跟 R 组成一行，作为结果集的一部分
+4. 重复执行步骤 1 到 3，直到表 t1 的末尾循环结束
+
+
+
+结论：
+
+1. 使用 join 语句，性能比强行拆成多个单表执行 SQL 语句的性能要好
+2. 如果使用 join 语句的话，需要让小表做驱动表
+3. 前提：可以使用被驱动表的索引
+
+
+
+
+
+## 34.2 Simple Nested-Loop Join
+
+SQL语句
+
+```sql
+select * from t1 straight_join t2 on (t1.a=t2.b);
+```
+
+由于表 t2 的字段 b 上没有索引，因此再用图 2 的执行流程时，每次到 t2 去匹配的时候，就要做一次全表扫描。这样算来，这个 SQL 请求就要扫描表 t2 多达 100 次，总共扫描 100*1000=10 万行。
+
+
+
+## 34.3 Block Nested-Loop Join
+
+算法流程：
+
+1. 把表 t1 的数据读入线程内存 join_buffer 中，由于我们这个语句中写的是 select *，因此是把整个表 t1 放入了内存
+2. 扫描表 t2，把表 t2 中的每一行取出来，跟 join_buffer 中的数据做对比，满足 join 条件的，作为结果集的一部分返回
+
+
+
+如果表t1太大，join_buffer 无法放下全部，就分段放。执行过程变成：
+
+1. 扫描表 t1，顺序读取数据行放入 join_buffer 中，放完第 88 行 join_buffer 满了，继续第 2 步
+2. 扫描表 t2，把 t2 中的每一行取出来，跟 join_buffer 中的数据做对比，满足 join 条件的，作为结果集的一部分返回
+3. 清空 join_buffer
+4. 继续扫描表 t1，顺序读取最后的 12 行数据放入 join_buffer 中，继续执行第 2 步
+
+
+
+如果join太慢就把参数join_buffer_size 调大，默认是256k，可以调整到16m。
+
+
+
+## 34.5 总结
+
+1. 如果可以使用 Index Nested-Loop Join 算法，也就是说可以用上被驱动表上的索引，可以使用join
+2. 如果使用 Block Nested-Loop Join 算法，扫描行数就会过多。尤其是在大表上的 join 操作，这样可能要扫描被驱动表很多次，会占用大量的系统资源。所以这种 join 尽量不要用。explain是，extra字段有关键词Block Nested Loop
+3. 应该使用小表做驱动表
+4. 小表是指：两个表按照各自的条件过滤，过滤完成之后，计算参与 join 的各个字段的总数据量
+
+
+
 
 
 # 第三十六章 join语句怎么优化
 
+建表
 
+```sql
+create table t1(id int primary key, a int, b int, index(a));
+create table t2 like t1;
+drop procedure idata;
+delimiter ;;
+create procedure idata()
+begin
+  declare i int;
+  set i=1;
+  while(i<=1000)do
+    insert into t1 values(i, 1001-i, i);
+    set i=i+1;
+  end while;
+  
+  set i=1;
+  while(i<=1000000)do
+    insert into t2 values(i, i, i);
+    set i=i+1;
+  end while;
+
+end;;
+delimiter ;
+call idata();
+```
+
+
+
+
+
+## 36.1 Multi-Range Read 优化
+
+查询语句
+
+```sql
+select * from t1 where a>=1 and a<=100;
+```
+
+InnoDB 在普通索引 a 上查到主键 id 的值后，再根据一个个主键 id 的值到主键索引上去查整行数据。随着 a 的值递增顺序查询的话，id 的值就变成随机的，那么就会出现随机访问，性能相对较差。
+
+
+
+优化思路：
+
+1. 根据索引 a，定位到满足条件的记录，将 id 值放入 read_rnd_buffer 中
+2. 将 read_rnd_buffer 中的 id 进行递增排序
+3. 排序后的 id 数组，依次到主键 id 索引中查记录，并作为结果返回
+
+
+
+使用MRR优化
+
+```sql
+set optimizer_switch="mrr_cost_based=off";
+
+/*Extra 里多出MRR*/
+explain select * from t1 where a>=1 and a<=100;
+```
+
+
+
+
+
+
+
+## 36.2 Batched Key Access
+
+NLJ 算法执行的逻辑是：从驱动表 t1，一行行地取出 a 的值，再到被驱动表 t2 去做 join。也就是说，对于表 t2 来说，每次都是匹配一个值。我们就把表 t1 的数据取出来一部分，先放到一个临时内存join_buffer。
+
+
+
+开启BKA优化，执行SQL语句前，先设置
+
+```sql
+set optimizer_switch='mrr=on,mrr_cost_based=off,batched_key_access=on';
+```
+
+
+
+
+
+## 36.3 BNL性能问题
+
+1. 可能会多次扫描被驱动表，占用磁盘 IO 资源
+2. 判断 join 条件需要执行 M*N 次对比（M、N 分别是两张表的行数），如果是大表就会占用非常多的 CPU 资源；
+3. 可能会导致 Buffer Pool 的热数据被淘汰，影响内存命中率
+
+
+
+## 36.4 BNL 转 BKA 
+
+
+
+### 36.4.1 方法一
+
+直接在被驱动表上建索引，就能转成BKA了
+
+
+
+### 36.4.2 方法二
+
+1. 把表 t2 中满足条件的数据放在临时表 tmp_t 中
+2. 为了让 join 使用 BKA 算法，给临时表 tmp_t 的字段 b 加上索引
+3. 让表 t1 和 tmp_t 做 join 操作
+
+
+
+对应SQL
+
+```sql
+
+create temporary table temp_t(id int primary key, a int, b int, index(b))engine=innodb;
+insert into temp_t select * from t2 where b>=1 and b<=2000;
+select * from t1 join temp_t on (t1.b=temp_t.b);
+```
+
+
+
+
+
+## 36.5 拓展 hash join
+
+思路：oin_buffer 里面维护的不是一个无序数组，而是一个哈希表的话，这样相等判断会很快
+
+
+
+1. select * from t1;取得表 t1 的全部 1000 行数据，在业务端存入一个 hash 结构，比如 C++ 里的 set、PHP 的数组这样的数据结构
+2. select * from t2 where b>=1 and b<=2000; 获取表 t2 中满足条件的 2000 行数据
+3. 把这 2000 行数据，一行一行地取到业务端，到 hash 结构的数据表中寻找匹配的数据。满足匹配的条件的这行数据，就作为结果集的一行
 
 
 
