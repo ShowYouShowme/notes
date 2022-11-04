@@ -1247,10 +1247,13 @@ show create table t;
 ### 2.18.1 查看全部存储过程
 
 ```sql
-select `name` from mysql.proc where db = '${your_db_name}' and `type` = 'PROCEDURE'
+select `name` from mysql.proc where db = '${your_db_name}' and `type` = 'PROCEDURE';
+
+#例子
+select `name` from mysql.proc where db = 'test' and `type` = 'PROCEDURE';
 
 #或者
-show procedure status;
+show procedure status \G;
 ```
 
 

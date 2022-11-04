@@ -119,6 +119,8 @@ server.listen( 9999, "0.0.0.0" );
 ```ini
 ; https://www.npmjs.com/package/pbjs
 ; 推荐使用proto2 ,因为 proto3 如果int32 等类型不传值,客户端解析能得到0; proto2 可以判断是否为undefined
+; pbjs的实现和官方proto有点差异,即使proto3,如果不传值,依然可以读取到undefined
+; 如果客户端也是js/ts开发，建议用pbjs
 npm install pbjs
 
 [常用数据类型]
