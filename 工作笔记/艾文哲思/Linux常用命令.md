@@ -1069,7 +1069,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                      
+  >                         
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1093,7 +1093,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                      
+  >                         
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1376,6 +1376,13 @@ firewall是iptables的封装，推荐使用它替代iptables
 
     ```shell
     firewall-cmd --permanent --zone=public --add-masquerade
+    ```
+
+11. 安装防火墙
+
+    ```shell
+    #aws的centos7默认未安装
+    yum install firewalld firewall-config
     ```
 
     

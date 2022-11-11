@@ -2069,6 +2069,41 @@ cmd-2 = ./node_modules/protobufjs-cli/bin/pbts -o compiled.d.ts compiled.js
 
 4. try...catch await 函数，只能捕获reject，不能捕获promise的异常。
 
+5. 可以throw 各种类型，比如bool，string等等
+
+   ```javascript
+   throw "Error2";   // String type
+   throw 42;         // Number type
+   throw true;       // Boolean type
+   throw {toString: function() { return "I'm an object!"; } };
+   ```
+
+6. 判断特定类型的异常
+
+   ```javascript
+   try {
+     myRoutine();
+   } catch (e) {
+     if (e instanceof RangeError) {
+       // statements to handle this very common expected error
+     } else {
+       throw e;  // re-throw the error unchanged
+     }
+   }
+   ```
+
+7. 抛出基本错误
+
+   ```javascript
+   try {
+     throw new Error('Whoops!')
+   } catch (e) {
+     console.error(e.name + ': ' + e.message)
+   }
+   ```
+
+   
+
 
 
 
@@ -2458,4 +2493,46 @@ app.listen(port, '0.0.0.0', () => {
    });
    ```
 
-   
+
+
+
+# 第十六章 时间和日期
+
+
+
+## 16.1 获取时间戳
+
+```javascript
+//毫秒时间戳
+let ts = new Date().getTime()
+```
+
+
+
+## 16.2 打印时间
+
+```javascript
+let datetime = (new Date()).toLocaleString();
+console.log(datetime);
+```
+
+
+
+
+
+# 第十七章 调度系统
+
+类似于cron的调度系统，常用的开源组件有xxl-job和node-schedule。
+
+
+
+网址：https://github.com/node-schedule/node-schedule
+
+
+
+## 17.1 安装
+
+```shell
+npm install node-schedule
+```
+

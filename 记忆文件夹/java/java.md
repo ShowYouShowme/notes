@@ -105,4 +105,17 @@ export PATH=/home/nash/local/apache-maven-3.6.3/bin:$PATH
    http://localhost:8080/xxl-job-admin 
    ```
 
+4. 建议使用shell脚本
+
+   ```ini
+   [获取上个命令退出码]
+   cmd = echo $?
+   
+   [执行node脚本]
+   cmd = node path/to/your/script
+   
+   [node指定退出码]
+   cmd = process.exit(123)
+   ```
+
    
