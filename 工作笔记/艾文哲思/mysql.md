@@ -152,7 +152,7 @@ docker pull mysql:5.7
    mysql -uroot -proot@appinside db_tars < db_tars.sql
    
    #也可以不指定DB
-   mysql -uroot -ptars2015 < tables_xxl_job.sql
+   mysql -uroot -p'tars2015' < tables_xxl_job.sql
    ```
 
 3. 删除数据库

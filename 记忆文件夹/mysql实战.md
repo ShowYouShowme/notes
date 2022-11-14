@@ -3104,6 +3104,16 @@ mysqldump -h$host -P$port -u$user -p --add-locks=0 --no-create-info --single-tra
 [创建用户]
 cmd  = create user 'ua'@'%' identified by 'pa';
 desc = 在 MySQL 里面，用户名 (user)+ 地址 (host) 才表示一个用户，因此 ua@ip1 和 ua@ip2 代表的是两个不同的用户。%表示所有Ip地址
+
+;刚安装数据库时,root用户只能localhost访问
+;增加一个特定ip的root用户
+;mysql的用户名是名字 +Ip 组成的
+cmd = create user 'root'@'18.231.132.46' identified by 'qhx#2TD3WR+b1sMa';
+;授权特定的数据库
+cmd = grant all privileges on machine_game.* to 'root'@'18.231.132.46' with grant option;
+
+;查询账号信息
+cmd = select host, user from mysql.user;
 ```
 
 
