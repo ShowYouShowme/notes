@@ -685,9 +685,16 @@ CONVERT_TZ
 ### 2.11.3 插入数据
 
    ```mysql
+   #方法一
    INSERT INTO tb_courses \
              (course_id,course_name,course_grade,course_info) \
        	  VALUES(1,'Network',3,'Computer Network');
+       	  
+   #方法二
+   INSERT INTO student VALUES(null, '张三丰', 28,4);
+   
+   #自增长或者有默认值的列,用方法一插入,直接忽略对应列
+   #有默认值且限定为非NULL的列,不能插入NULL,会报错
    ```
 
 ### 2.11.4 修改数据
@@ -726,6 +733,9 @@ CONVERT_TZ
 
    ```mysql
    CREATE DATABASE test_db;
+   
+   #创建数据库时指定编码
+    CREATE DATABASE `test2` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
    ```
 
 ### 2.11.8 查看数据库

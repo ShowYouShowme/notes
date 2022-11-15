@@ -365,6 +365,9 @@ st->op2->op3->op4->op5->op6
    return URL;
    
    Context: server,location,if
+   
+   #打印请求uri和request
+   return 200  '$uri = $request';
    ```
 
 2. 返回状态码

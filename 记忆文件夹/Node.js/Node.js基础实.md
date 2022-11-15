@@ -173,6 +173,7 @@ npm install @types/node
 3. 配置代理
 
    ```shell
+   #当安装包卡住，提示sill idealTree buildDeps的时候，设置代理即可
    npm config set proxy=http://127.0.0.1:8090
    ```
 
@@ -2129,10 +2130,11 @@ request({
     method: "GET",
 },function(err : any, response : any,body : any){
     if(err){
-        console.log(err)
+        console.log(err);
+        return;
     }
-    console.log(response)
-    console.log(body)
+    console.log(response);
+    console.log(body);
 })
 ```
 
@@ -2154,10 +2156,11 @@ request({
     }
 },function(err : any, response : any, body:any){
     if(err){
-        console.log(err)
+        console.log(err);
+        return;
     }
-    console.log(response)
-    console.log(body)
+    console.log(response);
+    console.log(body);
 })
 ```
 
@@ -2184,6 +2187,16 @@ let person = {
 }
 
 console.log(person)
+
+
+let hello = 'justin';
+let age = 25;
+
+let obj = {
+  'salary' : 1290,
+  hello,
+  age
+};
 ```
 
 
@@ -2227,11 +2240,12 @@ logger.debug("Some debug messages");
 ```javascript
 const log4js = require("log4js");
 log4js.configure({
-  appenders: { cheese: { type: "file", filename: "cheese.log" } },
-  categories: { default: { appenders: ["cheese"], level: "error" } },
+  appenders: { cheeseLogs: { type: "file", filename: "cheese.log" },
+               console: { type: 'console' }},
+  categories: { default: { appenders: ["cheeseLogs","console"], level: "error" } },
 });
 
-const logger = log4js.getLogger("cheese");
+const logger = log4js.getLogger();
 logger.trace("Entering cheese testing");
 logger.debug("Got cheese.");
 logger.info("Cheese is Comté.");
@@ -2352,7 +2366,7 @@ exec('ls -al', function(error, stdout, stderr){
     }
     console.log('stdout: ' + stdout);
     console.log('stderr: ' + typeof stderr);
-}
+})
 ```
 
 
@@ -2534,5 +2548,150 @@ console.log(datetime);
 
 ```shell
 npm install node-schedule
+```
+
+
+
+
+
+# 第十八章 进程
+
+
+
+## 18.1 环境变量
+
+
+
+### 18.1.1 配置
+
+```ini
+[配置文件]
+path = ~/.bashrc
+
+[配置环境变量]
+export PHP_ADDR="192.168.2.102:9103"
+```
+
+
+
+
+
+### 18.1.2 获取环境变量
+
+```javascript
+console.log(JSON.stringify(process.env));
+
+let php_addr = process.env.PHP_ADDR;
+console.log(php_addr);
+
+let php_port = process.env.PHP_PORT;
+console.log(php_port);
+if(php_port == undefined){
+        console.log("变量不存在!");
+}
+```
+
+
+
+
+
+# 第十九章 进程管理工具
+
+
+
+## 19.1 systemd
+
+具体内容参考Linux实战技能，实际部署时需要root权限，比较麻烦！
+
+
+
+## 19.2 pm2
+
+
+
+### 19.2.1 安装
+
+```shell
+npm install pm2 -g
+```
+
+
+
+### 19.2.2 启动服务
+
+```shell
+pm2 start bin/index.js --name schedule
+
+#开发阶段
+pm2 start bin/index.js --name schedule --no-autorestart
+```
+
+
+
+启动参数
+
+- `--watch`：监听应用目录的变化，一旦发生变化，自动重启。如果要精确监听、不见听的目录，最好通过配置文件。
+- `-i --instances`：启用多少个实例，可用于负载均衡。如果`-i 0`或者`-i max`，则根据当前机器核数确定实例数目。
+- `--ignore-watch`：排除监听的目录/文件，可以是特定的文件名，也可以是正则。比如`--ignore-watch="test node_modules "some scripts""`
+- `-n --name`：应用的名称。查看应用信息的时候可以用到。
+- `-o --output <path>`：标准输出日志文件的路径。
+- `-e --error <path>`：错误输出日志文件的路径。
+- `--interpreter <interpreter>`：the interpreter pm2 should use for executing app (bash, python...)。比如你用的coffee script来编写应用。
+- --no-autorestart：不自动重启，开发阶段最好加上，可以及时排查错误
+
+
+
+
+
+### 19.2.3 查看日志
+
+```shell
+pm2 logs schedule --raw
+```
+
+
+
+### 19.2.4 查看进程状态
+
+```shell
+pm2 list
+```
+
+
+
+
+
+### 19.2.5 监控进程
+
+```shell
+pm2 monit schedule
+```
+
+
+
+### 19.2.6 停止
+
+```ini
+[停止特定应用]
+cmd = pm2 stop app_name|app_id
+
+[停止全部应用]
+cmd = pm2 stop all
+```
+
+
+
+### 19.2.7 重启
+
+```shell
+pm2 restart app_name|app_id
+```
+
+
+
+### 19.2.8 删除
+
+```shell
+pm2 delete app_name|app_id
 ```
 
