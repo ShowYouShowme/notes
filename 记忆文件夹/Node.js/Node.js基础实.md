@@ -2695,3 +2695,24 @@ pm2 restart app_name|app_id
 pm2 delete app_name|app_id
 ```
 
+
+
+
+
+### 19.2.9 开机启动
+
+1. 生成开机启动 pm2 服务的配置文件
+
+   ```shell
+   pm2 startup
+   #把输入的命令粘贴到终端运行
+   ```
+
+2. 保存当前 pm2 运行的各个应用
+
+   ```shell
+   pm2 save
+   ```
+
+   
+
