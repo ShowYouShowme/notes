@@ -1,4 +1,4 @@
-# 安装
+# 第一章 安装
 
 ```ini
 wget http://nginx.org/download/nginx-1.16.1.tar.gz
@@ -22,7 +22,7 @@ make install
 
 
 
-# 文件服务
+# 第二章 静态资源文件服务
 
 ```ini
 location / {
@@ -34,7 +34,7 @@ location / {
 
 
 
-# TCP反向代理
+# 第三章 TCP反向代理
 
 ```ini
 ; configure 时 加上--with-stream这个参数，以加载ngx_stream_core_module这个模块
@@ -70,9 +70,45 @@ stream {
 
 
 
+TCP 反向代理配置示例二
+
+```nginx
+stream {
+    upstream tcp_proxy{
+    hash $remote_addr consistent;
+    server 18.231.132.46:8080;
+    }   
+
+    server {
+    listen 8080 so_keepalive=on;
+    proxy_connect_timeout 10s;
+    proxy_timeout 60m;
+    proxy_pass tcp_proxy;
+    }   
+}
+```
 
 
-## 跨域配置
+
+TCP 反向代理配置示例三
+
+```nginx
+stream {
+    server {
+        listen 3000;
+        proxy_pass 127.0.0.1:3306;
+
+    # 也支持socket
+    # proxy_pass unix:/var/lib/mysql/mysql.socket;
+    }
+}
+```
+
+
+
+
+
+## 3.1 跨域配置
 
 ```nginx
 # 这种一般是网页直接在客户浏览器启动(不是从网站下载)，然后请求网站数据
@@ -120,7 +156,7 @@ xhr.send(null);
 
 
 
-## 利用反向代理解决跨域
+## 3.2 利用反向代理解决跨域
 
 ```nginx
 #user  nobody;
@@ -241,7 +277,7 @@ http {
 
 
 
-## 利用websocket 解决跨域
+## 3.3 利用websocket 解决跨域
 
 1. websocket支持跨域通信
 
@@ -249,5 +285,5 @@ http {
 
 
 
-## 利用jsonp解决跨域
+## 3.4 利用jsonp解决跨域
 

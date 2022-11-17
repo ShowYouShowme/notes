@@ -2607,6 +2607,8 @@ if(php_port == undefined){
 
 ## 19.2 pm2
 
+官方网站：https://pm2.keymetrics.io/docs/usage/quick-start/
+
 
 
 ### 19.2.1 安装
@@ -2715,4 +2717,20 @@ pm2 delete app_name|app_id
    ```
 
    
+
+
+
+### 19.2.10 查看服务的元数据
+
+```shell
+pm2 show ${srv_name}
+```
+
+
+
+### 19.1.11 产生配置文件
+
+```ini
+cmd = pm2 init 或者 pm2 ecosystem
+```
 

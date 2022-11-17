@@ -329,8 +329,8 @@
 
 + /etc/profile：所有用户通用
 + /etc/profile.d/
-+ ~/.bash_profile：用户特有的配置
-+ ~/.bashrc：用户特有的配置
++ ~/.bash_profile：用户特有的配置，交互式、login 方式进入bash 运行的
++ ~/.bashrc：用户特有的配置，交互式 non-login 方式进入bash 运行的
 + /etc/bashrc：所有用户通用
 
 **登录方式**
@@ -527,7 +527,7 @@ export PATH=${PATH}:/new/path
   > >
   > >    ```shell
   > >    cp -v /etc/passwd /etc/passwd.bak
-  > >    
+  > >       
   > >    # 上面命令的简写
   > >    cp -v /etc/passwd{,.bak}
   > >    ```
@@ -1113,7 +1113,7 @@ done
   >    ```shell
   >    ulimit -a
   >    #max user processes              (-u) 15022
-  >    
+  >       
   >    # 无限递归,会耗完CPU  FORK炸弹  普通用户受到ulimit 的限制,系统不会假死;root用户不受限制
   >    func()
   >    {
@@ -1142,14 +1142,14 @@ done
   >    trap "echo sig 2" 2
   >    # 显示进程号
   >    echo $$
-  >    
+  >       
   >    while :
-  >    
+  >       
   >    do
   >            sleep 1
   >            echo "111"
   >    done
-  >    
+  >       
   >    ```
 
 
