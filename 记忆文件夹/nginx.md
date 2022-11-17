@@ -1106,7 +1106,7 @@ cp -r ./contrib/vim/* ~/.vim/
 yum install gcc pcre pcre-devel zlib zlib-devel openssl openssl-devel -y
 
 
-./configure --prefix=/usr/local/nginx/ --with-stream --with-http_ssl_module
+./configure --prefix=$HOME/local/nginx/ --with-stream --with-http_ssl_module
 
 make -j4
 

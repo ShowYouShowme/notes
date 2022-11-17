@@ -11,7 +11,7 @@ sudo apt install nodejs npm
 ```shell
 wget https://nodejs.org/dist/v16.17.0/node-v16.17.0-linux-x64.tar.xz
 tar -xf node-v16.17.0-linux-x64.tar.xz
-mv node-v16.17.0-linux-x64 ~/local/
+mv node-v16.17.0-linux-x64 $HOME/local/
 #配置环境变量即可
 ```
 
@@ -2732,5 +2732,37 @@ pm2 show ${srv_name}
 
 ```ini
 cmd = pm2 init 或者 pm2 ecosystem
+
+#根据配置文件启动服务
+pm2 start ecosystem.config.js
 ```
 
+
+
+### 19.1.12 运行二进制文件
+
+```shell
+#产生配置文件
+pm2 init
+
+#配置文件内容
+#NGINX需要加上配置daemon off;让服务在前台运行
+module.exports = { 
+  apps : [{
+    "name"       : "nginx",
+    "script"     : "/home/li/local/nginx/sbin/nginx",
+    "exec_interpreter": "none",
+    "exec_mode"  : "fork_mode"
+  }]  
+};
+
+#运行
+pm2 start ecosystem.config.js
+```
+
+
+
+### 19.1.13 pm2与systemd的配合
+
+1. 全部服务用pm2管理
+2. 系统启动时，利用systemd执行pm2命令
