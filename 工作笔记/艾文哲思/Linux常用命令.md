@@ -1018,6 +1018,14 @@ rz -y ${fileName}
      
      nslookup httpbin.org 8.8.8.8
      ```
+  
+  3. 根据CNAME查询IP
+  
+     ```shell
+     nslookup -type=cname _cf07c7093e563600816ff2bb9c829f6f.zrvsvrxrgs.acm-validations.aws.
+     ```
+  
+     
 
 
 
@@ -1080,7 +1088,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >       
+  >          
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1104,7 +1112,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >       
+  >          
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
