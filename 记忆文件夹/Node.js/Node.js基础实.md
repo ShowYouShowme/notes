@@ -199,6 +199,8 @@ npm install @types/node
 
    ```shell
    #建议的安装方式,不改变大版本号和小版本号
+   #或者指定版本号
+   #或者-E 精确版本号
    npm install protobufjs --save --save-prefix=~
    
    #默认的安装方式
@@ -449,7 +451,14 @@ server.listen( 9999, "0.0.0.0" );
     如: 2.2.1 - 2.3.1, 表示 >=2.2.1 <=2.3.1版依赖包
     ```
 
-    
+
+
+
+## 1.5 常用第三方包
+
+1. moment：时间库，简化了对时间日期的操作
+2. pbjs：protobuf
+3. mathjs：扩展数学库，支持数字，大数，复数，分数，单位和矩阵。强大且易于使用
 
 
 
@@ -2311,6 +2320,70 @@ npm install @types/ws
 
 
 
+## 21.3 注意
+
+1. 回调函数里不能抛出异常，否则整个链接变得不可用；express框架，每个路由的处理函数里可以抛出异常，这点不一样。因为http协议是短连接，ws是长连接。
+
+   ```javascript
+   wss.on('connection', function connection(ws) {
+     
+     // 这里不能抛出异常
+     throw 'invalid connection!';
+       
+     
+     ws.on('message', function message(data : Object) {
+     // 这里不能抛出异常,要用try...catch住全部
+       try {
+         console.log(data.toString());
+         throw 'invalid cmd!';
+       } catch (error) {
+        console.log(`error : ${error}`); 
+       }
+     });
+   
+   
+     ws.on("error", function(error){
+       console.log('occur error : ', error);
+     });
+   
+     ws.on("close", function(error){
+       console.log('occur close : ', error);
+     });
+   
+     ws.send('something');
+   }
+   );
+   ```
+
+2. 回调函数里面的异步函数里抛出异常则不影响
+
+   ```javascript
+   wss.on('connection', function connection(ws) {
+     ws.on('message', function message(data: Object) {
+       setTimeout(() => {
+         console.log(data.toString());
+         throw 'invalid cmd!';
+       }, 1);
+     });
+   
+   
+     ws.on("error", function (error) {
+       console.log('occur error : ', error);
+     });
+   
+     ws.on("close", function (error) {
+       console.log('occur close : ', error);
+     });
+   
+     ws.send('something');
+   }
+   );
+   ```
+
+   
+
+
+
 
 
 # 第二十二章 类型断言
@@ -2589,6 +2662,9 @@ console.log(php_port);
 if(php_port == undefined){
         console.log("变量不存在!");
 }
+
+//powershell 中打印环境变量
+//$env:HALL_MONGO_HOST
 ```
 
 
@@ -2766,3 +2842,187 @@ pm2 start ecosystem.config.js
 
 1. 全部服务用pm2管理
 2. 系统启动时，利用systemd执行pm2命令
+
+
+
+
+
+### 19.1.14 运行普通NodeJs服务
+
+```shell
+module.exports = {
+  apps : [{
+    name  : "hall",
+    script: 'bin/index.js',
+    autorestart : false,
+    env : {
+      "HALL_MONGO_HOST" : "mongodb://192.168.2.102:8000",
+      "HALL_PHP_HOST"   : "http://192.168.2.102:9002"
+    },
+    env_production: {
+      "HALL_MONGO_HOST" : "mongodb://127.0.0.1:27017",
+      "HALL_PHP_HOST"   : "http://15.228.42.79:9002"
+  }
+  }]
+};
+
+
+#使用env中的环境变量运行
+pm2 start ecosystem.config.js
+
+#使用production中的环境变量运行
+pm2 start ecosystem.config.js --env production
+```
+
+
+
+
+
+# 第二十章 数学库
+
+url = https://github.com/josdejong/mathjs
+
+
+
+## 20.1 安装
+
+```shell
+npm install mathjs@11.4.0
+```
+
+
+
+## 20.2 使用
+
+```javascript
+import * as MathJs from 'mathjs'
+
+//加
+let a1 : MathJs.Fraction = MathJs.fraction('0.1'); //用字符串初始化,避免丢失精度
+let b1 : MathJs.Fraction = MathJs.fraction('0.2');
+let c1 : MathJs.Fraction = MathJs.add(a1, b1);
+console.log(c1.toString());
+{
+  //0.1 和 0.2 无法使用二进制存储
+  let a1  = 0.1;
+  let b1  = 0.2;
+  let c1  = a1 + b1;
+  console.log(c1.toString());  
+}
+
+
+//减
+let a2 : MathJs.Fraction = MathJs.fraction('0.5');
+let b2 : MathJs.Fraction = MathJs.fraction('0.21');
+let c2 : MathJs.Fraction = MathJs.subtract(a2, b2);
+console.log(`${c2}`);
+
+{
+  let a2 = 0.5;
+  let b2 = 0.21;
+  let c2 = a2 - b2;
+  console.log(`${c2}`);
+}
+
+//乘
+let a3 : MathJs.Fraction = MathJs.fraction('0.12');
+let b3 : MathJs.Fraction = MathJs.fraction('0.21');
+let c3 : MathJs.Fraction = MathJs.multiply(a3, b3) as MathJs.Fraction;
+console.log(`${c3}`);
+{
+  let a3 = 0.12;
+  let b3 = 0.21;
+  let c3 = a3 * b3;
+  console.log(`${c3}`);
+}
+
+//除
+let a4 : MathJs.Fraction = MathJs.fraction('0.021');
+let b4 : MathJs.Fraction = MathJs.fraction('0.1');
+let c4 : MathJs.Fraction = MathJs.multiply(a4, b4) as MathJs.Fraction;
+console.log(`${c4}`);
+{
+  let a4 = 0.021;
+  let b4 = 0.1;
+  let c4 = a4 * b4;
+  console.log(`${c4}`);
+}
+
+// 比较大小的API
+// MathJs.smaller
+// MathJs.smallerEq
+// MathJs.equal
+// MathJs.larger
+// MathJs.largerEq
+
+// 打印分数的两种形式
+function printRatio (value : any) {
+  console.log(MathJs.format(value, { fraction: 'ratio' }))
+}
+
+function print (value : any) {
+  console.log(MathJs.format(value, { fraction: 'decimal' }))
+}
+
+printRatio(a4);
+print(a4);
+
+//转换为number
+let a : MathJs.Fraction = MathJs.fraction('0.0252');
+let b = MathJs.number(a);
+console.log(`b = ${b}`);
+```
+
+
+
+直接计算表达式的值
+
+```javascript
+import * as MathJs from 'mathjs'
+
+// 配置所有的输入数字类型和输出为分数,确保不会丢失精度
+let config = {
+  number: 'Fraction' as 'number' | 'BigNumber' | 'Fraction'
+}
+const math = MathJs.create(MathJs.all, config)
+let result = math.evaluate('(369.06 - 358.58) + (2.22 - 0.28 ) + (2.53 - 0.32)');
+console.log(`result = ${result}`);
+```
+
+
+
+
+
+
+
+## 20.3 大整数
+
+javascript内置的类型，可以表示任意大的整数
+
+```javascript
+// 大整数 BigInt 可以表示任意大的整数
+// javascript 的number 表示的整数范围是 -(2^53 - 1) 到 2^53 - 1, 在这个范围之外 + - * / 会导致错误的结果
+// 可以用Number.MAX_SAFE_INTEGER属性获取
+
+
+{
+  // 可以使用整数或者字符串构造,建议用字符串,使用整数构造可能出错
+  let a : bigint = BigInt(5);
+  let b : bigint = BigInt(2);
+  let c : bigint = a / b;
+  console.log(`c = ${c}`);
+
+  // bigint类型不能和number类型混合运算
+  // let d = a + 2;  错误的代码
+
+  let f : bigint = BigInt('123456789012345678912345');
+  let d : bigint = BigInt('1');
+  let e : bigint = f + d;
+  console.log(`e = ${e}`);
+
+
+  let h1 : bigint = BigInt(1) + BigInt(5);
+  console.log(`h1 = ${h1}`);
+}
+```
+
