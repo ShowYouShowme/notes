@@ -247,6 +247,7 @@ ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
 
 # STEP-4 MAKEFILE
 # make file 里面有 build, deploy 和 test[测试接口] 三个target 基本就够了
+
 ```
 
 
@@ -520,6 +521,12 @@ tip = 目的目录存在同名文件会直接覆盖
 [拷贝文件]
 cmd = scp  a.txt aliyun:~/
 tip = 目的目录存在同名文件会直接覆盖
+
+
+[copy文件到win]
+desc = win11 自带ssh client和 ssh server
+开启ssh server = net start sshd ;管理员身份
+cmd  = scp get_env.js  jumbo@192.168.2.108:/Users/jumbo/Desktop
 ```
 
 ## 2 常见操作
@@ -601,6 +608,12 @@ tip = 目的目录存在同名文件会直接覆盖
 
    ```shell
    docker rmi $(docker images | tail -n +2 | awk '{print $3}')
+   ```
+
+4. windows 可以使用git bash,也具有tail的功能
+
+   ```shell
+   tail -f C://Users//jumbo//project//hall_ts//tigerTraining.log
    ```
 
    
@@ -1088,7 +1101,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >          
+  >                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1112,7 +1125,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >          
+  >                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1839,10 +1852,23 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
 
 # iptables
 
-1. 安装
+1. 简介
 
-   ```shell
-   yum install -y iptables
+   ```ini
+   [安装]
+   cmd = yum install -y iptables
+   
+   [说明]
+   desc1 = iptables包含4个表，5个链。
+   desc2 = 4个表:filter,nat,mangle,raw，默认表是filter
+   desc3 = 5个链：PREROUTING,INPUT,FORWARD,OUTPUT,POSTROUTING
+   
+   [命令格式]
+   cmd-1 = iptables -L [-t 表名] 如果没有指定表名,默认查看filter
+   cmd-1-default = iptables -L -t filter
+   
+   cmd-2 = iptables -L [-t 表名] [链名]
+   查看INPUT的规则 = iptables -L INPUT -n
    ```
 
 2. 只允许指定ip的数据进来
@@ -1877,11 +1903,23 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
    
    # 列出规则, 非nat
    iptables -Ln
+   
+   # 列出INPUT链的规则
+   iptables -L INPUT -n --line-number
+   
+   # 列出FORWARD的规则
+   iptables -L FORWARD -n
+   
+   # 列出OUTPUT的规则
+   iptables -L OUTPUT -n
    ```
 
 7. 删除规则
 
    ```shell
+   # 删除INPUT的第一条规则
+   iptables -D INPUT 1
+   
    # 删除FORWARD链的第二条规则
    iptables -D FORWARD 2
    

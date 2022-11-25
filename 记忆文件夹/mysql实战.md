@@ -2938,6 +2938,12 @@ create table db2.t like db1.t
 
 ## 41.1 mysqldump
 
+配置权限
+
+```
+GRANT PROCESS ON *.* TO 'demo'@'localhost';
+```
+
 
 
 ### 41.1.1 导出数据
@@ -3078,7 +3084,11 @@ load data infile '/var/lib/mysql-files/t.csv' into table db2.t;
 ## 41.5 导出整个数据库
 
 ```shell
+#不导出表结构
 mysqldump -h$host -P$port -u$user -p --add-locks=0 --no-create-info --single-transaction  --set-gtid-purged=OFF $db --result-file=/opt/$db.sql
+
+#导出表结构
+mysqldump -h$host -P$port -u$user -p --add-locks=0 --single-transaction  --set-gtid-purged=OFF $db --result-file=/opt/$db.sql
 ```
 
 上面的命令不导出表结构，如果需要导出表结构把参数--no-create-info 去掉。
@@ -3492,6 +3502,25 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
 ```
 
 
+
+## 45.3 常见配置
+
+1. 修改mysql绑定的网卡
+
+   ```ini
+   [mysqld]
+   bind-address=127.0.0.1
+   ```
+
+2. 修改端口号
+
+   ```ini
+   [mysqld]
+   ;必须关闭selinux
+   port = 3306
+   ```
+
+   
 
 
 
