@@ -175,6 +175,12 @@ npm install @types/node
    ```shell
    #当安装包卡住，提示sill idealTree buildDeps的时候，设置代理即可
    npm config set proxy=http://127.0.0.1:8090
+   
+   #删除代理
+   npm config delete proxy
+   
+   #打印代理信息
+   npm config get proxy
    ```
 
 4. 查看包的版本信息
@@ -2175,6 +2181,51 @@ request({
 
 
 
+## 18.4 封装为Promise
+
+```javascript
+import request from 'request';
+class HttpClient {
+  static async Post(url: string, body: Object) {
+    return new Promise(function (resolve, reject) {
+      request({
+        url: url,
+        method: "POST",
+        json: true,
+        headers: {
+          "content-type": "application/json"
+        },
+        body: body
+      }, function (err: any, response: any, body: any) {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(body);
+      })
+    })
+  }
+
+  static async Get(url: string) {
+    return new Promise(function (resolve, reject) {
+      request({
+        url: url,
+        method: "GET",
+      }, function (err: any, response: any, body: any) {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(body);
+      })
+    }
+    )
+  }
+}
+```
+
+
+
 
 
 # 第十九章  技巧
@@ -2876,6 +2927,15 @@ pm2 start ecosystem.config.js --env production
 
 
 
+## 19.1.15 静态资源服务器
+
+```shell
+#非常方便
+pm2 serve <path> <port>
+```
+
+
+
 
 
 # 第二十章 数学库
@@ -3023,6 +3083,54 @@ javascript内置的类型，可以表示任意大的整数
 
   let h1 : bigint = BigInt(1) + BigInt(5);
   console.log(`h1 = ${h1}`);
+}
+```
+
+
+
+# 第二十一章 MySQL
+
+网址 = https://www.npmjs.com/package/mysql 
+
+
+
+## 21.1 安装
+
+```ini
+npm install mysql
+```
+
+
+
+## 21.2 封装Promise
+
+```javascript
+import mysql from 'mysql';
+class MysqlClient {
+  private pool: mysql.Pool;
+  constructor() {
+    this.pool = mysql.createPool({
+      connectionLimit: 10,
+      host: Config.mysql_srv,
+      user: Config.mysql_user,
+      password: Config.mysql_passwd,
+      database: Config.mysql_db
+    });
+  }
+
+  async query(options: string, values: any) {
+    //不要用function定义cb,否则传入的this指针会有问题
+    return new Promise((resolve, reject) => {
+      this.pool.query(options, values, (error, results, fields) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        //当回调函数有多个参数时,可以用对象的方式返回
+        resolve({ results, fields });
+      });
+    })
+  }
 }
 ```
 
