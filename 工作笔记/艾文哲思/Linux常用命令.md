@@ -1101,7 +1101,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                   
+  >                      
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1125,7 +1125,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                   
+  >                      
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1933,7 +1933,7 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
    iptables -F
    ```
 
-8. 只允许指定IP访问某个端口
+8. **只允许指定IP访问某个端口**
 
    ```shell
    iptables -A INPUT -p tcp --dport 22 -s 47.106.120.244 -j ACCEPT

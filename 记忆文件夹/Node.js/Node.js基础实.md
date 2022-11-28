@@ -2339,11 +2339,22 @@ console.log(".......")
 
 
 
-## 20.2.4 配置vscode debug时显示
+### 20.2.4 配置vscode debug时显示
 
 ```shell
 #在launch.json 里面增加
 "outputCapture": "std"
+```
+
+
+
+### 20.2.5 确保进程退出前全部日志记录到文件
+
+```javascript
+  log4js.shutdown((error)=>{
+    console.log(`关闭全部日志....`);
+    process.exit(0);
+  })
 ```
 
 
@@ -2491,6 +2502,40 @@ exec('ls -al', function(error, stdout, stderr){
     console.log('stdout: ' + stdout);
     console.log('stderr: ' + typeof stderr);
 })
+```
+
+
+
+用promise封装
+
+```javascript
+const exec = require('child_process').exec;
+namespace Common{
+    export async function exec_shell_cmd(cmd : string){
+        return new Promise((onSuccess, onFail)=>{
+            exec(cmd, function(error : any, stdout : any, stderr: any){
+                if(error) {
+                    onFail(error);
+                    return;
+                }
+                onSuccess({stdout, stderr});
+            })
+        })
+    }
+}
+
+
+
+async function main() {
+    try {
+    let result = await Common.exec_shell_cmd('ls -l /');
+    console.log(`result = ${JSON.stringify(result)}`);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+main()
 ```
 
 
