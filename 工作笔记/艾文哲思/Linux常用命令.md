@@ -1101,7 +1101,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                      
+  >                         
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1125,7 +1125,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                      
+  >                         
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2420,15 +2420,17 @@ vim /etc/fstab
 
    ```shell
    date -R
+   
+   #查看全部可用时区
+   timedatectl list-timezones
    ```
 
-2. 修改配置文件`/etc/profile`
+2. 修改时区
 
    ```shell
-   # 增加一行 ubuntu 18.04 的做法
-   TZ='Asia/Shanghai'; export TZ
+   timedatectl set-timezone "Asia/ShangHai"
    ```
-
+   
 3. 再次查看时间
 
    ```shell

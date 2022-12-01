@@ -2140,17 +2140,11 @@ npm install request
 ## 18.2 GET请求
 
 ```javascript
-request({
-    url: "http://192.168.2.110:8100",
-    method: "GET",
-},function(err : any, response : any,body : any){
-    if(err){
-        console.log(err);
-        return;
-    }
-    console.log(response);
-    console.log(body);
-})
+request.get('http://www.baidu.com', (error: any, response: any, body: any)=>{
+    if(error)
+        throw error;
+    //console.log(`response = ${response}, body = ${body}`);
+});
 ```
 
 
@@ -2158,25 +2152,17 @@ request({
 ## 18.3 POST请求
 
 ```javascript
-const request = require('request')
-request({
-    url: "http://192.168.2.110:9002/server/login/checklogintoken",
-    method : "POST",
+request.post('http://127.0.0.1:3000', {
     json : true,
-    headers:{
-        "content-type": "application/json"
-    },
-    body:{
-        "token" : "65bad951c31b8777d512d832bcc633d718a1411f"
+    body : {
+        name : 'nash',
+        age  : 25
     }
-},function(err : any, response : any, body:any){
-    if(err){
-        console.log(err);
-        return;
-    }
-    console.log(response);
-    console.log(body);
-})
+}, (error: any, response: any, body: any)=>{
+    if(error)
+        throw error;
+    console.log(`response = ${response}, body = ${body}`);
+});
 ```
 
 
@@ -3178,4 +3164,44 @@ class MysqlClient {
   }
 }
 ```
+
+
+
+
+
+# 第二十二章 流程控制
+
+
+
+## 22.1 switch语句
+
+```javascript
+//javascript可以直接switch string
+switch (expression) {
+   case label_1:
+      statements_1
+      [break;]
+   case label_2:
+      statements_2
+      [break;]
+   ...
+   default:
+      statements_def
+      [break;]
+}
+```
+
+
+
+# 第二十三章  输入和输出
+
+```javascript
+// 调用的并不是toString
+console.info(pizza);
+
+// 调用pizza的 toString 函数
+console.info(`pizza detail = ${pizza}`);
+```
+
+
 
