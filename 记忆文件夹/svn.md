@@ -48,12 +48,17 @@
    vim svnserver.conf 
    
    [general]
+   #none|read|write none 表示无访问权限，read 表示只读，write 表示可读可写，默认为 read
+   #非授权用户的访问级别
    anon-access = none
+   #授权用户的访问级别
    auth-access = write
+   #指定账号密码数据库文件名
    password-db = passwd
+   #指定权限配置文件名
    authz-db = authz
-   #项目名
-   realm =art
+   #登录时提示的提示信息
+   realm =this is nash's project
    ```
 
 5. 启动服务
