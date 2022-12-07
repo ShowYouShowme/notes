@@ -727,6 +727,8 @@ CONVERT_TZ
        course_info CHAR(100) NULL,\
        PRIMARY KEY(course_id)\
        );
+   #创建临时表  
+   create temporary table temp_t(id int primary key, a int, b int, index (b))engine=memory;
    ```
 
 ### 2.11.7 创建数据库

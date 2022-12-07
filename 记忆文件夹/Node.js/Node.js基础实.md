@@ -2910,7 +2910,8 @@ module.exports = {
     "name"       : "nginx",
     "script"     : "/home/li/local/nginx/sbin/nginx",
     "exec_interpreter": "none",
-    "exec_mode"  : "fork_mode"
+    "exec_mode"  : "fork_mode",
+    "cwd"        : "/home/li/local/nginx/sbin"
   }]  
 };
 

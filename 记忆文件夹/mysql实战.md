@@ -2698,6 +2698,110 @@ select SQL_BIG_RESULT id%100 as m, count(*) as c from t1 group by m;
 
 
 
+# 第三十八章  Memory引擎
+
+
+
+## 38.1 内存表的数据组织结构
+
+1. InnoDB 引擎把数据放在主键索引上，其他索引上保存的是主键 id。这种方式，我们称之为索引组织表（Index Organizied Table）。
+
+2. Memory 引擎采用的是把数据单独存放，索引上保存数据位置的数据组织形式，我们称之为堆组织表（Heap Organizied Table）。
+
+
+
+Innodb和memory引擎的区别
+
+1. InnoDB 表的数据总是有序存放的，而内存表的数据就是按照写入顺序存放的；
+2. 当数据文件有空洞的时候，InnoDB 表在插入新数据的时候，为了保证数据有序性，只能在固定的位置写入新值，而内存表找到空位就可以插入新值；
+3. 数据位置发生变化的时候，InnoDB 表只需要修改主键索引，而内存表需要修改所有索引；
+4. InnoDB 表用主键索引查询时需要走一次索引查找，用普通索引查询的时候，需要走两次索引查找。而内存表没有这个区别，所有索引的“地位”都是相同的。
+5. InnoDB 支持变长数据类型，不同记录的长度可能不同；内存表不支持 Blob 和 Text 字段，并且即使定义了 varchar(N)，实际也当作 char(N)，也就是固定长度字符串来存储，因此内存表的每行数据长度相同。
+
+
+
+验证
+
+```sql
+
+create table t1(id int primary key, c int) engine=Memory;
+create table t2(id int primary key, c int) engine=innodb;
+insert into t1 values(1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(0,0);
+insert into t2 values(1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(0,0);
+
+select * from t1;
+select * from t2;
+```
+
+
+
+## 38.2 hash索引和BTree索引
+
+内存表支持B-Tree索引，在表上增加索引试试
+
+```sql
+alter table t1 add index a_btree_index using btree (id);
+```
+
+
+
+查询
+
+```sql
+#优化器优先选择B-Tree索引
+select * from t1 where id < 5;
+
+#强制选择主键索引
+select * from t1 force index(primary) where id < 5;
+```
+
+
+
+
+
+## 38.3 内存表的问题
+
+
+
+### 38.3.1 锁粒度
+
+内存表不支持行锁，只支持表锁。因此，一张表只要有更新，就会堵住其他所有在这个表上的读写操作
+
+
+
+### 38.3.2 数据持久化问题
+
+数据库重启的时候，所有的内存表都会被清空。在高可用架构下，内存表的这个特点简直可以当做 bug 来看待了
+
+
+
+1. M-S的架构，备库重启后，备库的数据清空，导致主备同步停止。如果这时候主备切换，导致数据丢失
+2. 双M的架构，备库重启会把delete语句发给主库执行，然后主库内存表里面的数据都被清空了。
+
+
+
+### 38.3.3 适合内存表的场景 临时表
+
+1. 未使用内存表
+
+   ```sql
+   create temporary table temp_t(id int primary key, a int, b int, index(b))engine=innodb;
+   insert into temp_t select * from t2 where b>=1 and b<=2000;
+   select * from t1 join temp_t on (t1.b=temp_t.b);
+   ```
+
+2. 使用内存表后
+
+   ```sql
+   create temporary table temp_t(id int primary key, a int, b int, index (b))engine=memory;
+   insert into temp_t select * from t2 where b>=1 and b<=2000;
+   select * from t1 join temp_t on (t1.b=temp_t.b);
+   ```
+
+   
+
+
+
 # 第三十九章  自增主键不连续
 
 
@@ -3475,7 +3579,103 @@ nnoDB 内部维护了一个 max_trx_id 全局变量，每次需要申请一个�
 
 
 
-# 第四十五章 附录
+# 第四十五章 主从配置
+
+
+
+## 45.1 主库配置
+
+1. 开启binlog
+
+   ```ini
+   [mysqld]
+   # 服务的唯一编号
+   server-id = 1
+   
+   # 开启mysql binlog功能
+   log-bin = master-bin
+   
+   # binlog记录内容的方式，记录被操作的每一行
+   binlog_format = ROW
+   ```
+
+2. 创建账号给从库同步，并且授权
+
+   ```ini
+   ;创建账号
+   cmd = create user 'repl'@'%' identified by 'mysql';
+   
+   ;授权
+   cmd = grant replication slave on *.* to 'repl'@'%' identified by 'mysql';
+   ```
+
+   
+
+## 45.2 从库配置
+
+1. 开启binlog
+
+   ```ini
+   [mysqld]
+   # 服务的唯一编号
+   server-id = 2
+   
+   # 开启mysql binlog功能
+   log-bin = slave-bin
+   
+   # binlog记录内容的方式，记录被操作的每一行
+   binlog_format = ROW
+   ```
+
+2. 测试从库所在机器是否能访问主库
+
+   ```shell
+   mysql -h 192.168.2.102 -P 6306 -urepl -pmysql
+   ```
+
+3. 执行同步
+
+   ```ini
+   cmd1 = change master to master_host='192.168.2.102',master_port=6306, master_user='repl',master_password='mysql',master_log_file='master-bin.000001',master_log_pos=0;
+   
+   cmd2 = start slave;
+   ```
+
+4. 查看同步状况
+
+   ```ini
+   cmd3 = show master status;
+   cmd4 = show slave status \G;
+   
+   ; Slave_IO_Running: Yes
+   ; Slave_SQL_Running: Yes
+   ```
+
+5. 停止同步
+
+   ```shell
+   mysql > stop slave;
+   ```
+
+6. 查看是否已经完全同步
+
+   ```ini
+   ;主库执行,留意File 和 Position字段
+   cmd = show master status;
+   
+   ;从库执行 File 和 Position与主库的一致即可
+   ;Master_Log_File: master-bin.000001
+   ;Read_Master_Log_Pos: 1375
+   cmd = show slave status \G;
+   ```
+
+   
+
+
+
+
+
+# 第四十六章 附录
 
 
 

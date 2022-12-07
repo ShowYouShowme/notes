@@ -978,13 +978,13 @@ rz -y ${fileName}
      ```
 
    + 存放响应的Cookies
-   
+
      1. 方式一
 
         ```shell
         curl --dump-header headers www.example.com
         ```
-   
+
      2. 方式二
 
         ```shell
@@ -992,14 +992,20 @@ rz -y ${fileName}
         ```
 
         
-   
+
    + 使用存放在文件里面的Cookies信息访问网站
 
      ```shell
      curl -b headers www.example.com
      ```
+
+9. 打印响应头 和响应码
+
+   ```shell
+   curl -I  http://127.0.0.1:3000/ 
+   ```
+
    
-     
 
 
 
@@ -1101,7 +1107,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                         
+  >                            
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1125,7 +1131,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                         
+  >                            
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

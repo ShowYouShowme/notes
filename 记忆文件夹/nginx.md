@@ -158,7 +158,9 @@ stream {
 
 # 第二章 初识Nginx
 
-配置https
+
+
+## 2.1 配置https
 
 ```shell
 server {
@@ -192,7 +194,7 @@ server {
    
    
 
-基本http服务配置
+## 2.2 基本http服务配置
 
 ```nginx
 #user  nobody;
@@ -222,7 +224,7 @@ http{
 
 
 
-文件服务器配置
+## 2.3 文件服务器配置
 
 ```nginx
 http{
@@ -234,6 +236,42 @@ http{
 		}
     }
 }
+```
+
+
+
+## 2.4 http反向代理
+
+```nginx
+
+worker_processes  1;
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    sendfile        on;
+    keepalive_timeout  65;
+    
+    #这里是关键
+    server {
+        listen       9901;
+		location / {
+				proxy_pass  http://192.168.2.102:9901;
+		}
+    }
+}
+```
+
+
+
+## 2.5 前台启动nginx
+
+```nginx
+#全局作用域
+daemon off;
 ```
 
 
@@ -1061,6 +1099,8 @@ st->op2->op3->op4->op5->op6
 
 ```ini
 [启动nginx]
+;推荐使用pm2来启动nginx
+;使用pm2管理nginx,必须配置前台启动 daemon off;
 cmd = start nginx
 
 [重新加载配置文件]
@@ -1072,6 +1112,17 @@ cmd =  nginx -t -c /path/to/nginx.conf
 [关闭nginx]
 cmd1 = nginx -s stop
 cmd2 = nginx -s quit
+
+[pm2管理nginx]
+;记得启动前测试配置文件是否有错误
+[pm2配置]
+ {
+    "name"       : "nginx",
+    "script"     : "nginx.exe",
+    "exec_interpreter": "none",
+    "exec_mode"  : "fork_mode",
+	"cwd"        : "C:\\Users\\jumbo\\local\\nginx-1.23.2"
+ }
 ```
 
 
