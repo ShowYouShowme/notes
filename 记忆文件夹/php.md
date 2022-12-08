@@ -198,11 +198,12 @@
 1. 安装依赖
 
    ```shell
+   #先安装第三方源,其它的可以一起安装
+   sudo yum install epel-release -y
    sudo yum install -y gcc gcc-c++
    sudo yum install -y libxml2-devel
    sudo yum install -y openssl-devel
    sudo yum install -y sqlite-devel libcurl-devel libpng-devel
-   sudo yum install epel-release -y
    sudo yum install oniguruma-devel -y
    ```
 
@@ -210,7 +211,7 @@
 
    ```shell
    #安装libzip
-   #依赖于cmake
+   #依赖于cmake root或者有sudo权限的用户
    wget https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-x86_64.tar.gz
    
    #解压后可以直接使用
@@ -219,14 +220,14 @@
    wget https://libzip.org/download/libzip-1.8.0.tar.gz && tar -zxf libzip-1.8.0.tar.gz && cd libzip-1.8.0
    
    mkdir build && cd build \
-   && cmake -DCMAKE_INSTALL_PREFIX=/usr .. \
+   && ../../cmake-3.25.0-linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=/usr .. \
    && make \
    && sudo make install
    ```
 
 3. 编译安装php
 
-   ./configure --prefix=/home/li/local/php7 --bindir=/home/li/local/php7/bin --with-config-file-path=/home/li/local/php7/etc --enable-fpm --with-openssl --with-curl --with-pdo-mysql --with-zip --enable-mbstring --with-zlib --enable-gd --with-zlib 
+   ./configure --prefix=$HOME/local/php7 --bindir=$HOME/local/php7/bin --with-config-file-path=$HOME/local/php7/etc --enable-fpm --with-openssl --with-curl --with-pdo-mysql --with-zip --enable-mbstring --with-zlib --enable-gd --with-zlib 
 
    make -j20    	//使用20个核心
    make install
@@ -234,19 +235,19 @@
 
    给php执行文件加软连接到bin
 
-   	ln -s /home/li/local/php7/bin/php /home/li/bin/php
+   	ln -s $HOME/local/php7/bin/php $HOME/bin/php
 
    创建 php-fpm 执行文件
 
-   	cp /home/li/tmp/php-7.4.30/sapi/fpm/init.d.php-fpm /home/li/local/php7/bin/php-fpm
+   	cp $HOME/tmp/php-7.4.30/sapi/fpm/init.d.php-fpm $HOME/local/php7/bin/php-fpm
 
    给执行文件 执行权限
 
-   	chmod +x /home/li/local/php7/bin/php-fpm
+   	chmod +x $HOME/local/php7/bin/php-fpm
 
    创建软连接
 
-   	ln -s /home/li/local/php7/bin/php-fpm /home/li/bin/php-fpm
+   	ln -s $HOME/local/php7/bin/php-fpm $HOME/bin/php-fpm
 
 
    测试php-fpm 
@@ -257,12 +258,12 @@
 
    由于安装时指定了配置路径 --with-config-file-path=/home/li/local/php7/etc ， 所以需要拷贝php.ini到对应目录
 
-   	cp /home/li/tmp/php-7.4.30/php.ini-development /home/li/local/php7/etc/php.ini
+   	cp $HOME/tmp/php-7.4.30/php.ini-development $HOME/local/php7/etc/php.ini
 
 
    创建 php-fpm 配置文件 
 
-   	cd /home/li/local/php7/etc/
+   	cd $HOME/local/php7/etc/
    	cp ./php-fpm.conf.default ./php-fpm.conf
    	
    	cd php-fpm.d

@@ -9,11 +9,17 @@
 2. 编译安装
 
    ```shell
+   #~/.bashrc 里面配置环境变量
+   #export C_INCLUDE_PATH=$HOME/usr/include/
+   #export CPLUS_INCLUDE_PATH=$HOME/usr/include/
+   #export LD_LIBRARY_PATH=$HOME/usr/lib/
+   #export LIBRARY_PATH=$HOME/usr/lib/
+   
    tar -zxvf v3.9.0-rc1.tar.gz
    cd ./protobuf-3.9.0-rc1/
    yum install -y libtool automake autoconf curl make unzip gcc-c++   
    ./autogen.sh
-   ./configure --prefix=/usr
+   ./configure --prefix=$HOME/usr
    make -j${CPU核心}  # top命令然后按数字1即可显示CPU核心数
    make install
    ```
@@ -89,7 +95,7 @@
    ```makefile
    # 链接的库要加上pthread,否则会报错
    main:main.cpp person.pb.cc
-           g++  -std=c++11 main.cpp person.pb.cc -o main -I/usr/local/protobuf/include -lprotobuf -lpthread
+           g++  -std=c++11 main.cpp person.pb.cc -o main -lprotobuf -lpthread
    ```
 
 

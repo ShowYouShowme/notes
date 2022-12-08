@@ -276,3 +276,45 @@ echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 ***
 
 C++ 的server 部署在Docker 里面可以确保环境一致，避免很多问题。这是非常推荐的做法。
+
+
+
+
+
+# 第八章 搜索路径
+
+
+
+## 8.1 环境变量
+
+首先明确一点，这几个预处理包含目录的环境变量并不是Linux操作系统的一部分，因此一般情况下Linux是不会设置这些环境变量的。所以在对某一个环境变量第一次设置时，应该直接将其赋值为所需的目录，在之后的设置中再使用递归式的赋值。使用非root用户编译时，记得先创建$HOME/usr目录，然后      编译时配置--prefix=$HOME/usr
+
+1. gcc头文件的搜索路径
+
+   ```shell
+   export C_INCLUDE_PATH=$HOME/usr/include/
+   ```
+
+2. g++头文件搜索路径
+
+   ```shell
+   export CPLUS_INCLUDE_PATH=$HOME/usr/include/
+   ```
+
+3. ***程序加载运行期间***查找动态链接库时，指定除了系统默认路径之外的其他路径，发布的时候使用
+
+   ```shell
+   export LD_LIBRARY_PATH=$HOME/usr/lib/
+   ```
+
+4. ***程序编译期间***查找动态链接库时指定查找共享库的路径，开发过程中使用
+
+   ```shell
+   export LIBRARY_PATH=$HOME/usr/lib/
+   ```
+
+
+
+## 8.2 做法
+
+使用非root用户编译安装软件时，先创建目录$HOME/usr，然后把源码编译的软件安装到$HOME/usr，最后.bashrc 里面配置上面的四个环境变量，之后再编译其它的软件时就可以找到这些头文件和目录了，并且不会污染到其它的用户。然后make install 就不需要root用户的权限了。

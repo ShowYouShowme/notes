@@ -388,6 +388,15 @@ export PATH=${PATH}:/new/path
 
 
 
+配置非root用户的PATH环境变量
+
+```shell
+#.bashrc
+export PATH=${PATH}:$HOME/bin
+```
+
+
+
 ## 3-7 数组
 
 + 定义数组
@@ -527,7 +536,7 @@ export PATH=${PATH}:/new/path
   > >
   > >    ```shell
   > >    cp -v /etc/passwd /etc/passwd.bak
-  > >       
+  > >          
   > >    # 上面命令的简写
   > >    cp -v /etc/passwd{,.bak}
   > >    ```
@@ -1113,7 +1122,7 @@ done
   >    ```shell
   >    ulimit -a
   >    #max user processes              (-u) 15022
-  >       
+  >          
   >    # 无限递归,会耗完CPU  FORK炸弹  普通用户受到ulimit 的限制,系统不会假死;root用户不受限制
   >    func()
   >    {
@@ -1142,14 +1151,14 @@ done
   >    trap "echo sig 2" 2
   >    # 显示进程号
   >    echo $$
-  >       
+  >          
   >    while :
-  >       
+  >          
   >    do
   >            sleep 1
   >            echo "111"
   >    done
-  >       
+  >          
   >    ```
 
 
