@@ -74,6 +74,8 @@
 ## 2.2 删除数据库
 
 ```ini
+use ${dbName};
+
 db.dropDatabase()
 ```
 
@@ -261,4 +263,33 @@ db.dropDatabase()
    mongodump -d test -o /home/roglic/mongo  --collection runoob
    ```
 
-   
+
+
+
+
+
+## 3.2 备份
+
+```ini
+;--host -h 指定备份的主机ip和端口号，默认值localhost:27017
+;--db -d 指定备份的数据库，未指定的话，备份所有的数据库，但不包含local库
+;--out -o 输出的目录路径,需要先创建目录
+
+mongodump --host 127.0.0.1:27017 --db game --out db/
+```
+
+
+
+
+
+## 3.3 恢复
+
+```ini
+;--host -h 指定恢复的主机ip和端口号，默认值localhost:27017
+;--db -d 恢复的数据库
+;--dir 输入数据的目录
+
+#game目录下有两个文件roles.bson 和 roles.metadata.json
+mongorestore --host 127.0.0.1:27017 --db game --dir db/game
+```
+
