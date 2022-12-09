@@ -313,6 +313,15 @@ C++ 的server 部署在Docker 里面可以确保环境一致，避免很多问�
    export LIBRARY_PATH=$HOME/usr/lib/
    ```
 
+5. PKG_CONFIG_PATH包管理器的环境变量，用来查找pc文件，默认路径是/usr/lib/pkgconfig 和 /usr/share/pkgconfig，如果非root用户源码编译依赖，需要加上这个
+
+   ```shell
+   #错误信息 Consider adjusting the PKG_CONFIG_PATH environment variable if you installed software in a non-standard prefix
+   export PKG_CONFIG_PATH=$HOME/usr/lib64/pkgconfig/
+   ```
+
+   
+
 
 
 ## 8.2 做法

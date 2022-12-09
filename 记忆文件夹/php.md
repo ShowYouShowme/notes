@@ -220,7 +220,7 @@
    wget https://libzip.org/download/libzip-1.8.0.tar.gz && tar -zxf libzip-1.8.0.tar.gz && cd libzip-1.8.0
    
    mkdir build && cd build \
-   && ../../cmake-3.25.0-linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=/usr .. \
+   && ../../cmake-3.25.0-linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=$HOME/usr .. \
    && make \
    && sudo make install
    ```
