@@ -34,7 +34,7 @@
    wget https://dev.mysql.com/get/mysql80-community-release-el7-7.noarch.rpm
    
    #安装源
-   yum localinstall mysql80-community-release-el7-7.noarch.rpm
+   yum localinstall mysql80-community-release-el7-7.noarch.rpm -y
    
    #安装工具
    yum install -y yum-utils

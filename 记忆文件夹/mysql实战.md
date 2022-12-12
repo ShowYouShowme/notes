@@ -2147,11 +2147,211 @@ mysql -uroot -p'tars2015' < /usr/share/mysql/install_rewriter.sql
 
 # 第二十三章 如何保证数据不丢失
 
+主题：BinLog和RedoLog的写入流程
 
+
+
+## 23.1 BinLog的写入机制
+
+事务执行过程中，先把日志写到 binlog cache，事务提交的时候，再把 binlog cache 写到 binlog 文件中。系统给 binlog cache 分配了一片内存，每个线程一个，参数 binlog_cache_size 用于控制单个线程内 binlog cache 所占内存的大小。如果超过了这个参数规定的大小，就要暂存到磁盘。
+
+
+
+binlog cache先写到系统个page cache，然后再由系统写入到磁盘。
+
+1. write，指的就是指把日志写入到文件系统的 page cache，并没有把数据持久化到磁盘，所以速度比较快。
+2. fsync，才是将数据持久化到磁盘的操作。一般情况下，我们认为 fsync 才占磁盘的 IOPS。
+
+
+
+参数sync_binlog
+
+1. sync_binlog=0 的时候，表示每次提交事务都只 write，不 fsync
+2. sync_binlog=1 的时候，表示每次提交事务都会执行 fsync
+3. sync_binlog=N(N>1) 的时候，表示每次提交事务都 write，但累积 N 个事务后才fsync
+
+因此，在出现 IO 瓶颈的场景里，将 sync_binlog 设置成一个比较大的值，可以提升性能。比较常见的是将其设置为 100~1000 中的某个数值
+
+
+
+## 23.2 RedoLog的写入机制
+
+
+
+### 23.2.1 redoLog的三种状态
+
+1. 在MySQL进程内存中
+2. 写到磁盘 (write)，但是没有持久化（fsync)，物理上是在文件系统的 page cache 里面
+3. 持久化到磁盘，对应的是 hard disk
+
+
+
+### 23.2.2 innodb_flush_log_at_trx_commit
+
+1. 设置为 0 的时候，表示每次事务提交时都只是把 redo log 留在 redo log buffer 中
+2. 设置为 1 的时候，表示每次事务提交时都将 redo log 直接持久化到磁盘
+3. 设置为 2 的时候，表示每次事务提交时都只是把 redo log 写到 page cache
+
+
+
+### 23.2.3 导致未提交的事务写入磁盘的场景
+
+1. InnoDB 有一个后台线程，每隔 1 秒，就会把 redo log buffer 中的日志，调用 write 写到文件系统的 page cache，然后调用 fsync 持久化到磁盘。事务执行中间过程的 redo log 也是直接写在 redo log buffer 中的，这些 redo log 也会被后台线程一起持久化到磁盘。也就是说，一个没有提交的事务的 redo log，也是可能已经持久化到磁盘的
+2. redo log buffer 占用的空间即将达到 innodb_log_buffer_size 一半的时候，后台线程会主动写盘。注意，由于这个事务并没有提交，所以这个写盘动作只是 write，而没有调用 fsync，也就是只留在了文件系统的 page cache
+3. 并行的事务提交的时候，顺带将这个事务的 redo log buffer 持久化到磁盘
+
+
+
+### 23.2.4 MySQL双1配置
+
+1. sync_binlog设置为1
+2. innodb_flush_log_at_trx_commit设置为1
+
+
+
+### 23.2.5 组提交
+
+LSN：每次将redoLog 写入到redo log buffer 时，LSN都会单调递增。prepare到写盘的这段时间，附带的LSN越大，节约的IOPS效果越好。这个需要开启多线程。
+
+
+
+两阶段提交的优化
+
+```ini
+[step-1]
+cmd = redo log prepare: write
+
+[step-2]
+cmd = binlog : write
+
+[step-3]
+cmd = redo log prepare :fsync
+
+[step-4]
+cmd = binlog : fsync
+
+[step-5]
+cmd = redo log commit : write
+```
+
+
+
+
+
+提升组提交效果的配置
+
+```ini
+;延迟多少微妙后才调用fsync
+[binlog_group_commit_sync_delay]
+;延迟1s调用,这个参数慎用,很容易导致性能问题
+ binlog_group_commit_sync_delay = 1000000
+
+;累计多少次以后才调用
+[binlog_group_commit_sync_no_delay_count]
+
+;这两个条件是或的关系
+```
+
+
+
+### 23.2.6 MySQL性能瓶颈在IO的解决方案
+
+1. 设置 binlog_group_commit_sync_delay 和 binlog_group_commit_sync_no_delay_count 参数，减少 binlog 的写盘次数。这个方法是基于“额外的故意等待”来实现的，因此可能会增加语句的响应时间，但没有丢失数据的风险
+2. 将 sync_binlog 设置为大于 1 的值（比较常见是 100~1000）。这样做的风险是，主机掉电时会丢 binlog 日志
+3. 将 innodb_flush_log_at_trx_commit 设置为 2。这样做的风险是，主机掉电的时候会丢数据
 
 
 
 # 第二十四章 如何保证主备一致
+
+
+
+## 24.1 主备的基本原理
+
+
+
+### 架构
+
+```ini
+client ---> MySQLA --->MySQLB(readonly)
+```
+
+
+
+```ini
+[slave只读设置]
+cmd-1 = set global read_only=1;
+cmd-2 = show global variables like "%read_only%";
+
+[slave只读设为读写]
+cmd-1 = set global read_only=0;
+```
+
+
+
+
+
+### 主备同步过程
+
+1. 在备库 B 上通过 change master 命令，设置主库 A 的 IP、端口、用户名、密码，以及要从哪个位置开始请求 binlog，这个位置包含文件名和日志偏移量
+2. 在备库 B 上执行 start slave 命令，这时候备库会启动两个线程，就是图中的 io_thread 和 sql_thread。其中 io_thread 负责与主库建立连接
+3. 主库 A 校验完用户名、密码后，开始按照备库 B 传过来的位置，从本地读取 binlog，发给B
+4. 备库 B 拿到 binlog 后，写到本地文件，称为中转日志（relay log）
+5. sql_thread 读取中转日志，解析出日志里的命令，并执行
+
+
+
+## 24.2 binLog的三种格式对比
+
+1. statement：记录到 binlog 里的是语句原文，因此可能会出现这样一种情况：在主库执行这条 SQL 语句的时候，用的是索引 a；而在备库执行这条 SQL 语句的时候，却使用了索引 t_modified。导致主备不一致
+2. row：binLog里面不再记录SQL原文，而是变成了事件。备库执行不会导致主备不一致
+3. 
+
+
+
+## 24.3 mixed格式的binLog
+
+有些statement格式的binlog可能导致主备不一致，所用用row格式。但是row格式缺点是非常占用空间。有了 mixed 格式的 binlog。mixed 格式的意思是，MySQL 自己会判断这条 SQL 语句是否可能引起主备不一致，如果有可能，就用 row 格式，否则就用 statement 格式。
+
+
+
+
+
+## 24.4 使用row格式方便恢复数据
+
+1. 执行delete语句，把delete换成insert
+2. 执行insert语句，把insert缓存delete
+3. 执行update，把event前后两行的信息对调
+
+
+
+## 24.5 使用binlog恢复数据
+
+错误的方法：用 mysqlbinlog 解析出日志，然后把里面的 statement 语句直接拷贝出来执行。有些语句的执行结果是依赖于上下文命令的，直接执行的结果很可能是错误的。
+
+
+
+正确的方法
+
+```shell
+mysqlbinlog master.000001  --start-position=2738 --stop-position=2973 | mysql -h127.0.0.1 -P13000 -u$user -p$pwd;
+```
+
+
+
+
+
+## 24.6 循环复制
+
+生产上主要用双M结构，但是双M结构会导致循环复制的问题
+
+
+
+解决方案
+
+1. 规定两个库的 server id 必须不同，如果相同，则它们之间不能设定为主备关系
+2. 一个备库接到 binlog 并在重放的过程中，生成与原 binlog 的 server id 相同的新的binlog
+3. 每个库在收到从自己的主库发过来的日志后，先判断 server id，如果跟自己的相同，表示这个日志是自己生成的，就直接丢弃这个日志
 
 
 

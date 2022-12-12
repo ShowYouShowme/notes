@@ -222,7 +222,7 @@
    mkdir build && cd build \
    && ../../cmake-3.25.0-linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=$HOME/usr .. \
    && make \
-   && sudo make install
+   && make install
    ```
 
 3. 编译安装php

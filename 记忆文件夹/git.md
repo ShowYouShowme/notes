@@ -24,12 +24,16 @@
    chmod +x gitea
    
    ./gitea web
+   # 第一次运行会显示管理员账号和密码
    
    # 数据库选择sqlite3
    
    # 地址配置为ip 而不是localhost
+   
+   # 修改密码, 工作目录和启动时保持一致
+   ./gitea admin user change-password --username roglic --password mm123456
    ```
-
+   
    
 
 
@@ -248,7 +252,7 @@ git commit -m "${comment}"
    ```shell
    git checkout target-branch
    ```
-   
+
 3. 创建分支
 
    + 在当前提交上创建分支
@@ -266,50 +270,83 @@ git commit -m "${comment}"
 4. 删除分支
 
    + 删除其它分支
-   
+
      ```shell
      git branch -d b-branch
      ```
-   
+
    + 删除当前所在分支
-   
+
      ```shell
      git branch -D b-branch
      ```
-   
+
 5. 查看分支
-   
+
    + 查看本地分支
-   
+
      ```shell
      git branch
      ```
-   
+
      
-   
+
    + 查看远程分支
-   
+
      ```shell
      git branch -r
      ```
-   
+
      
-   
+
    + 查看全部分支
-   
+
      ```shell
      git branch -a
      ```
-   
+
 6. 切换远程分支[非master，比如develop]
-   
+
    ```shell
    # checkout远程remotes/origin/develop,在本地重命名为develop,并切换到develop
    git checkout -b develop remotes/origin/develop
    ```
-   
-   
-   
+
+7. 重命名分支
+
+   + 重命名本地分支
+
+     ```ini
+     [重命名当前分支]
+     cmd = git branch -m new_branch_name
+     
+     [重命名其它分支]
+     cmd = git branch -m old_branch_name new_branch_name
+     ```
+
+   + 重命名远程分支
+
+     ```ini
+     ;重命名本地分支
+     step-1 = git branch -m new_branch_name
+     
+     ;删除远程分支
+     step-2 = git push --delete origin old_branch_name
+     
+     ;上传新命名的本地分支
+     step-3 = git push origin new_branch_name
+     
+     ;本地分支和远程分支关联
+     step-4 = git branch --set-upstream-to origin/new_branch_name
+     
+     
+     [附录]
+     ;查看本地分支和远程分支的关联情况
+     cmd = git branch -vv
+     ```
+
+     
+
    
 
 

@@ -2118,6 +2118,31 @@ cmd-2 = ./node_modules/protobufjs-cli/bin/pbts -o compiled.d.ts compiled.js
    }
    ```
 
+8. 重新抛出异常
+
+   ```javascript
+   function main(input : number){
+       try {
+           if(input % 2 == 0)
+               throw 'wrong input';
+       } catch (error) {
+           console.log(`error = ${error}`);
+           throw error;   // 即使catch 里面抛出异常,finally里面的语句还是会执行
+           console.log('at catch...');
+       }
+       finally{
+           console.log('at finally...');
+       }
+   }
+   
+   try{
+       main(2)
+   }
+   catch(err){
+       console.info(`ouside  = ${err}`);
+   }
+   ```
+
    
 
 
