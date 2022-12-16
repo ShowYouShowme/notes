@@ -1509,6 +1509,37 @@ os.Exit 与 panic
    }
    ```
 
+3. 全局panic
+
+   ```go
+   package main
+   
+   import "fmt"
+   
+   func getName() {
+   	panic("error from getName")
+   }
+   
+   func testWrong(input int32) {
+   	if input == 5 {
+   		panic("wrong info from testWrong")
+   	} else {
+   		getName()
+   	}
+   }
+   
+   func main() {
+   	defer func() {
+   		if err := recover(); err != nil {
+   			fmt.Println("recovered from ", err)
+   		}
+   	}()
+   
+   	testWrong(6)
+   }
+   
+   ```
+
    
 
 
@@ -4108,7 +4139,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                             
+   >                               
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5283,3 +5314,185 @@ func main() {
 2. 数据用protobuf序列化再存进去
 3. protobuf的proto文件里面的Role[序列化存入data里]类型的字段，可以增加，不能删除，也不能修改字段的索引，即可兼容。
 4. 如果增加新字段后，希望默认值不是protobuf的默认值，可以自己定义version字段和upgrade函数，类似居家修仙那样。
+
+
+
+
+
+# 第二十五章 LevelDB
+
+Google 开源的高性能的key-value 数据库，数据存在硬盘上，redis是存在硬盘里面。
+
+
+
+## 25.1 安装
+
+```shell
+go get github.com/syndtr/goleveldb/leveldb
+```
+
+
+
+## 25.2 基本使用
+
+
+
+### 25.2.1 打开数据库
+
+```go
+db, err := leveldb.OpenFile("path/to/db", nil)
+...
+defer db.Close()
+...
+```
+
+
+
+
+
+### 25.2.2 读写数据库
+
+```go
+// 注意：返回数据结果不能修改
+data, err := db.Get([]byte("key"), nil)
+...
+err = db.Put([]byte("key"), []byte("value"), nil)
+...
+err = db.Delete([]byte("key"), nil)
+...
+```
+
+
+
+### 25.2.3 数据库遍历
+
+```go
+iter := db.NewIterator(nil, nil)
+for iter.Next() {
+    key := iter.Key()
+    value := iter.Value()
+    ...
+}
+iter.Release()
+err = iter.Error()
+...
+```
+
+
+
+### 25.2.4 迭代查询
+
+```go
+iter := db.NewIterator(nil, nil)
+for ok := iter.Seek(key); ok; ok = iter.Next() {
+    // Use key/value.
+    ...
+}
+iter.Release()
+err = iter.Error()
+...
+```
+
+
+
+
+
+### 25.2.5 按区间查询
+
+```go
+iter := db.NewIterator(&util.Range{Start: []byte("foo"), Limit: []byte("xoo")}, nil)
+for iter.Next() {
+    // Use key/value.
+    ...
+}
+iter.Release()
+err = iter.Error()
+...
+```
+
+
+
+
+
+### 25.2.6 按前缀查询
+
+```go
+iter := db.NewIterator(util.BytesPrefix([]byte("foo-")), nil)
+for iter.Next() {
+    // Use key/value.
+    ...
+}
+iter.Release()
+err = iter.Error()
+...
+```
+
+
+
+### 25.2.7 批量写
+
+```go
+batch := new(leveldb.Batch)
+batch.Put([]byte("foo"), []byte("value"))
+batch.Put([]byte("bar"), []byte("another value"))
+batch.Delete([]byte("baz"))
+err = db.Write(batch, nil)
+...
+```
+
+
+
+
+
+### 25.2.8 不使用内存，直接读写硬盘
+
+```go
+o := &opt.Options{
+    Filter: filter.NewBloomFilter(10),
+}
+db, err := leveldb.OpenFile("path/to/db", o)
+...
+defer db.Close()
+...
+```
+
+
+
+
+
+## 25.3 示例代码
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/syndtr/goleveldb/leveldb"
+)
+
+func main() {
+	db, err := leveldb.OpenFile("level/game", nil)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	err = db.Put([]byte("name"), []byte("trump"), nil)
+
+	myName, err := db.Get([]byte("name"), nil)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("myName = ", string(myName))
+}
+
+```
+
+
+
+
+
+# 第二十六章  Redis
+
+
+
+网站：https://github.com/go-redis/redis
