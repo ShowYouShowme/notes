@@ -2984,7 +2984,7 @@ pm2 start ecosystem.config.js --env production
 
 
 
-## 19.1.15 静态资源服务器
+### 19.1.15 静态资源服务器
 
 ```shell
 #非常方便
@@ -2992,6 +2992,14 @@ pm2 serve <path> <port>
 ```
 
 
+
+
+
+### 19.1.16 发布服务规范
+
+1. autorestart 必须设置为true
+2. 服务需要重启的时候，先pm2 stop ${server_name}，然后更新代码，再pm2 start ${server_name}。直接运行pm2 restart  ${server_name} 会导致重启次数增加。重启次数主要用来监控非正常重启的次数（比如出现异常）
+3. 发布新版本时，先pm2 stop，然后pm2 delete。更新代码，再pm2 start。
 
 
 
