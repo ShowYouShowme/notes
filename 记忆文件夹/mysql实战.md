@@ -2672,7 +2672,115 @@ master_auto_position=1 就表示这个主备关系使用的是 GTID 协议。
 
 # 第二十八章 读写分离的问题
 
+主题：如何处理主备延迟导致的读写分离问题。
 
+
+
+## 28.1 读写分离架构
+
+1. 客户端直连。一般使用Zookeeper 来管理数据库列表
+2. 带 proxy 的架构，对客户端比较友好。客户端不需要关注后端细节，连接维护、后端信息维护等工作，都是由 proxy 完成的
+
+
+
+读写分离的问题：由于主从可能存在延迟，客户端执行完一个更新事务后马上发起查询，如果查询选择的是从库的话，就有可能读到刚刚的事务更新之前的状态
+
+
+
+
+
+## 28.2 过期读处理方案
+
+
+
+### 28.2.1 强制走主库方案
+
+将查询请求做分类
+
++ 对于必须要拿到最新结果的请求，强制将其发到主库
++ 对于可以读到旧数据的请求，才将其发到从库上
+
+
+
+有时候你会碰到“所有查询都不能是过期读”的需求，比如一些金融类的业务。这样的话，你就要放弃读写分离，所有读写压力都在主库，等同于放弃了扩展性
+
+
+
+### 28.2.2 判断主备无延迟方案
+
+主库更新后，读从库之前先 sleep 一下。具体的方案就是，类似于执行一条 select sleep(1) 命令。这个方案的假设是，大多数情况下主备延迟在 1 秒之内，做一个 sleep 可以有很大概率拿到最新的数据
+
+
+
+#### 28.2.2.1 有延迟的方案
+
+1. 每次从库执行查询请求前，先判断 seconds_behind_master 是否已经等于 0
+2. 对比位点确保主备无延迟
+   + Master_Log_File 和 Read_Master_Log_Pos，表示的是读到的主库的最新位点
+   + Relay_Master_Log_File 和 Exec_Master_Log_Pos，表示的是备库执行的最新位点
+3. 对比 GTID 集合确保主备无延迟
+   + Auto_Position=1 ，表示这对主备关系使用了 GTID 协议
+   + Retrieved_Gtid_Set，是备库收到的所有日志的 GTID 集合
+   + Executed_Gtid_Set，是备库所有已经执行完成的 GTID 集合
+
+
+
+该方案的问题：只能判断备库收到的日志都执行完成了。但是，从 binlog 在主备之间状态的分析中，不难看出还有一部分日志，处于客户端已经收到提交确认，而备库还没收到日志的状态。
+
+
+
+#### 28.2.2.2 配合semi-sync方案
+
+1. 事务提交的时候，主库把 binlog 发给从库；
+2. 从库收到 binlog 以后，发回给主库一个 ack，表示收到了
+3. 主库收到这个 ack 以后，才能给客户端返回“事务完成”的确认
+
+如果启用了 semi-sync，就表示所有给客户端发送过确认的事务，都确保了备库已经收到了这个日志
+
+semi-sync+ 位点判断的方案，只对一主一备的场景是成立的。在一主多从场景中，主库只要等到一个从库的 ack，就开始给客户端返回确认。如果查询落在非ack的从库上，会出现问题。
+
+
+
+#### 28.2.2.3 等主库位点方案
+
+命令
+
+```sql
+select master_pos_wait(file, pos[, timeout]);
+```
+
+
+
+1. trx1 事务更新完成后，马上执行 show master status 得到当前主库执行到的 File 和 Position；
+2. 选定一个从库执行查询语句；
+3. 在从库上执行 select master_pos_wait(File, Position, 1)；1表示最多等待1s
+4. 如果返回值是 >=0 的正整数，则在这个从库执行查询语句；
+5. 否则，到主库执行查询语句。
+
+
+
+#### 28.2.2.4 等GTID方案
+
+命令
+
+```sql
+select wait_for_executed_gtid_set(gtid_set, 1);
+```
+
+命令逻辑
+
+1. 等待，直到这个库执行的事务中包含传入的 gtid_set，返回 0；
+2. 超时返回 1。
+
+
+
+执行流程
+
+1. trx1 事务更新完成后，从返回包直接获取这个事务的 GTID，记为 gtid1
+2. 选定一个从库执行查询语句；
+3. 在从库上执行 select wait_for_executed_gtid_set(gtid1, 1)
+4. 如果返回值是 0，则在这个从库执行查询语句
+5. 否则，到主库执行查询语句
 
 
 
@@ -2767,6 +2875,12 @@ mysql> update setup_instruments set ENABLED='YES', Timed='YES' where name like '
 #单次 IO 请求时间超过 200 毫秒属于异常
 mysql> select event_name,MAX_TIMER_WAIT  FROM performance_schema.file_summary_by_event_name where event_name in ('wait/io/file/innodb/innodb_log_file','wait/io/file/sql/binlog') and MAX_TIMER_WAIT>200*1000000000;
 ```
+
+
+
+
+
+# 第三十章 误删数据库
 
 
 
