@@ -3003,6 +3003,14 @@ pm2 serve <path> <port>
 
 
 
+### 19.1.17 查看环境变量
+
+```shell
+pm2 env ${id}
+```
+
+
+
 # 第二十章 数学库
 
 url = https://github.com/josdejong/mathjs

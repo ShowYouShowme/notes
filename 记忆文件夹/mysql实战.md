@@ -2899,9 +2899,78 @@ mysql> select event_name,MAX_TIMER_WAIT  FROM performance_schema.file_summary_by
 
 ## 30.2 误删行
 
+恢复思路 ： 用 Flashback 工具通过闪回把数据恢复回来。
+
+
+
+前提条件：binlog_format=row 和 binlog_row_image=FULL
+
+
+
+### 30.2.1 单个语句事务恢复方法：
+
+1. 对于 insert 语句，对应的 binlog event 类型是 Write_rows event，把它改成 Delete_rows event 即可
+2. 同理，对于 delete 语句，也是将 Delete_rows event 改为 Write_rows event；
+3. 而如果是 Update_rows 的话，binlog 里面记录了数据行修改前和修改后的值，对调这两行的位置即可
+
+
+
+### 30.2.2 多语句事务
+
+误操作是多个
+
+```sql
+(A)delete ...
+(B)insert ...
+(C)update ...
+```
+
+恢复方法
+
+```sql
+(reverse C)update ...
+(reverse B)delete ...
+(reverse A)insert ...
+```
+
+
+
+
+
+### 30.2.3 事前预防
+
+1. 把 sql_safe_updates 参数设置为 on。这样一来，如果我们忘记在 delete 或者 update 语句中写 where 条件，或者 where 条件里面没有包含索引字段的话，这条语句的执行就会报错
+2. 代码上线前，必须经过 SQL 审计
+
+
+
+注意：删除整个表的操作，尽量不要使用truncate table 或者 drop table 命令，那样如果误操作了无法恢复。尽量使用delete  + where。
+
 
 
 ## 30.3 误删库/表
+
+
+
+### 30.3.1 全量备份 + 增量日志
+
+需要定期全量备份 + 实时备份binlog
+
+恢复流程
+
+1. 取最近一次全量备份，假设这个库是一天一备，上次备份是当天 0 点；
+2. 用备份恢复出一个临时库；
+3. 从日志备份里面，取出凌晨 0 点之后的日志；
+4. 把这些日志，除了误删除数据的语句外，全部应用到临时库。
+
+
+
+注意：
+
+1. 为了加速恢复，可以只恢复误删的数据库
+2. 跳过误操作语句的方法
+   + 先用–stop-position 参数执行到误操作之前的日志，然后再用–start-position 从误操作之后的日志继续执行
+   + 使用GTID。先把这个 GTID 加到临时实例的 GTID 集合，之后按顺序执行 binlog 的时候，就会自动跳过误操作的语句
 
 
 
@@ -2919,6 +2988,8 @@ mysql> select event_name,MAX_TIMER_WAIT  FROM performance_schema.file_summary_by
 2. 制定操作规范
    + 在删除数据表之前，必须先对表做改名操作。然后，观察一段时间，确保对业务无影响以后再删除这张表
    + 改表名的时候，要求给表名加固定的后缀（比如加 _to_be_deleted)，然后删除表的动作必须通过管理系统执行。并且，管理系删除表的时候，只能删除固定后缀的表
+
+
 
 ## 30.6 rm删除数据
 
@@ -3981,7 +4052,7 @@ desc = 在 MySQL 里面，用户名 (user)+ 地址 (host) 才表示一个用户�
 ;mysql的用户名是名字 +Ip 组成的
 cmd = create user 'root'@'18.231.132.46' identified by 'qhx#2TD3WR+b1sMa';
 ;授权特定的数据库
-cmd = grant all privileges on machine_game.* to 'root'@'18.231.132.46' with grant option;
+cmd = grant all privileges on machine_game.* to 'root'@'18.231.132.46';
 
 ;查询账号信息
 cmd = select host, user from mysql.user;
@@ -4006,6 +4077,7 @@ select * from mysql.user where user = 'ua' \G
 ### 42.2.1 赋予权限
 
 ```mysql
+#with grant option表示用户可以将自己的权限授予其它人,如果是开发账号不需要
 grant all privileges on *.* to 'ua'@'%' with grant option;
 ```
 
@@ -4483,5 +4555,125 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
 
 
 
+## 45.4 权限配置
 
+
+
+### 45.4.1 普通用户权限
+
+```sql
+#授予增删改查权限
+grant select on testdb.* to common_user@'%'
+grant insert on testdb.* to common_user@'%'
+grant update on testdb.* to common_user@'%'
+grant delete on testdb.* to common_user@'%'
+```
+
+或者
+
+```sql
+grant select, insert, update, delete on testdb.* to common_user@'%'
+```
+
+
+
+### 45.4.2 开发人员权限
+
+1.  创建、修改、删除 MySQL 数据表结构权限
+
+   ```sql
+   grant create on testdb.* to developer@'192.168.0.%';
+   grant alter on testdb.* to developer@'192.168.0.%';
+   grant drop on testdb.* to developer@'192.168.0.%';
+   ```
+
+2. 操作 MySQL 外键权限
+
+   ```sql
+   grant references on testdb.* to developer@'192.168.0.%';
+   ```
+
+3. 操作 MySQL 临时表权限
+
+   ```sql
+   grant create temporary tables on testdb.* to developer@'192.168.0.%';
+   ```
+
+4. 操作 MySQL 索引权限
+
+   ```sql
+   grant index on testdb.* to developer@'192.168.0.%';
+   ```
+
+5. 操作 MySQL 视图、查看视图源代码 权限
+
+   ```sql
+   grant create view on testdb.* to developer@'192.168.0.%';
+   grant show view on testdb.* to developer@'192.168.0.%';
+   ```
+
+6. 操作 MySQL 存储过程、函数 权限
+
+   ```sql
+   grant create routine on testdb.* to developer@'192.168.0.%'; -- now, can show procedure status
+   grant alter routine on testdb.* to developer@'192.168.0.%'; -- now, you can drop a procedure
+   grant execute on testdb.* to developer@'192.168.0.%';
+   ```
+
+   
+
+### 45.4.3 DBA权限
+
+1. grant 普通 DBA 管理某个 MySQL 数据库的权限
+
+   ```sql
+   grant all privileges on testdb to dba@'localhost'
+   ```
+
+2. grant 高级 DBA 管理 MySQL 中所有数据库的权限
+
+   ```sql
+   grant all on *.* to dba@'localhost'
+   ```
+
+
+
+### 45.4.4 查看MySQL用户权限
+
+1. 查看当前用户（自己）权限
+
+   ```sql
+   show grants;
+   ```
+
+2. 查看其他 MySQL 用户权限
+
+   ```sql
+   show grants for dba@localhost;
+   ```
+
+
+
+### 45.4.5 撤销权限
+
+```sql
+grant all on *.* to dba@localhost;
+revoke all on *.* from dba@localhost;
+```
+
+
+
+
+
+### 45.4.6 授权注意事项
+
+1. grant, revoke 用户权限后，该用户只有重新连接 MySQL 数据库，权限才能生效
+
+2. 如果想让授权的用户，也可以将这些权限 grant 给其他用户，需要加选项 grant option
+
+   ```sql
+   grant select on testdb.* to dba@localhost with grant option;
+   ```
+
+   
 
