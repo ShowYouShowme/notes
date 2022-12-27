@@ -595,11 +595,15 @@ lock tables 会限制其它线程和本线程对表的操作
 
 ```ini
 [共享锁]
+;当前读
 sql = select * from test lock in share mode;
 
 [排他锁]
+;即使用一致性视图启动事务,下面这些语句依然可能锁住
+;当前读
 sql-1 = select * from test for update;
 sql-2 = insert into test values(…);
+;update使用的是当前读
 sql-3 = update test set …;
 sql-4 = delete from test …;
 
@@ -4743,6 +4747,13 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
    
    [mysqld_safe]
    ;mysqld_safe 是服务器端工具，用于启动 mysqld，也是 mysqld 的守护进程。当 mysql 被 kill 时，mysqld_safe 负责重启启动它
+   ```
+
+4. 关闭TCP，只用unix socket
+
+   ```ini
+   ;如果数据库和业务在一台机器,这样可以提高性能
+   skip-networking=1
    ```
 
    

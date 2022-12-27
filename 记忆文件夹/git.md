@@ -457,6 +457,13 @@ git checkout -- main.cpp
 
 ***
 
+```ini
+        dev
+   dev-li     dev-lj
+   
+;如果dev-li先合并分支,等dev-lj开发完成后,先rebase,再合并分支
+```
+
 
 
 

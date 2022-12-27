@@ -126,7 +126,7 @@ npm install pbjs
 [常用数据类型]
 ;枚举
 T1 = enum
-;整数
+;整数, int64需要结合Long.js来使用
 T2 = int32/int64
 ;字符串
 T3 = string
@@ -170,6 +170,46 @@ console.log(JSON.stringify(m2))
 let r2 = proto.decodeCTokenLogonReq(m2.Data as Uint8Array)
 console.log(JSON.stringify(r2))
 console.log("......")
+```
+
+
+
+int64的处理
+
+```javascript
+import * as proto from "./cmd_net"
+import Long from "long";
+
+//PB 的声明
+// message TTest{
+//     int64 money = 1;
+//     int64 gold = 2;
+// }
+
+
+//构造Long类型的数字
+let v1 : Long = Long.fromNumber(1234567);
+let v2 : Long = Long.fromString('123456789123456');
+console.log(`v1 = ${v1}, v2 = ${v2}`);
+
+//构造pb的int64,然后发送给client
+let t1 : proto.TTest = {};
+t1.money = Long.fromString('1289');
+
+
+//将客户端发的int64转换为Long
+let t2 :  proto.TTest = {}
+t2.gold = {
+    low: 100,
+    high: 200,
+    unsigned: false,
+}
+let v4 : Long = Long.fromValue(t2.gold);
+console.log(`v4 = ${v4}`);
+
+
+let v5 : Long = Long.fromString('858993459300');
+console.log(`v5 = ${v5}`);
 ```
 
 

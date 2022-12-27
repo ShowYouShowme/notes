@@ -217,4 +217,12 @@ bgwriteaof
    redis -h
    ```
 
-   
+
+
+
+## 3.8 关闭TCP监听,只用unix socket
+
+```ini
+port 0 
+```
+

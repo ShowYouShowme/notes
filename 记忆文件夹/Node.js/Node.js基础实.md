@@ -2030,7 +2030,7 @@ cmd-2 = ./node_modules/protobufjs-cli/bin/pbts -o compiled.d.ts compiled.js
 
 
 
-## 16.2.2 示例代码
+### 16.2.2 示例代码
 
 
 
@@ -3158,6 +3158,64 @@ javascript内置的类型，可以表示任意大的整数
   console.log(`h1 = ${h1}`);
 }
 ```
+
+
+
+
+
+## 20.4 Long 长整形
+
+javascript 的number 表示的整数范围是 -(2^53 - 1) 到 2^53 - 1，第三方的Long类型可以安全表示 （-2\^64 ~2^63 - 1）范围的值。注意：pbjs里面的int64的类型也是Long，需要借助这个库才能方便赋值。
+
+
+
+安装
+
+```shell
+npm install long
+```
+
+
+
+使用
+
+```javascript
+import * as proto from "./cmd_net"
+import Long from "long";
+
+//PB 的声明
+// message TTest{
+//     int64 money = 1;
+//     int64 gold = 2;
+// }
+
+
+//构造Long类型的数字
+let v1 : Long = Long.fromNumber(1234567);
+let v2 : Long = Long.fromString('123456789123456');
+console.log(`v1 = ${v1}, v2 = ${v2}`);
+
+//构造pb的int64,然后发送给client
+let t1 : proto.TTest = {};
+t1.money = Long.fromString('1289');
+
+
+//将客户端发的int64转换为Long
+let t2 :  proto.TTest = {}
+t2.gold = {
+    low: 100,
+    high: 200,
+    unsigned: false,
+}
+let v4 : Long = Long.fromValue(t2.gold);
+console.log(`v4 = ${v4}`);
+
+
+let v5 : Long = Long.fromString('858993459300');
+console.log(`v5 = ${v5}`);
+```
+
+
 
 
 
