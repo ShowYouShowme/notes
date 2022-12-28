@@ -3211,8 +3211,12 @@ let v4 : Long = Long.fromValue(t2.gold);
 console.log(`v4 = ${v4}`);
 
 
-let v5 : Long = Long.fromString('858993459300');
+let v5 : Long = Long.fromString('1234567890');
 console.log(`v5 = ${v5}`);
+
+//Long转化为nodejs基本类型number,如果超出2^53-1会 出错
+let v6 : number = v5.toNumber();
+console.log(`v6 = ${v6}`);
 ```
 
 

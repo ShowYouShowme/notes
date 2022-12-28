@@ -127,6 +127,8 @@ npm install pbjs
 ;枚举
 T1 = enum
 ;整数, int64需要结合Long.js来使用
+;发送int64给客户端时,先用Long.fromNumber()构造 Long，再发送出去;
+;收到客户端的int64时,先用Long.fromValue() 将int64转换为Long,然后再用Long.toNumber()将Long转换为nodejs的number类型
 T2 = int32/int64
 ;字符串
 T3 = string
