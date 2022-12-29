@@ -603,7 +603,7 @@ sql = select * from test lock in share mode;
 ;当前读
 sql-1 = select * from test for update;
 sql-2 = insert into test values(…);
-;update使用的是当前读
+;update使用的是当前读,会加上排他锁
 sql-3 = update test set …;
 sql-4 = delete from test …;
 
@@ -655,7 +655,104 @@ desc  = 当前读会加锁
    D=一条记录改用几条记录保存
    ```
 
-   
+
+
+
+# 第五章 事务隔离性
+
+
+
+表
+
+```sql
+CREATE TABLE `t` (
+  `id` int(11) NOT NULL,
+  `k` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+insert into t(id, k) values(1,1),(2,2);
+```
+
+
+
+事务执行
+
+| 事务A                                       | 事务B                                                        | 事务C                          |
+| ------------------------------------------- | ------------------------------------------------------------ | ------------------------------ |
+| start TRANSACTION WITH consistent SNAPSHOT; |                                                              |                                |
+|                                             | start TRANSACTION WITH consistent SNAPSHOT;                  |                                |
+|                                             |                                                              | update t set k=k+1 where id=1; |
+|                                             | update t set k=k+1 where id=1;           select k from t where id=1; |                                |
+| select k from t where id=1;       commit;   |                                                              |                                |
+|                                             | commit;                                                      |                                |
+|                                             |                                                              |                                |
+
+
+
+**结果：事务 B 查到的 k 的值是 3，而事务 A 查到的 k 的值是 1**
+
+
+
+主题：讲清楚为什么上面那个时序图里面的结果是这个样子
+
+
+
+视图
+
+1. 一个是 view。它是一个用查询语句定义的虚拟表，在调用的时候执行查询语句并生成结果。创建视图的语法是 create view … ，而它的查询方法与表一样
+2. 事务的一致性视图。默认的是可重复读。
+
+
+
+## 5.1 MVCC的原理
+
+数据表中的一行记录，其实可能有多个版本 (row)，每个版本有自己的 row trx_id。
+
+在实现上， InnoDB 为每个事务构造了一个数组，用来保存这个事务启动瞬间，当前正在“活跃”的所有事务 ID。数组里面事务 ID 的最小值记为低水位，当前系统里面已经创建过的事务 ID 的最大值加 1 记为高水位。
+
+
+
+对于当前事务的启动瞬间来说，一个数据版本的 row trx_id，有以下几种可能
+
+1. 如果落在绿色部分，表示这个版本是已提交的事务或者是当前事务自己生成的，这个数据是可见的
+2. 如果落在红色部分，表示这个版本是由将来启动的事务生成的，是肯定不可见的
+3. 如果落在黄色部分，那就包括两种情况
+   + 若 row trx_id 在数组中，表示这个版本是由还没提交的事务生成的，不可见
+   + 若 row trx_id 不在数组中，表示这个版本是已经提交了的事务生成的，可见
+
+
+
+事务读取行的数据时，从当前版本往以前读取，逐个判断是否可见。
+
+
+
+## 5.2 更新逻辑
+
+更新数据都是先读后写的，而这个读，只能读当前的值，称为“当前读”（current read）。而且update语句，会自动添加排它锁。
+
+
+
+类似地，select语句加上lock in share mode 或 for update，也会变成当前读。
+
+
+
+| 事务A                                       | 事务B                                       | 事务C                                       |
+| ------------------------------------------- | ------------------------------------------- | ------------------------------------------- |
+| start TRANSACTION WITH consistent SNAPSHOT; |                                             |                                             |
+|                                             | start TRANSACTION WITH consistent SNAPSHOT; |                                             |
+|                                             |                                             | start TRANSACTION WITH consistent SNAPSHOT; |
+|                                             |                                             | update t set k=k+1 where id=1;              |
+|                                             | update t set k=k+1 where id=1;              |                                             |
+|                                             | select k from t where id = 1;               |                                             |
+|                                             |                                             | commit;                                     |
+| select k from t where id = 1; commit;       |                                             |                                             |
+|                                             | commit;                                     |                                             |
+
+读提交隔离级别下，事务 A 查询语句返回的是 k=2，事务 B 查询结果 k=3。
+
+
+
+
 
 # 第六章 普通索引和唯一索引
 

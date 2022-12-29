@@ -3221,6 +3221,20 @@ console.log(`v6 = ${v6}`);
 
 
 
+## 20.5 第三方大整数包
+
+
+
+安装
+
+```shell
+npm install bignumber.js
+```
+
+
+
+网址 = https://github.com/MikeMcl/bignumber.js
+
 
 
 # 第二十一章 MySQL
