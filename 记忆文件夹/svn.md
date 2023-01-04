@@ -64,7 +64,7 @@
 5. 启动服务
 
    ```shell
-   svnserve -d -r /home/roglic/svn/repository
+   svnserve -d -r $HOME/svn/repository
    ```
 
 6. 用TortoiseSVN下注

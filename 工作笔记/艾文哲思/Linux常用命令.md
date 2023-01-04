@@ -77,34 +77,6 @@
    
    
 
-# windows查看端口占用
-
-```shell
-# 查看指定端口被谁占用
-netstat -aon|findstr "8081"
-
-# 或者
-netstat -aon|findstr "TCP" | findstr "LISTENING"
-
-  TCP    172.18.80.183:6396     172.18.80.183:8888     ESTABLISHED     27068
-  TCP    172.18.80.183:8888     0.0.0.0:0              LISTENING       12052   # 这个
-  TCP    172.18.80.183:8888     172.18.80.183:6396     ESTABLISHED     12052
-  
-
-# 查看指定PID 的进程
-tasklist|findstr "12052"
-
-
-# 强行杀死进程
-taskkill /T /F /PID 12052  
-
-
-# 查看进程 powershell
-get-process -Name "node"
-```
-
-
-
 # Linux上查看不可见字符
 
 1.  windows上用\r\n作为换行，linux上用\n。shell脚本必须用\n换行，否则执行出错
@@ -1107,7 +1079,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                            
+  >                               
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1131,7 +1103,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                            
+  >                               
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -3465,4 +3437,180 @@ make install
 yum remove gcc gcc-c++
 #用户重新登录即可
 ```
+
+
+
+
+
+
+
+# Windows常用命令
+
+1. 列出目录下的全部文件
+
+   ```shell
+   dir
+   ```
+
+2. 创建目录
+
+   ```shell
+   md ${dirName}
+   ```
+
+3. 显示当前目录
+
+   ```shell
+   pwd
+   ```
+
+4. 创建文件
+
+   ```ini
+   cmd     = fsutil file createnew ${fileName} ${fileSize}
+   example = fsutil file createnew filename.txt 0
+   ```
+
+5. 删除文件
+
+   ```shell
+   del ${fileName}
+   ```
+
+6. 删除文件夹
+
+   ```ini
+   [删除空文件夹]
+   cmd     = rmdir ${folderName}
+   example = rmdir Rubbish
+   
+   
+   [删除非空文件夹]
+   cmd-1 = rm -r ${folderName}
+   example = rm -r Rubbish
+   
+   cmd-2 = rmdir  /S /Q  ${folderName}
+   example = rmdir  /S /Q  Rubblish
+   ```
+
+7. 查看帮助信息
+
+   ```ini
+   [查看全部命令]
+   ;必须是cmd,不是powershell
+   cmd = help
+   
+   [查看单个命令的帮助信息]
+   cmd = rmdir /?
+   ```
+
+8. 清屏
+
+   ```ini
+   cmd = cls
+   ```
+
+9. 进程管理
+
+   ```ini
+   ;查看指定端口被谁占用
+   cmd = netstat -aon|findstr "8081"
+   
+   ;查看监听的端口
+   cmd = netstat -aon|findstr "TCP" | findstr "LISTENING"
+   
+     TCP    172.18.80.183:6396     172.18.80.183:8888     ESTABLISHED     27068
+     TCP    172.18.80.183:8888     0.0.0.0:0              LISTENING       12052   # 这个
+     TCP    172.18.80.183:8888     172.18.80.183:6396     ESTABLISHED     12052
+     
+   
+   ;查看指定PID 的进程
+   cmd = tasklist|findstr "12052"
+   
+   
+   ; 强行杀死进程
+   cmd = taskkill /T /F /PID 12052  
+   ```
+
+10. 复制文件
+
+    ```ini
+    CMD     = copy ${src} ${dst}
+    EXAMPLE = copy index.txt index.txt.bak 
+    ```
+
+11. 复制文件夹
+
+    ```ini
+    CMD-1 = Xcopy /E /I C:\dir1\sourcedir D:\data\destinationdir
+    
+    ;目的目录加上后缀\就不需要/I,建议原目录和目的目录都加上\
+    CMD-2 = Xcopy /E C:\dir1\sourcedir D:\data\destinationdir\
+    ```
+
+12. 移动目录
+
+    ```ini
+    ;文件重命名
+    CMD = MOVE ${srcFile} ${dstFile}
+    
+    ;文件夹重命名
+    CMD = MOVE ${name1} ${name2}
+    
+    ;移动文件夹
+    CMD     = MOVE ${srcPath} ${dstPath}
+    EXAMPLE =  move .\tt\tmp3 .\
+    ```
+
+13. 环境变量
+
+    ```ini
+    [设置环境变量]
+    CMD = SET varName=Value
+    
+    [打印环境变量]
+    CMD = echo %MyName%
+    ```
+
+14. 运行程序
+
+    ```ini
+    ;启动一个单独的命令提示符窗口来运行指定的程序或者命令
+    CMD = start
+    
+    ;打开画图工具
+    EXAMPLE-1 = start mspaint 
+    
+    ;打开注册表
+    EXAMPLE-2 = start regedit
+    
+    ;打开控制面板
+    EXAMPLE-3 = start control
+    
+    ;打开记事本
+    EXAMPLE-4 = start notepad
+    
+    ;打开notepad++
+    EXAMPLE-5 = start notepad++
+    
+    ;打开vscode
+    EXAMPLE-5 = start code
+    ```
+
+15. 查看可执行文件路径，类似linux的which命令
+
+    ```ini
+    ;在默认情况下，搜索是在当前目录和 PATH 环境变量指定的路径中执行的。
+    CMD = where
+    
+    ;查询regedit.exe
+    EXAMPLE = where regedit
+    
+    [常见参数]
+    /R = 从指定目录开始，递归性搜索并显示符合指定模式的文件。
+    
+    EXAMPLE = where /R C:\Windows  hosts
+    ```
+
+    
 

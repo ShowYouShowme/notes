@@ -1825,7 +1825,9 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse):void=>{
 
 5. promise([...]).then(res =>{}) 里面的res的结果次序和传入的promise一致
 
-6. 示例代码
+6. 全部异步函数使用Promise包装，只是简单返回resolve和reject，不能包含任何业务逻辑；这样可以将异步函数的错误（通常是IO错误）和业务逻辑错误统一用try...catch来处理
+
+7. 示例代码
 
    ```javascript
    //利用promise + await 将回调改为顺序执行

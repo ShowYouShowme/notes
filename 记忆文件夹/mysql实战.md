@@ -754,6 +754,54 @@ insert into t(id, k) values(1,1),(2,2);
 
 
 
+## 5.3 事务隔离级别配置
+
+
+
+### 5.3.1 查看
+
+```sql
+show variables like '%tx_isolation%';
+```
+
+
+
+### 5.3.2 配置
+
+1. 读提交
+
+   ```mysql
+   [mysqld]
+   transaction-isolation = READ-COMMITTED
+   ```
+
+2. 读未提交
+
+   ```mysql
+   [mysqld]
+   transaction-isolation = READ-UNCOMMITTED
+   ```
+
+3. 可重复读（默认）
+
+   ```mysql
+   [mysqld]
+   transaction-isolation = REPEATABLE-READ
+   ```
+
+4. 串行
+
+   ```mysql
+   [mysqld]
+   transaction-isolation = SERIALIZABLE
+   ```
+
+   
+
+
+
+
+
 # 第六章 普通索引和唯一索引
 
 
