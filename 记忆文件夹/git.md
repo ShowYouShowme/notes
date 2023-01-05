@@ -345,7 +345,31 @@ git commit -m "${comment}"
      cmd = git branch -vv
      ```
 
-     
+   
+
+8. 推送本地新分支到仓库
+
+   ```ini
+   ;仓库没有该分支,推送时会报错
+   ;fatal: The current branch dev-branka has no upstream branch
+   
+   CMD = git push --set-upstream origin ${localBranchName}
+   EXAMPLE = git push --set-upstream origin dev-branka
+   ```
+
+9. 配置分支保护，某些分支仅允许指定的人员push，最常见的是release和dev分支，只有项目管理员能push
+
+   ```ini
+   ;使用的服务是gitea
+   
+   cmd = 项目 --> 分支 --> 分支保护 -->启动分支保护 --> 受白名单限制的推送(选择指定用户即可)
+   ```
+
+   
+
+   
+
+   
 
    
 

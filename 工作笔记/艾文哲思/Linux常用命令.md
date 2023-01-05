@@ -1079,7 +1079,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                               
+  >                                  
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1103,7 +1103,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                               
+  >                                  
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -3469,6 +3469,10 @@ yum remove gcc gcc-c++
    ```ini
    cmd     = fsutil file createnew ${fileName} ${fileSize}
    example = fsutil file createnew filename.txt 0
+   
+   ;必须是cmd,不支持powershell
+   CMD = TYPE NUL > ${fileName}
+   EXAMPLE = TYPE NUL > hello.txt
    ```
 
 5. 删除文件
