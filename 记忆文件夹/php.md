@@ -193,7 +193,7 @@
 
 
 
-安装步骤：
+## 3.1 安装步骤
 
 1. 安装依赖
 
@@ -270,6 +270,22 @@
    	cp www.conf.default www.conf
 
    
+
+## 3.2 操作命令
+
+```ini
+[启动]
+cmd  = php-fpm start
+
+[停止]
+cmd  = php-fpm stop
+
+[重启]
+cmd  = php-fpm restart
+
+[命令全部用法]
+cmd  = php-fpm {start|stop|force-quit|restart|reload|status|configtest}
+```
 
 
 
