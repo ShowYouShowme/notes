@@ -1079,7 +1079,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                  
+  >                                                    
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1103,7 +1103,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                  
+  >                                                    
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1515,7 +1515,27 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
 ## 2 密钥登陆
 
-1. 生成密钥
+1. 配置服务器权限
+
+   ```ini
+   [.ssh]
+   ;服务器的.ssh 目录的权限必须是700,执行命令ssh-keygen会自动生成该文件夹并且配置好权限
+   cmd = chmod 700 .ssh
+   
+   [authorized_keys]
+   ;authorized_keys 的权限是600
+   cmd = chmod 600 authorized_keys
+   
+   [config]
+   ;config 权限是600
+   
+   [秘钥文件]
+   ;公钥和私钥的权限都必须是600,否则会出错
+   ```
+
+   
+
+2. 生成密钥
 
    ```shell
    # 指定加密类型和注释，rsa长度默认为2048位
@@ -1525,15 +1545,40 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    ssh-keygen
    ```
 
-2. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
+3. ssh-keygen 用法
+
+   ```ini
+   [参数]
+   -b = 指定密钥长度
+   -e = 读取已有私钥或者公钥文件
+   -f = 指定用来保存密钥的文件名
+   -t = 指定要创建的密钥类型
+   -C = 添加注释
+   
+   [EXAMPLE]
+   ;默认方式创建秘钥
+   cmd-1 = ssh-keygen
+   
+   ;指定参数
+   cmd-2 = ssh-keygen -t rsa -b 2048 -f aliyun
+   
+   ;移动到秘钥目录
+   cmd = mv aliyun aliyun.pub $HOME/.ssh
+   ```
+
+   
+
+4. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
 
    ```shell
    ssh-copy-id -i ~/.ssh/id_rsa.pub slzg@192.168.0.10
    
    # 或者 打开服务器 ~/.ssh/authorized_keys , 把你的公钥复制进去
+   # 服务器的.ssh 目录的权限必须是700, authorized_keys 的权限是600
+   # 推荐先在服务器生成公私钥,然后再将私钥copy到客户端使用
    ```
 
-3. 登陆
+5. 登陆
 
    ```shell
    # 登陆命令
@@ -1594,18 +1639,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
    
 
-
-
-## 5 公钥拷贝到远程机器
-
-```shell
-ssh-copy-id -p ${port} ${user}@${host}
-
-ssh-copy-id -p 22 root@192.168.1.2
-```
-
-
-## 6 多机器免密钥配置
+## 5 多机器免密钥配置
 
 1. 创建文件
 
@@ -1625,13 +1659,13 @@ ssh-copy-id -p 22 root@192.168.1.2
        IdentityFile ~/.ssh/aliyun.pem
    
    Host aws
-   HostName 120.25.248.58
-   User ubuntu
-   Port 8000
-   IdentityFile ~/.ssh/hk.pem
+       HostName 120.25.248.58
+       User ubuntu
+       Port 8000
+       IdentityFile ~/.ssh/hk.pem
    ```
 
-## 7 常用配置
+## 6 常用配置
 
 1. 配置文件：/etc/ssh/sshd_config
 
@@ -2020,12 +2054,12 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
 
 0. 功能
 
-    ```shell
-    输出CPU和磁盘I/O相关的统计信息，主要关注TPS
-    
-    # 测试命令
-    dd if=/dev/zero of=/opt/test2 bs=1k count=10240000
-    ```
+     ```shell
+     输出CPU和磁盘I/O相关的统计信息，主要关注TPS
+     
+     # 测试命令
+     dd if=/dev/zero of=/opt/test2 bs=1k count=10240000
+     ```
 
 1. 安装
 
@@ -2041,7 +2075,30 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
    
    # 每两秒采样一次,不断采样
    iostat -d 2 
+   
+   #以MB为单位显示
+   iostat -d 1 -m
+   
+   #以kB为单位显示
+   iostat -d 1 -k
    ```
+
+3. 列解释
+
+   | Device   | tps            | kB_read/s | kB_wrtn/s | kB_read  | kB_wrtn  |
+   | -------- | -------------- | --------- | --------- | -------- | -------- |
+   | 磁盘名称 | 每秒钟的io请求 | 读取速率  | 写入速率  | 总共读取 | 总共写入 |
+
+4. 磁盘监控
+
+   ```ini
+   ;如果传输的数据非常多,可以把-k改为-m,用MB作为单位
+   monitorCmd = iostat -d 1 -k
+   
+   ;监控工具 zabbix
+   ```
+
+   
 
 
 
@@ -2051,12 +2108,43 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
 + 功能
 
   > 查看磁盘使用情况
+  
++ 信息说明
+
+  ```ini
+  
+  [概览]
+  Total DISK READ   = 从磁盘中读取的总速率
+  Total DISK WRITE  = 往磁盘里写入的总速率
+  
+  ;监控该值
+  Actual DISK READ  = 从磁盘中读取的实际速率
+  
+  ;监控该值
+  Actual DISK WRITE = 往磁盘里写入的实际速率
+  
+  [列]
+  TID 		= 线程ID，按p可转换成进程ID
+  PRIO 		= 优先级
+  USER 		= 线程所有者
+  ;监控该值
+  DISK READ 	= 从磁盘中读取的速率
+  ;监控该值
+  DISK WRITE 	= 往磁盘里写入的速率
+  ;监控该值
+  SWAPIN 		= swap交换百分比
+  ;监控该值
+  IO> 		= IO等待所占用的百分比
+  COMMAND 	= 具体的进程命令
+  ```
+  
+  
 
 
 
 # **dstat**
 
-+ 介绍：性能监控工具，可以用来替换iostat，netstat之类的工具
++ 介绍：性能监控工具，可以用来替换iostat，netstat之类的工具，监控磁盘用iostat
 
 + 安装
 
@@ -2069,6 +2157,41 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
   ```shell
   dstat
   ```
+  
++ 信息说明
+
+  ```ini
+  ;CPU使用率
+  [----total-cpu-usage----]
+  usr  = 用户空间的程序所占百分比
+  sys  = 系统空间程序所占百分比
+  idel = 空闲百分比
+  wai  = 等待磁盘I/O所消耗的百分比
+  hiq  = 硬中断次数
+  siq  = 软中断次数
+  
+  ;磁盘统计
+  [-dsk/total-]
+  read = 读的字节总数
+  writ = 写的字节总数
+  
+  ;网络统计
+  [-net/total-]
+  recv = 网络收包总数
+  send = 网络发包总数
+  
+  ;内存分页统计
+  [---paging--]
+  in = pagein（换入）
+  out =page out（换出）
+  
+  ;系统信息
+  [---system--]
+  int = 中断次数
+  csw = 上下文切换
+  ```
+
+  
 
 
 

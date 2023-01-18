@@ -2195,6 +2195,34 @@ request.post('http://127.0.0.1:3000', {
 
 
 
+```javascript
+// 请求数据为: application/x-www-form-urlencoded
+import request from 'request';
+const url = 'http://192.168.2.117:9002/houtai/player/playergetall';
+request.post({
+    url,
+    form : {
+        page : 1,
+        limit : 10,
+        uid : undefined,
+        account_name : undefined,
+        phone : undefined,
+        start_time : '2023-01-04 00:00:00',
+        end_time : '2023-01-11 23:59:59',
+        order_type : 'login'
+    }
+}, function(error, res, body){
+    if(error != undefined){
+        console.error(`请求错误! error = ${JSON.stringify(error)}`);
+        return;
+    }
+    body = JSON.parse(body);
+    console.info(`收到响应 body = ${JSON.stringify(body)}`);
+})
+```
+
+
+
 ## 18.4 封装为Promise
 
 ```javascript
@@ -3017,6 +3045,16 @@ pm2 env ${id}
 
 
 
+### 19.1.18 清空日志
+
+```shell
+pm2 flush
+```
+
+
+
+
+
 # 第二十章 数学库
 
 url = https://github.com/josdejong/mathjs
@@ -3328,4 +3366,65 @@ console.info(`pizza detail = ${pizza}`);
 ```
 
 
+
+# 第二十四章 邮件
+
+
+
+## 24.1 安装依赖
+
+```shell
+npm install nodemailer
+```
+
+
+
+## 24.2 官网
+
+```ini
+github = https://github.com/nodemailer/nodemailer/
+官网 = https://nodemailer.com/about/
+```
+
+
+
+## 24.2 Example
+
+```javascript
+"use strict";
+import nodemailer from "nodemailer";
+
+// async..await is not allowed in global scope, must use a wrapper
+async function main() {
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: "smtp.126.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: 'wzc_0618@126.com', // generated ethereal user
+      pass: 'SAGJEOZIYUNKVLLH', // generated ethereal password
+    },
+  });
+
+  // send mail with defined transport object
+  let info = await transporter.sendMail({
+    from: 'wzc_0618@126.com', // sender address
+    to: "wzc1990880000@gmail.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world?", // plain text body
+    html: "<b>this is html content, we will not use it!</b>", // html body
+  });
+
+  console.log("Message sent: %s", info.messageId);
+  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+  // Preview only available when sending through an Ethereal account
+  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+}
+
+main().catch(console.error);
+
+```
 

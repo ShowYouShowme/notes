@@ -1145,6 +1145,10 @@ cmd2 = nginx -s quit
 
 # 第九章 安装
 
+
+
+## 9.1 源码编译安装
+
 ```ini
 wget http://nginx.org/download/nginx-1.16.1.tar.gz
 tar -zxvf nginx-1.16.1.tar.gz
@@ -1167,6 +1171,30 @@ make install
 
 
 
+
+
+## 9.2 包管理器安装
+
+```ini
+[CMD]
+sudo yum install -y epel-release
+sudo yum install -y nginx
+
+[配置]
+;默认网站目录
+WEB_PATH= /usr/share/nginx/html
+
+;默认配置文件
+CONFIG_PATH=/etc/nginx/nginx.conf
+
+;自定义配置文件目录
+CUSTOM_CONFIG_PATH = /etc/nginx/conf.d/
+```
+
+
+
+
+
 # 第十章 静态资源文件服务
 
 ```ini
@@ -1185,66 +1213,40 @@ location / {
 
 ## 11.1 TCP反向代理
 
+TCP反向代理 + 负载均衡配置示例
+
 ```ini
 ; configure 时 加上--with-stream这个参数，以加载ngx_stream_core_module这个模块
 ; 监听本机的2222端口，实现跳转到192.168.56.12的22号端口
 ; --with-http_ssl_module 支持https
+
+; 反向代理 + 负载均衡
 stream {
     upstream tcp_proxy{
     hash $remote_addr consistent;
     server 178.128.61.189:8399;
+    server 178.128.61.190:8399;
     }
 
     server {
     listen 8399 so_keepalive=on;
     proxy_connect_timeout 10s;  # 链接超时
-    ; proxy_timeout 30s;  不设置则使用默认时间:10分钟
-    proxy_timeout 60m;
+    proxy_timeout 60m;          # 60分钟无数据传输就关闭链接,默认10分钟
     proxy_pass tcp_proxy;
-    }
-
-    upstream tcp_proxy_2{
-    hash $remote_addr consistent;
-    server 178.128.61.189:8306;
-    }
-
-    server {
-    listen 8306 so_keepalive=on;
-    proxy_connect_timeout 10s;
-    proxy_timeout 30s;
-    proxy_pass tcp_proxy_2;
     }
 }
 ```
 
 
 
-TCP 反向代理配置示例二
-
-```nginx
-stream {
-    upstream tcp_proxy{
-    hash $remote_addr consistent;
-    server 18.231.132.46:8080;
-    }   
-
-    server {
-    listen 8080 so_keepalive=on;
-    proxy_connect_timeout 10s;
-    proxy_timeout 60m;
-    proxy_pass tcp_proxy;
-    }   
-}
-```
-
-
-
-TCP 反向代理配置示例三
+TCP 反向代理配置示例
 
 ```nginx
 stream {
     server {
         listen 3000;
+        proxy_connect_timeout 10s;
+        proxy_timeout 60m;
         proxy_pass 127.0.0.1:3306;
 
     # 也支持socket
@@ -1421,3 +1423,89 @@ http {
 ```
 
 思路：本来ajax请求http://10.10.10.123:81/get_text，但是这样会造成跨域（服务器是http://10.10.10.123:80），因此先请求到http://10.10.10.123:80/get_text，然后把http://10.10.10.123:80/get_text 的请求反向代理到http://10.10.10.123:81/get_text
+
+
+
+
+
+
+
+# 第十二章 SSL证书
+
+
+
+## 12.1 申请免费证书
+
+使用Let’s-Encrypt来申请免费证书，一次可以使用3个月，到期后可以再次执行命令更新
+
+
+
+```ini
+[官网]
+url = https://github.com/certbot/certbot
+url2= https://certbot.eff.org/
+
+[安装]
+;系统  centos7
+cmd-1 = yum install epel-release -y
+cmd-2 = yum install certbot -y
+
+;必须先启动一个nginx服务,并且防火墙开放80端口,同时要将域名映射到指定的ip地址
+[申请证书]
+;也可以直接指定webroot: certbot certonly --webroot -w /usr/share/nginx/html -d shop.icashflow.cc
+step-1 = sudo certbot certonly -d shop.icashflow.cc
+;Place files in webroot directory (webroot)
+step-2 = 输入2
+;输入邮箱地址
+step-3 = wzc199088@gmail.com
+;You must agree in order to register with the ACME server
+step-4 = y
+;share your email address with the Electronic Frontier Foundation
+step-5 = n
+;Input the webroot for shop.icashflow.cc
+;输入网站根目录
+step-5 = /usr/share/nginx/html
+
+
+;申请到的证书的路径
+certificate = /etc/letsencrypt/live/shop.icashflow.cc/fullchain.pem
+
+;申请到的私钥的路径
+private_key = /etc/letsencrypt/live/shop.icashflow.cc/privkey.pem
+
+
+
+;证书的有效期只有3个月
+[更新证书]
+;测试自动更新是否正常,如果看到Congratulations, all simulated renewals succeeded:表示成功
+cmd = certbot renew --dry-run
+
+;更新命令
+cmd = certbot renew
+
+[配置定时任务自动更新]
+crontab = 0 3,19 * * * certbot renew
+```
+
+
+
+
+
+## 12.2 证书种类
+
+
+
+### 按照验证方式划分
+
++ DV证书：只需验证域名所有权，无需人工验证申请单位真实身份，几分钟就可颁发的SSL证书。价格一般在百元至千元左右，适用于个人或者小型网站
++ OV证书：需要验证域名所有权以及企业身份信息，证明申请单位是一个合法存在的真实实体，一般在1~5个工作日颁发。价格一般在百元至千元左右，适用于企业型用户申请。
++ EV证书：除了需要验证域名所有权以及企业身份信息之外，还需要提交一下扩展型验证，比如：邓白氏等，通常CA机构还会进行电话回访，一般在2~7个工作日颁发证书。价格一般在千元至万元左右，适用于在线交易网站、企业型网站。EV证书会将公司名称直接显示在浏览器上面。
+
+
+
+### 按照域名数量划分
+
++ 单域名证书：只保护一个域名（包括带www和不带www）的SSL证书，可以是顶级域名可以是二级域名
++ 多域名证书：可以同时保护多个域名，不限制域名类型
++ 通配符证书：只能保护一个域名以及该域名的所有下一级域名，不限制域名数量；例如：[http://anxinssl.com](https://link.zhihu.com/?target=http%3A//anxinssl.com)及它的所有子域，没有数量限制。
+
