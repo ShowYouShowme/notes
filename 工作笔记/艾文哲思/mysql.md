@@ -1361,6 +1361,15 @@ DROP PROCEDURE [ IF EXISTS ] <过程名>
    #建议设置为读提交
    transaction_isolation=read-committed
    ```
+
+5. 数据库对比工具
+
+   ```ini
+   ;每次发布外网时,把外网的库备份导入到内网,然后对比生成差异sql
+   tool = mysqldbcompare  
    
+   cmd = mysqldbcompare --server1=user:pass@host:port:socket --server2=user:pass@host:port:socket db1:db2
+   ```
+
    
 

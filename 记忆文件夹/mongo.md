@@ -147,6 +147,9 @@ db.dropDatabase()
        ],
        "likes" : 110
    })
+   
+   ;全部文档新增一个字段
+   db.runoob.update({},{$set:{'character':'GM'}}, {multi:true})
    ```
 
 3. 删除文档

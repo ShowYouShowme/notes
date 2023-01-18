@@ -520,6 +520,14 @@ git checkout -- main.cpp
    git tag -d test_tag
    ```
 
+4. 推送tag
+
+   ```shell
+   git push --tags
+   ```
+
+   
+
 
 
 ## 2.16 子模块
