@@ -278,14 +278,6 @@ $username  ALL=(ALL) NOPASSWD:ALL
 
 
 
-### 免密码sudo运行部分命令
-
-```shell
-$username ALL=(ALL) NOPASSWD:/bin/mkdir,/bin/rmdir
-```
-
-
-
 
 
 ## centos7
@@ -309,7 +301,28 @@ $username ALL=(ALL) NOPASSWD:/bin/mkdir,/bin/rmdir
    usermod -G wheel ${user}
    ```
 
+3. 将某个用户加入sudo
+
+   ```shell
+   #加上NOPASSWD可以免输密码
+   roglic ALL=(ALL) NOPASSWD:ALL
+   ```
+
+4. 将某个组加入sudo
+
+   ```shell
+   %wheel ALL=(ALL)       NOPASSWD: ALL
+   ```
+
    
+
+5. 问题
+
+   > 1. We trust you have received the usual lecture from the local System。有时候会出现这样的提示，输入代码即可。
+   >
+   > 2. centos7下不可以设置免sudo运行部分命令。
+   >
+   > 3. 文件/etc/sudoers是只读的，需要用wq!来保存
 
 
 
@@ -1079,7 +1092,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                    
+  >                                                       
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1103,7 +1116,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                    
+  >                                                       
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
