@@ -169,6 +169,12 @@ ansible www_jfedu -m copy -a 'src=/root/install.log dest=/tmp/
 ```shell
 # 500并发，发起10000个请求
 ab -n 10000 -c 500 http://192.168.1.159:5000/
+
+#常见错误 apr_socket_recv: Connection reset by peer (104)
+vim /etc/sysctl.conf
+##此参数是为了防止洪水DOS的，但对于大并发系统，要禁用此设置
+net.ipv4.tcp_syncookies = 0
+sysctl -p
 ```
 
 
@@ -1092,7 +1098,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                       
+  >                                                          
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1116,7 +1122,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                       
+  >                                                          
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
