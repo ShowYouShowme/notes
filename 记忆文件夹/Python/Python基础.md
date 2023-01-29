@@ -125,10 +125,11 @@
      curl -O https://www.python.org/ftp/python/3.8.1/Python-3.8.1.tgz
      tar -xzf Python-3.8.1.tgz
      cd Python-3.8.1/
-     ./configure --enable-optimizations --prefix=/home/roglic/local/
-     make altinstall
+     ./configure --enable-optimizations --prefix=$HOME/local/python3
+     make -j20
+     make install
      ```
-  
+     
      
 
 ## 1.3 第一个程序

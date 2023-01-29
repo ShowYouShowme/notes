@@ -526,6 +526,12 @@ git checkout -- main.cpp
    git push --tags
    ```
 
+5. 切换到tag
+
+   ```shell
+   git checkout ${tagName}
+   ```
+
    
 
 
@@ -699,4 +705,29 @@ git push -u origin dev
 git remote add origin http://192.168.2.110:3000/roglic/protocol.git
 git push -u origin dev
 ```
+
+
+
+
+
+# 第六章 安装
+
+
+
+```shell
+ #下载源码
+ wget https://github.com/git/git/archive/refs/tags/v2.39.1.tar.gz
+ #解压
+ tar -zxvf v2.39.1.tar.gz
+ #进入目录
+ cd git-2.39.1/
+ #编译
+ make prefix=$HOME/local/git -j8
+ #安装
+ make prefix=$HOME/local/git install -j8
+ #配置环境变量
+ export PATH=$PATH:/home/andy/local/git/bin
+```
+
+
 

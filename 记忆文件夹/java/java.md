@@ -36,6 +36,27 @@
   ```shell
   yum install java-1.8.0-openjdk* -y
   ```
+  
++ 源码安装：推荐的方式
+
+  ```ini
+  ;下载压缩包
+  tar -zxvf jdk-8u361-linux-x64.tar.gz
+  mv jdk1.8.0_361/ ~/local/
+  
+  ;配置环境变量 .bashrc
+  [enviroment]
+  JAVA_HOME=$HOME/local/jdk1.8.0_361
+  JRE_HOME=$JAVA_HOME/jre
+  CLASS_PATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
+  PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
+  export JAVA_HOME JRE_HOME CLASS_PATH PATH
+  
+  [测试]
+  java -version
+  ```
+
+  
 
 
 

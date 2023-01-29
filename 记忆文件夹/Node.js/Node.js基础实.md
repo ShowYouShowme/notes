@@ -3428,3 +3428,36 @@ main().catch(console.error);
 
 ```
 
+
+
+
+
+# 第二十五章 内存分析
+
+
+
+## 25.1 工具安装
+
+```shell
+npm install heapdump --save
+```
+
+
+
+
+
+## 25.2 代码
+
+```javascript
+var heapdump = require('heapdump');
+heapdump.writeSnapshot('./' + Date.now() + '.heapsnapshot');
+```
+
+
+
+## 25.3 用Chrome分析
+
+```shell
+Chrome --> 更多工具 --> 开发者工具 --> Memory --> Load
+```
+
