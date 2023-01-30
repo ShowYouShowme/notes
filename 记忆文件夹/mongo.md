@@ -252,7 +252,7 @@ db.dropDatabase()
 
 1. 导出为json文件
 
-   ```shell
+   ```ini
    #导出全部字段
    mongoexport --uri="mongodb://127.0.0.1:27017/test" --collection=runoob --out=my.json --pretty --jsonArray 
    
@@ -265,6 +265,19 @@ db.dropDatabase()
    ```shell
    mongodump -d test -o /home/roglic/mongo  --collection runoob
    ```
+
+3. 导入/导出
+
+   ```ini
+   ;mongoexport/mongoimport 命令常用来修改单个表
+   [导出一个表]
+   mongoexport --host 127.0.0.1:27017 --db=game --collection=roles --out=game.json --pretty --jsonArray 
+   
+   [导入一个表]
+   mongoimport --host 127.0.0.1:27017 --db=game --collection=roles --file=game.json  --jsonArray 
+   ```
+
+   
 
 
 
