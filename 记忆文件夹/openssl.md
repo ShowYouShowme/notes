@@ -194,6 +194,6 @@ Verified OK
 ```ini
 [info]
 url  = https://manage.sslforfree.com/
-域名  = 公网IP地址   ---> 申请域名需要设置DNS解析,非常麻烦,所以直接使用ip地址
+直接用DNS 验证即可, 推荐用godaddy 来购买域名.
 ```
 

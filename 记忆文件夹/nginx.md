@@ -193,6 +193,39 @@ server {
    
    
    
+   配置案例
+   
+   ```nginx
+   #nginx 是编译安装
+   #ssl证书在https://manage.sslforfree.com/申请
+   #域名在godaddy购买
+   #keys目录和html同级
+   http{
+   
+       server{
+           listen 8300;
+           root         html/;
+       }
+   
+   server {
+           listen 4430 ssl;
+           root html/;
+           index index.html index.htm index.nginx-debian.html;
+       
+           ssl_certificate     ../keys/certificate.crt;#配置证书位置
+           ssl_certificate_key ../keys/private.key;#配置秘钥位置
+           location / { 
+                   proxy_pass  http://127.0.0.1:8300;
+           }   
+   
+   }
+   }
+   ```
+   
+   
+   
+   
+   
 
 ## 2.2 基本http服务配置
 
@@ -215,8 +248,7 @@ events {
 http{
     server{
         listen 8100;
-        default_type application/json;
-        return 200  '{"name":"aming","id":"100"}';
+        root         /usr/share/nginx/html;
     }
 
 }
@@ -272,6 +304,44 @@ http {
 ```nginx
 #全局作用域
 daemon off;
+```
+
+
+
+## 2.6 ws反向代理 + wss配置
+
+```nginx
+http{
+    map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+
+upstream websocket {
+    server 192.168.2.228:8080; # appserver_ip:ws_port
+}
+
+server {
+     server_name dev.icashflow.cc;
+     listen 8283 ssl;
+     location / { 
+         proxy_pass http://websocket;
+         proxy_read_timeout 300s;
+         proxy_send_timeout 300s;
+
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+         proxy_http_version 1.1;
+         proxy_set_header Upgrade $http_upgrade;
+         proxy_set_header Connection $connection_upgrade;
+     }
+     ssl_certificate     ../keys/certificate.crt;#配置证书位置
+     ssl_certificate_key ../keys/private.key;#配置秘钥位置
+}
+
+}
 ```
 
 
