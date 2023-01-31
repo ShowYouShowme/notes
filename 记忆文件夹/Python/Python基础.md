@@ -3244,3 +3244,123 @@ def main():
     ws.close()
 ```
 
+
+
+# 第三十一章  网络框架
+
+
+
+## 31.1 概览
+
+1. flask：简单
+
+2. tornado：异步非阻塞的http框架，支持websocket，自带计时器等功能，libEvent
+
+3. Django
+
+4. fastapi：高性能，简单
+
+5. Twisted
+
+6. gevent
+
+   >gevent 是一个基于协程的 Python 网络库，它使用 greenlet 在 libev 或 libuv 事件循环之上提供高级同步 API。
+
+
+
+
+
+## 31.2 示例
+
+
+
+### 31.2.1 tornado
+
+1. http
+
+   ```shell
+   # Http框架
+   import asyncio
+   
+   import tornado.web
+   
+   
+   class MainHandler(tornado.web.RequestHandler):
+       def get(self):
+           self.write("Hello, world")
+   
+   
+   def make_app():
+       return tornado.web.Application([
+           (r"/", MainHandler),
+       ])
+   
+   
+   async def main():
+       app = make_app()
+       app.listen(8888)
+       await asyncio.Event().wait()
+   
+   
+   if __name__ == "__main__":
+       asyncio.run(main())
+   ```
+
+   
+
+2. websocket
+
+   ```python
+   # 一个端口能同时提供ws和http的接口,不需要另外启动一个admin
+   # MainHandler里面通过self.request.remote_ip 来获取远程IP,必须做白名单限制
+   # golang的gorilla/websocket 应该也是同时支持http和ws
+   import tornado.ioloop
+   import tornado.web
+   import tornado.websocket
+   
+   
+   class ConnectHandler(tornado.websocket.WebSocketHandler) :
+       def check_origin(self, origin) :
+           '''重写同源检查 解决跨域问题'''
+           return True
+   
+       def open(self) :
+           '''新的websocket连接后被调动'''
+           self.write_message('Welcome')
+   
+       def on_close(self) :
+           '''websocket连接关闭后被调用'''
+   
+       def on_message(self, message) :
+           '''接收到客户端消息时被调用'''
+           self.write_message('new message :' + message)  # 向客服端发送
+   
+   
+   class MainHandler(tornado.web.RequestHandler) :
+       def get(self) :
+           self.write("Hello world")
+   
+   
+   class Application(tornado.web.Application) :
+       def __init__(self) :
+           handlers = [
+               (r'/index', MainHandler),
+               (r'/ws', ConnectHandler)
+           ]
+           tornado.web.Application.__init__(self, handlers)
+   
+   
+   if __name__ == "__main__" :
+       app = Application()
+       app.listen(8000)
+       tornado.ioloop.IOLoop.current().start()
+   ```
+
+   
+
+
+
+
+
+
+

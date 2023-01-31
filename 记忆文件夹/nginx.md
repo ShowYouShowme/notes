@@ -1314,7 +1314,7 @@ TCP 反向代理配置示例
 ```nginx
 stream {
     server {
-        listen 3000;
+        listen 3000 so_keepalive=on;
         proxy_connect_timeout 10s;
         proxy_timeout 60m;
         proxy_pass 127.0.0.1:3306;
