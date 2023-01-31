@@ -163,6 +163,7 @@ stream {
 ## 2.1 配置https
 
 ```shell
+#ssl_certificate 和 ssl_certificate_key 的 Context是http、server,因此只有一个域名或者泛域名证书，# 可以在 http模块里面配置 
 server {
         listen 443 ssl;
         root /var/www/html;
@@ -1257,7 +1258,7 @@ WEB_PATH= /usr/share/nginx/html
 ;默认配置文件
 CONFIG_PATH=/etc/nginx/nginx.conf
 
-;自定义配置文件目录
+;自定义配置文件目录, http模块里有 include /etc/nginx/conf.d/*.conf;
 CUSTOM_CONFIG_PATH = /etc/nginx/conf.d/
 ```
 
