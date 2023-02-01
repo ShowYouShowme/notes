@@ -2831,6 +2831,7 @@ if(php_port == undefined){
 ### 19.2.1 安装
 
 ```shell
+#目前项目使用的是5.2.2 非常稳定,没有内存泄露
 npm install pm2 -g
 ```
 

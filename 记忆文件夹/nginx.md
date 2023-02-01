@@ -198,7 +198,6 @@ server {
    
    ```nginx
    #nginx 是编译安装
-   #ssl证书在https://manage.sslforfree.com/申请
    #域名在godaddy购买
    #keys目录和html同级
    http{
@@ -231,6 +230,7 @@ server {
 ## 2.2 基本http服务配置
 
 ```nginx
+# 如果是非root用户编译安装Nginx,打算监听80端口,必须用sudo 启动,同时配置 user 为 该用户而不是nobody
 #user  nobody;
 worker_processes  1;
 
@@ -1509,8 +1509,6 @@ http {
 
 使用Let’s-Encrypt来申请免费证书，一次可以使用3个月，到期后可以再次执行命令更新
 
-去网站https://manage.sslforfree.com/手动申请其实比这个方便，反正三个月才更换一次。这个工具主要用于自动化申请。
-
 ```ini
 [官网]
 url = https://github.com/certbot/certbot
@@ -1524,7 +1522,7 @@ cmd-2 = yum install certbot -y
 ;必须先启动一个nginx服务,并且防火墙开放80端口,同时要将域名映射到指定的ip地址
 [申请证书]
 ;也可以直接指定webroot: certbot certonly --webroot -w /usr/share/nginx/html -d shop.icashflow.cc
-step-1 = sudo certbot certonly -d shop.icashflow.cc
+step-1 = sudo certbot certonly --webroot -w /home/centos/local/nginx/html -d dev.icashflow.cc -d stage.icashflow.cc 
 ;Place files in webroot directory (webroot)
 step-2 = 输入2
 ;输入邮箱地址
@@ -1556,6 +1554,19 @@ cmd = certbot renew
 
 [配置定时任务自动更新]
 crontab = 0 3,19 * * * certbot renew
+
+[使用DNS解析申请证书--不需要启动nginx监听80端口]
+cmd = certbot certonly --manual --preferred-challenge dns -d dev.icashflow.cc -d stage.icashflow.cc
+
+;在godaddy里面增加TXT记录
+
+;查询TXT记录是否生效
+nslookup -query=txt  _acme-challenge.stage.icashflow.cc
+
+;TXT记录生效后,按Enter就可以生成申请到证书了
+
+;更新证书
+cmd = certbot renew
 ```
 
 
