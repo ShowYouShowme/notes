@@ -296,7 +296,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                           
+   >                                              
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -622,6 +622,7 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
 ```dockerfile
 FROM centos:7
 
+# 修改这一行可以禁用Docker build cache
 ENV REFRESHED_AT 2020-03-04
 RUN yum install -y wget
 # 类似CD命令

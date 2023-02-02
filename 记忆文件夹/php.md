@@ -271,6 +271,7 @@
 
    
 
+
 ## 3.2 操作命令
 
 ```ini
@@ -285,6 +286,64 @@ cmd  = php-fpm restart
 
 [命令全部用法]
 cmd  = php-fpm {start|stop|force-quit|restart|reload|status|configtest}
+```
+
+
+
+## 3.3 Dockerfile
+
+```dockerfile
+# 构建好image,启动container后,设置Php的启动user = root  group = root, 前台运行 daemonize = no
+# 将端口9000暴露出去, 启动Php-fpm 后, 按住 Ctrl 再按P、Q退出不关闭容器
+FROM centos:centos7.9.2009
+
+# 修改这一行可以禁用Docker build缓存
+ENV REFRESH_DATE 2018-01-07
+ENV PATH=$HOME/bin:$PATH
+RUN export PATH
+ENV TOOLS_HOST=http://192.168.2.105:2000
+WORKDIR /opt
+RUN mkdir $HOME/bin $HOME/local
+RUN yum install -y wget
+RUN yum install -y vim
+RUN yum install -y net-tools
+RUN yum install epel-release -y
+RUN yum install -y gcc gcc-c++
+RUN yum install -y libxml2-devel
+RUN yum install -y openssl-devel
+RUN yum install -y sqlite-devel libcurl-devel libpng-devel
+RUN yum install oniguruma-devel -y
+RUN yum install -y make
+RUN wget $TOOLS_HOST/cmake-3.25.0-linux-x86_64.tar.gz
+RUN wget $TOOLS_HOST/libzip-1.8.0.tar.gz
+RUN tar -zxf libzip-1.8.0.tar.gz
+RUN tar -zxvf cmake-3.25.0-linux-x86_64.tar.gz
+WORKDIR /opt/libzip-1.8.0/build
+RUN /opt/cmake-3.25.0-linux-x86_64/bin/cmake  -DCMAKE_INSTALL_PREFIX=/usr ..
+RUN make
+RUN make install
+
+WORKDIR /opt
+RUN wget $TOOLS_HOST/php-7.4.30.tar.gz
+RUN tar -zxvf php-7.4.30.tar.gz
+WORKDIR /opt/php-7.4.30
+RUN ./configure --prefix=$HOME/local/php7 --bindir=$HOME/local/php7/bin --with-config-file-path=$HOME/local/php7/etc --enable-fpm --with-openssl --with-curl --with-pdo-mysql --with-zip --enable-mbstring --with-zlib --enable-gd --with-zlib 
+
+RUN make -j20
+RUN make install
+
+
+RUN cp /opt/php-7.4.30/sapi/fpm/init.d.php-fpm  $HOME/local/php7/bin/php-fpm
+RUN chmod +x $HOME/local/php7/bin/php-fpm
+RUN ln -s $HOME/local/php7/bin/php-fpm $HOME/bin/php-fpm
+RUN cp /opt/php-7.4.30/php.ini-development $HOME/local/php7/etc/php.ini
+
+WORKDIR /root/local/php7/etc
+RUN cp ./php-fpm.conf.default ./php-fpm.conf
+WORKDIR /root/local/php7/etc/php-fpm.d
+RUN cp www.conf.default www.conf
+RUN /root/bin/php-fpm configtest	
+
 ```
 
 

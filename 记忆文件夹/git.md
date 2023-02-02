@@ -715,6 +715,7 @@ git push -u origin dev
 
 
 ```shell
+ sudo yum -y install expat-devel
  #下载源码
  wget https://github.com/git/git/archive/refs/tags/v2.39.1.tar.gz
  #解压

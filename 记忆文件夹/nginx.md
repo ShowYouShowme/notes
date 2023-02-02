@@ -347,6 +347,75 @@ server {
 
 
 
+## 2.7 多域名配置
+
+1. 不定义default_server
+
+   ```nginx
+   http {
+       # 如果没有显式声明 default server 则第一个 server 会被隐式的设为 default server
+       server {
+           listen 80;
+           server_name _; # _ 并不是重点 __ 也可以 ___也可以
+           return 403; # 403 forbidden
+       }
+       
+       server {
+           listen 80;
+           server_name www.a.com;
+           ...
+       }
+       
+       server {
+           listen 80;
+           server_name www.b.com;
+           ...
+       }
+   }
+   
+   # 在没有显式定义 default server 时，nginx 会将配置的第一个 server 作为 default server，即当请求没有匹配任何 server_name 时.此 server 会处理此请求。所以，当我们直接使用 ip 访问时会被交给此处定义的第一个 server 处理，403 forbidden。
+   ```
+
+   
+
+2. 显示定义default_server
+
+   ```nginx
+   http {
+       server {
+           listen 80;
+           server_name www.a.com;
+           ...
+       }
+       
+       server {
+           listen 80;
+           server_name www.b.com;
+           ...
+       }
+       
+       # 显示的定义一个 default server, 用ip访问就会匹配到这里
+       server {
+           listen 80 default_server;
+           server_name _;
+           return 403; # 403 forbidden
+       }
+       
+   }
+   ```
+
+   
+
+   
+
+
+
+
+
+
+
+
+
 
 
 

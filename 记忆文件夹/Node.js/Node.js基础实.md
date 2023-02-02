@@ -3449,6 +3449,15 @@ main().catch(console.error);
 
 ```shell
 npm install heapdump --save
+
+#Centos7安装
+#先安装高版本的g++
+yum -y install centos-release-scl
+yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+#临时使用g++ 9.3,退出shell或重启就会恢复原系统gcc版本
+scl enable devtoolset-9 bash
+#安装 heapdump,建议全局安装,否则每次都需要重新安装
+npm install heapdump  
 ```
 
 

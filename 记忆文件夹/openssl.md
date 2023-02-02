@@ -184,16 +184,3 @@ Verified OK
 ```
 
 
-
-
-
-
-
-# 第四章 免费证书申请网站
-
-```ini
-[info]
-url  = https://manage.sslforfree.com/
-直接用DNS 验证即可, 推荐用godaddy 来购买域名.
-```
-
