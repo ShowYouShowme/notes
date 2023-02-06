@@ -160,6 +160,24 @@ stream {
 
 
 
+## 2.0 常见配置项
+
+```ini
+[配置启动用户]
+user  nobody;
+
+[配置工作进程数]
+worker_processes  1;
+
+[配置最大连接数]
+;生产服务一般配置为65536,同时得修改ulimit
+worker_connections  1024;
+```
+
+
+
+
+
 ## 2.1 配置https
 
 ```shell
@@ -185,9 +203,7 @@ server {
 1. 申请免费证书
 
    ```ini
-   url = https://manage.sslforfree.com/
-   
-   ; 没有域名就填写机器的公网IP
+   Let’s-Encrypt 来申请
    ```
    
    
@@ -313,7 +329,8 @@ daemon off;
 
 ```nginx
 http{
-    map $http_upgrade $connection_upgrade {
+    
+map $http_upgrade $connection_upgrade {
     default upgrade;
     '' close;
 }
@@ -371,6 +388,14 @@ server {
            server_name www.b.com;
            ...
        }
+       
+       # 443端口禁止 直接用ip地址访问
+       server {
+           listen 443 ssl default_server;
+           server_name _;
+           return 403;
+   	}
+   
    }
    
    # 在没有显式定义 default server 时，nginx 会将配置的第一个 server 作为 default server，即当请求没有匹配任何 server_name 时.此 server 会处理此请求。所以，当我们直接使用 ip 访问时会被交给此处定义的第一个 server 处理，403 forbidden。
@@ -407,7 +432,59 @@ server {
    
 
    
+   
+## 2.8 反向代理路径修改
 
+nginx的proxy_pass配置路径，加与不加“/”差异巨大，加上"/"会去掉匹配的那部分
+
+1. 绝对路径
+
+   ```nginx
+   location /proxy {
+       proxy_pass http://192.168.137.181:8080/;
+   }
+   
+   # 访问路径    = http://127.0.0.1/proxy/test/test.txt
+   # 实际请求路径 = http://10.0.0.1:8080/test/test.txt
+   # nginx会去掉匹配的 /proxy
+   ```
+
+2. 相对路径
+
+   ```nginx
+   location /proxy {
+       proxy_pass http://10.0.0.1:8080;
+   }
+   
+   # 访问路径   = http://127.0.0.1/proxy/test/test.txt
+   # 实际路径   = http://192.168.137.181:8080/proxy/test/test.txt
+   ```
+
+   
+
+3. 增加前缀
+
+   ```nginx
+   location /proxy {
+       proxy_pass http://10.0.0.1:8080/static01/;
+   }
+   
+   # 访问路径   = http://127.0.0.1/proxy/test/test.txt
+   # 实际路径   = http://10.0.0.1:8080/static01/test/test.txt
+   ```
+
+4. 使用正则重写
+
+   ```nginx
+   location /resource {
+       rewrite  ^/resource/?(.*)$ /$1 break;
+       proxy_pass http://192.168.137.189:8082/; # 转发地址
+   }
+   
+   # 新的路径就是除去/resource/以外的所有，就达到了去除/resource前缀的目的
+   ```
+
+   
 
 
 

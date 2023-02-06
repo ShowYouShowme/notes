@@ -233,6 +233,7 @@ yum -y install centos-release-scl
 yum -y install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
 
 # scl命令启用只是临时的，退出shell或重启就会恢复原系统gcc版本
+# 可以临时使用,来编译一些第三方的软件
 scl enable devtoolset-7 bash
 
 # 长期使用

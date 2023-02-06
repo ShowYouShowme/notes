@@ -209,6 +209,8 @@ npm install @types/node
    #或者-E 精确版本号
    npm install protobufjs --save --save-prefix=~
    
+   # --save-dev 开发时才保存
+   
    #默认的安装方式
    npm install ${包名}
    

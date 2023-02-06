@@ -125,7 +125,7 @@
      curl -O https://www.python.org/ftp/python/3.8.1/Python-3.8.1.tgz
      tar -xzf Python-3.8.1.tgz
      cd Python-3.8.1/
-     ./configure --enable-optimizations --prefix=$HOME/local/python3
+     ./configure --prefix=$HOME/local/python3
      make -j20
      make install
      ```
@@ -3148,6 +3148,8 @@ if __name__ == '__main__':
 
 
 # 第三十章 Protobuf
+
+Python的protobuf 不会像ts那样生成详细的class，提供完备的代码补全。因此实际开发时，自己写enum和class类来将生成的代码再度封装一层。主要有clientMessage.proto 和 adminMessage.proto 两个文件；当然如果amin用http访问游戏，那么只需要message.proto，轻松加愉快.
 
 
 
