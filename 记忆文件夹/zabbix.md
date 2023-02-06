@@ -77,9 +77,59 @@ passwd = zabbix
 
 
 
+## 2.1 添加监控主机
+
+```ini
+[安装agent]
+yum install zabbix-agent
+;vim /etc/zabbix/zabbix_agentd.conf
+;修改Server的地址 Server=127.0.0.1,如果Server和agent在一台机器,不用改
+
+[启动]
+systemctl start zabbix-agent
+systemctl enable zabbix-agent
+
+[添加主机]
+配置 --> 主机 --> 创建主机
+
+;主机选项卡
+主机名称 = web01
+群主    = Linux servers
+接口    = IP地址(agent的IP,如果和server在一台机器,就用127.0.0.1)
+
+;模板选项卡
+链接指示 = 输入Linux,然后点击 底下的文字 添加，最后点击添加按钮
+```
+
+
+
+
+
+## 2.2 创建自定义监控项
+
+
+
+
+
+## 2.3 自定义触发器
+
+
+
+
+
 
 
 # 第三章 报警
+
+
+
+## 3.1 配置邮件报警
+
+
+
+## 3.2 配置微信报警
+
+
 
 
 
@@ -87,7 +137,35 @@ passwd = zabbix
 
 
 
+## 4.1 zabbix自定义图形
+
+
+
+## 4.2 安装配置grafana
+
+
+
+## 4.3 使用grafana自定义图形
+
+
+
+
+
+
+
 # 第五章 自定义模板
+
+
+
+## 5.1 监控tcp的十一种状态
+
+
+
+## 5.2 创建自定义模板
+
+
+
+
 
 
 
