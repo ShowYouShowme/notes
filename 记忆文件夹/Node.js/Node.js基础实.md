@@ -3487,6 +3487,8 @@ Chrome --> 更多工具 --> 开发者工具 --> Memory --> Load
 
 # 第二十六章 TCP服务
 
+Nodejs网络底层使用水平触发，只要fd还有数据可读，每次 epoll_wait都会返回它的事件，提醒用户程序去操作。因此，即使data事件注册前，客户端已经发送数据了，依旧会触发回调。
+
 ```javascript
 import net from 'net';
 import log4js from "log4js";
