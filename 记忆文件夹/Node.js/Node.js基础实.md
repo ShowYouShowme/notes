@@ -906,6 +906,7 @@ console.log("程序执行完毕!");
 let b1 : Buffer = new Buffer(10);
 let b2 : Buffer = new Buffer([10, 20, 30, 40, 50]);
 let b3 : Buffer = new Buffer("www.runoob.com", "utf-8");
+let b4 : Buffer = Buffer.from("hello, i am big one!");
 ```
 
 
@@ -3489,6 +3490,10 @@ Chrome --> 更多工具 --> 开发者工具 --> Memory --> Load
 
 Nodejs网络底层使用水平触发，只要fd还有数据可读，每次 epoll_wait都会返回它的事件，提醒用户程序去操作。因此，即使data事件注册前，客户端已经发送数据了，依旧会触发回调。
 
+
+
+## 26.1 TCP服务器端
+
 ```javascript
 import net from 'net';
 import log4js from "log4js";
@@ -3535,6 +3540,45 @@ server.on('error', err => {
     logger.error(`socket error = ${err}, 进程结束!`);
     process.exit(-1);
 });
+```
+
+
+
+
+
+## 26.2 TCP 客户端
+
+```javascript
+import net from 'net';
+
+const HOST : string = '120.25.248.58';
+const PORT : number = 22;
+function main(){
+    const client = net.createConnection({
+        host : HOST,
+        port : PORT
+    });
+
+    client.on('connect', ()=>{
+        console.info(`connected to ${HOST}`);
+    });
+
+    client.on('data', (data: Buffer)=>{
+        console.info(`recv msg = ${data.toString()}`);
+    });
+    
+    client.on('error', (err: Error)=>{
+        // 发生错误
+    });
+
+
+    client.on('close', (hadError: boolean)=>{
+        // 链接关闭
+    });
+}
+
+
+main()
 ```
 
 
