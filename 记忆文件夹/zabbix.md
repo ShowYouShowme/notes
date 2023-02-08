@@ -422,6 +422,24 @@ UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
 
 
 
+### 4.1.4 应用集
+
+用于把监控项分组的标签。创建监控项的时候可以选择应用集。
+
+
+
+#### 创建应用集
+
+1. 点击配置
+2. 点击主机
+3. 点击名称这列的某个主机
+4. 点击应用集
+5. 点击右边的创建应用集按钮
+
+
+
+
+
 ## 4.2 安装配置grafana
 
 
