@@ -316,7 +316,7 @@ UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
 
 3. 在名称这列点击Email
 
-4. 配置Email信息
+4. 配置发件人Email信息
 
    ```ini
    SMTP服务器    = smtp.126.com
@@ -373,6 +373,52 @@ UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
 
 
 ## 4.1 zabbix自定义图形
+
+
+
+### 4.1.1 定义图形
+
+1. 点击配置
+
+2. 点击主机
+
+3. 在名称这一列点击主机
+
+4. 点击图形
+
+5. 点击右边的创建图形
+
+6. 填写信息
+
+   ```ini
+   名称 = tcp连接数
+   ; 正常 = 折线图
+   ; 层积 = 柱状图
+   ; Pie = 饼状图
+   ; 爆发 很少用
+   图形类别 = 正常
+   
+   ; 可以添加多个监控项,比如监控TCP的十一种状态, 并且配置不同的颜色
+   监控项 = 
+   ```
+
+   
+
+
+
+### 4.1.2 查看图形
+
+1. 点击监测
+2. 点击图形
+3. 选择群组，选择主机，再选择图形
+
+
+
+### 4.1.3 zabbix 乱码修复
+
+1. 将windows的字体复制到桌面，字体路径C:\Windows\Fonts，这里我们选择--> 简体字(华文宋体 常规)
+2. zabbix 的字体路径：/usr/share/zabbix/assets/fonts
+3. \mv STSONG.TTF  graphfont.ttf
 
 
 
