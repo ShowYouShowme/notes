@@ -212,6 +212,15 @@ cmd = zabbix_get -s 127.0.0.1 -p 10050 -k tps
 
 
 
+监控TCP连接数
+
+```ini
+;配置netstat的权限 chmod +s /bin/netstat
+UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
+```
+
+
+
 
 
 ## 2.3 自定义触发器

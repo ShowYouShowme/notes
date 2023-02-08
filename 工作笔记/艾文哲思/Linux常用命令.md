@@ -759,7 +759,7 @@ yum install tree -y
    # -E 选项指定使用正则表达式
    grep -n -E '[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{2}' mount_wzc.sh
    ```
-   
+
 4. 利用通配符查找
 
    ```shell
@@ -787,6 +787,14 @@ yum install tree -y
    ```shell
    grep ${CONTENT} -l ./*
    ```
+
+8. 显示行的数量
+
+   ```shell
+   netstat -apnt | grep ESTABLISHED -c
+   ```
+
+   
 
 
 
@@ -1105,7 +1113,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                
+  >                                                                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1129,7 +1137,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                
+  >                                                                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
