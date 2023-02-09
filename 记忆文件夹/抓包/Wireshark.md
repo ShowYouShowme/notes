@@ -73,6 +73,14 @@
    http.request.method == "POST" and ip.dst == 10.10.10.168
    ```
 
+7. 抓某个网站的包
+
+   ```ini
+   ; 如果使用chrome抓包,记得把Preserve log 勾上(否则加载新页面或者导航不会保留之前的日志)
+   ; Disable cache 也可以加上
+   http and tcp.dstport == 8000 and ip.dst == 120.25.248.58
+   ```
+
    
 
 

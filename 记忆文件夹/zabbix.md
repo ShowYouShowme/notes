@@ -178,6 +178,7 @@ systemctl enable zabbix-agent
 
 ```INI
 [配置文件]
+; 自定义配置文件的路径 = /etc/zabbix/zabbix_agentd.d
 path = vim /etc/zabbix/zabbix_agentd.conf
 
 [格式]
@@ -199,6 +200,9 @@ cmd = zabbix_get -s 127.0.0.1 -p 10050 -k tps
 ;修改不支持的监控项的刷新时间:  管理 --> 一般 --> 其它 --> 刷新不支持的项目 --> 10s
 信息类型 = 浮点数
 更新间隔 = 5s
+
+;自定义的监控项放在 某些自定义的应用集里面
+应用集  =
 
 [查看数据]
 ; 监测 --> 最新数据 --> 主机(点击那个选择按钮) -->应用
@@ -490,9 +494,78 @@ UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
 
 ## 5.2 创建自定义模板
 
+```ini
+; cd /etc/zabbix/zabbix_agentd.d
+; vim tcp_status.conf
+UserParameter=ESTABLISHED,netstat -apnt | grep ESTABLISHED -c
+UserParameter=SYN_SENT,netstat -apnt | grep SYN_SENT -c
+UserParameter=SYN_RECV,netstat -apnt | grep SYN_RECV -c
+UserParameter=FIN_WAIT1,netstat -apnt | grep FIN_WAIT1 -c
+UserParameter=FIN_WAIT2,netstat -apnt | grep FIN_WAIT2 -c
+UserParameter=TIME_WAIT,netstat -apnt | grep TIME_WAIT -c
+UserParameter=CLOSE,netstat -apnt | grep CLOSE -c
+UserParameter=CLOSE_WAIT,netstat -apnt | grep CLOSE_WAIT -c
+UserParameter=LAST_ACK,netstat -apnt | grep LAST_ACK -c
+UserParameter=LISTEN,netstat -apnt | grep LISTEN -c
+UserParameter=CLOSING,netstat -apnt | grep CLOSING -c
+
+
+;重启agent服务
+systemctl restart zabbix-agent
+
+;测试获取值
+zabbix_get -s 127.0.0.1 -p 10050 -k TIME_WAIT
+```
 
 
 
+自定义模板
+
+```ini
+1 = 点击配置
+2 = 点击模板
+3 = 点击右边的创建模板按钮
+4 = 
+	4.1  模板名称 = TcpState
+		 群组    = Templates
+		 描述    = TCP的十一种状态的模板
+5 = 点击添加
+```
+
+
+
+为模板创建监控项
+
+```ini
+1 = 点击配置
+2 = 点击模板
+3 = 在名称这一列, 点击某个模板
+4 = 点击监控项
+
+; 也可以将已有的监控项复制到模板 [选择某个监控项,点击下面的复制, 目标类型选择模板, 目标这行选择一个模板]
+5 = 点击创建监控项
+
+; 选择全部监控项,点击批量更新, 勾上 添加新的或者已经存在的应用, 在里面选择一个应用集
+6 = 将模板里面的监控项配置到指定应用集
+```
+
+
+
+
+
+为主机添加模板
+
+```ini
+1 = 点击配置
+2 = 点击主机
+3 = 名称这一列点击某个主机
+4 = 点击模板选项卡
+5 = 链接指示器 这里选择一个模板, 在点击添加，最后点击更新
+```
+
+
+
+模板的导入和导出
 
 
 
