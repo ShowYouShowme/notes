@@ -420,9 +420,10 @@ UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
 
 ### 4.1.3 zabbix 乱码修复
 
-1. 将windows的字体复制到桌面，字体路径C:\Windows\Fonts，这里我们选择--> 简体字(华文宋体 常规)
+1. 将windows的字体复制到桌面，字体路径C:\Windows\Fonts，这里我们选择--> 简体字(推荐微软雅黑)
 2. zabbix 的字体路径：/usr/share/zabbix/assets/fonts
 3. \mv STSONG.TTF  graphfont.ttf
+4. 字体github地址：https://github.com/chengda/popular-fonts
 
 
 
