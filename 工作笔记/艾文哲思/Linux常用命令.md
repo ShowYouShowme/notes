@@ -141,6 +141,13 @@ ss -s | sed -n "2p" | awk -F, '{print $5}' | awk '{print $2}' | awk -F/ '{print 
 
 ; syn_recv 的个数
  ss -o state syn-recv | wc -l
+ 
+; 列出全部监听的端口
+ss -lnt
+
+; TCP 的全部状态 established, syn-sent, syn-recv, fin-wait-1, fin-wait-2, time-wait, closed, close-wait, last-ack, listening and closing
+; 统计某个状态的TCP链接
+ss -o state syn-recv | wc -l
 ```
 
 
@@ -1183,7 +1190,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                            
+  >                                                                               
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1207,7 +1214,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                            
+  >                                                                               
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
