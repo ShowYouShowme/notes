@@ -3583,3 +3583,95 @@ main()
 
 
 
+
+
+# 第二十七章 小工具
+
+
+
+## 27.1 远程执行shell命令，并获取输出
+
+```javascript
+import net from 'net';
+import express = require('express');
+import bodyParser = require("body-parser");
+import request from 'request';
+const exec = require('child_process').exec;
+
+
+const port = 3001;
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+app.post('/', async (req, res)=>{
+    let cmd = req.body['cmd'];
+    let stdout = await HttpClient.exec_shell_cmd(cmd);
+    console.log(`stdout = ${stdout}`);
+    res.send(stdout);
+});
+
+app.listen(port, '0.0.0.0', ()=>{
+    console.log(`Example app listening on port ${port}`);
+});
+
+
+
+
+
+export default class HttpClient {
+    static async Post(url: string, body: Object) {
+        return new Promise(function (resolve, reject) {
+            request({
+                url: url,
+                method: "POST",
+                json: true,
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: body
+            }, function (err: any, response: any, body: any) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(body);
+            })
+        })
+    }
+
+    static async Get(url: string) {
+        return new Promise(function (resolve, reject) {
+            request({
+                url: url,
+                method: "GET",
+                timeout : 5000
+            }, function (err: any, response: any, body: any) {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve(body);
+            })
+        }
+        )
+    }
+
+    static exec_shell_cmd(cmd: string, cwd?: string) {
+        return new Promise((resolve, reject) => {
+            exec(cmd, { cwd }, function (error: any, stdout: any, stderr: any) {
+                if (error) {
+                    console.error({ cmd, error, msg: '执行shell出错' });
+                    reject(error);
+                    return;
+                }
+                console.info({ cmd, stdout });
+                resolve(stdout);
+            });
+        })
+    }
+}
+```
+
+
+

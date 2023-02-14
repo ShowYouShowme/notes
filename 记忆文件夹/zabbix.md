@@ -166,8 +166,11 @@ systemctl enable zabbix-agent
 群主    = Linux servers
 接口    = IP地址(agent的IP,如果和server在一台机器,就用127.0.0.1)
 
-;模板选项卡
+;模板选项卡, 必须链接一个模板,否则 可用性 ZBX为灰色
 链接指示 = 输入Linux,然后点击 底下的文字 添加，最后点击添加按钮
+
+[修改防火墙]
+防火墙开放 10050端口, zabbix-server 通过10050端口从zabbix-agent获取数据
 ```
 
 
@@ -446,6 +449,49 @@ UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
 
 
 ## 4.2 安装配置grafana
+
+grafana图形稍微好看一点，但是没有必要安装！
+
+流程
+
+1. 安装grafana的服务
+
+2. 安装zabbix的插件
+
+3. 添加zabbix的数据源
+
+   ```ini
+   ; 填写zabbix的地址
+   URL = http://localhost:8000/zabbix/api_jsonrpc.php
+   
+   ; 填写zabbix管理后台账号密码
+   Username = 
+   Password = 
+   ```
+
+   
+
+```ini
+wget https://dl.grafana.com/enterprise/release/grafana-enterprise-9.3.6-1.x86_64.rpm
+yum localinstall ./grafana-enterprise-9.3.6-1.x86_64.rpm
+systemctl start grafana-server.service
+;grafana 监听的端口是3000
+systemctl enable grafana-server.service
+```
+
+
+
+
+
+登录
+
+```ini
+;默认账号 admin
+;默认密码 admin
+http://${host}:3000/
+```
+
+
 
 
 

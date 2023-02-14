@@ -75,7 +75,77 @@
    lsof -i:3000  # 查看3000端口是否处于listening状态
    ```
    
-   
+
+
+
+# SS
+
+类似netstat的一个工具，但是性能非常高，当服务器连接数或者time_wait过多是，netstat的运行速度会非常慢
+
+
+
+帮助信息
+
+```ini
+Usage: ss [ OPTIONS ]
+       ss [ OPTIONS ] [ FILTER ]
+   -h, --help           this message
+   -V, --version        output version information
+   -n, --numeric        don't resolve service names
+   -r, --resolve       resolve host names
+   -a, --all            display all sockets
+   -l, --listening      display listening socket
+   -o, --options       show timer information
+   -e, --extended      show detailed socket information
+   -m, --memory        show socket memory usage
+   -p, --processes      show process using socket
+   -i, --info           show internal TCP information
+   -s, --summary        show socket usage summary
+ 
+   -4, --ipv4          display only IP version 4 sockets
+   -6, --ipv6          display only IP version 6 sockets
+   -0, --packet display PACKET sockets
+   -t, --tcp            display only TCP sockets
+   -u, --udp            display only UDP sockets
+   -d, --dccp           display only DCCP sockets
+   -w, --raw            display only RAW sockets
+   -x, --unix           display only Unix domain sockets
+   -f, --family=FAMILY display sockets of type FAMILY
+ 
+   -A, --query=QUERY, --socket=QUERY
+       QUERY := {all|inet|tcp|udp|raw|unix|packet|netlink}[,QUERY]
+ 
+   -D, --diag=FILE      Dump raw information about TCP sockets to FILE
+   -F, --filter=FILE   read filter information from FILE
+       FILTER := [ state TCP-STATE ] [ EXPRESSION ]
+```
+
+
+
+查看统计信息
+
+```shell
+ss -s
+```
+
+
+
+统计TCP的状态
+
+```ini
+; 建立链接的数量
+ss -s | sed -n "2p" | awk -F, '{print $1}' | awk '{print $4}'
+
+; time_wait 的个数
+ss -s | sed -n "2p" | awk -F, '{print $5}' | awk '{print $2}' | awk -F/ '{print $1}'
+
+; syn_recv 的个数
+ ss -o state syn-recv | wc -l
+```
+
+
+
+
 
 # Linux上查看不可见字符
 
@@ -1113,7 +1183,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                   
+  >                                                                            
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1137,7 +1207,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                   
+  >                                                                            
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2105,7 +2175,7 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
 
    ```shell
    # 每两秒采样一次,共采样3次
-   iostat -d 2 
+   iostat -d 2 3
    
    # 每两秒采样一次,不断采样
    iostat -d 2 
@@ -2320,12 +2390,25 @@ ln -s "${BACKUP_PATH}" "${LATEST_LINK}"
        sed -n "2, $"p test.lua 
        ```
   
+     + 选取第二行
+  
+       ```shell
+       ss -s | sed -n "2p"
+       ```
+  
        
   
   5. 批量删除docker镜像
   
      ```shell
      docker images | sed -n "2,6p" | awk '{print "docker rmi " $3}' | sh
+     ```
+  
+  6. 指定分隔符
+  
+     ```shell
+     # 分隔符紧跟在-F参数后面（中间没有空格）
+     awk -F, '{print $2}' test.txt
      ```
   
      

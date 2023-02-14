@@ -334,6 +334,67 @@ let server = app.listen(8081);
 
 
 
+使用formidable 来上传文件
+
+1. 安装
+
+   ```shell
+   # 或者 npm install formidable@v
+   npm install  formidable@2.1.1
+   ```
+
+2. 示例代码
+
+   ```javascript
+   import express = require('express');
+   import bodyParser = require("body-parser");
+   import request from 'request';
+   const exec = require('child_process').exec;
+   import formidable = require('formidable');
+   import  path = require('path');
+   
+   
+   const port = 3004;
+   const app = express();
+   app.use(bodyParser.json())
+   app.use(bodyParser.urlencoded({ extended: true }))
+   
+   // form.html和上面那个一样
+   // 也可以使用postman上传完文件,Body选择form-data, 填写了一个key后选择File
+   app.get("/index.html", (req, res):void=>{
+       res.sendFile(process.cwd() + "/" + "form.html");
+   });
+   
+   // 在工作目录下创建 文件夹/public/files
+   app.post('/api/upload', (req, res, next) => {
+       const form = new formidable.IncomingForm({
+           uploadDir : path.join(process.cwd(), 'public', 'files'),
+           multiples : false,
+           maxFileSize : 200 * 1024 * 1024,
+           filename : (name: string, ext: string, part: formidable.Part, form: any)  => {
+               return part['originalFilename'];
+           }
+       });
+       form.parse(req, (err, fields, files) => {
+           if (err) {
+             next(err);
+             return;
+           }
+           res.json({ fields, files });
+         });
+     });
+   
+   app.listen(port, '127.0.0.1', ()=>{
+       console.log(`Example app listening on port ${port}`);
+   });
+   ```
+
+   
+
+
+
+
+
 ### cookie管理
 
 ***
