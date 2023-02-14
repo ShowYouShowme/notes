@@ -1081,6 +1081,13 @@ rz -y ${fileName}
    curl -I  http://127.0.0.1:3000/ 
    ```
 
+10. 不显示进度条或者错误信息，只显示结果
+
+   ```shell
+   # 通常用于zabbix的监控
+   curl -s http://127.0.0.1:3004/queryTps
+   ```
+
    
 
 
@@ -1190,7 +1197,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                               
+  >                                                                                  
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1214,7 +1221,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                               
+  >                                                                                  
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

@@ -138,7 +138,7 @@ npm install typescript -g
 ------
 
 ```shell
-npm install @types/node
+npm install @types/node --save
 ```
 
 
@@ -3587,6 +3587,8 @@ main()
 
 # 第二十七章 小工具
 
+也可以使用spawn产生子进程，获取子进程的输出，并且用base64编码，然后在windows上面再利用base64解码来处理！因为标准输出和标准出错会有不可见字符，比如回车，空格等等！
+
 
 
 ## 27.1 远程执行shell命令，并获取输出
@@ -3671,6 +3673,54 @@ export default class HttpClient {
         })
     }
 }
+```
+
+
+
+
+
+# 第二十八章 base64处理
+
+
+
+## 28.1 Base64编码
+
+```javascript
+// plain-text string
+const str = 'Base64 Encoding in Node.js';
+
+// create a buffer
+const buff = Buffer.from(str, 'utf-8');
+
+// encode buffer as Base64
+const base64 = buff.toString('base64');
+
+// print Base64 string
+console.log(base64);
+
+// QmFzZTY0IEVuY29kaW5nIGluIE5vZGUuanM=
+```
+
+
+
+
+
+## 28.2 Base64解码
+
+```javascript
+// Base64 encoded string
+const base64 = 'QmFzZTY0IEVuY29kaW5nIGluIE5vZGUuanM=';
+
+// create a buffer
+const buff = Buffer.from(base64, 'base64');
+
+// decode buffer as UTF-8
+const str = buff.toString('utf-8');
+
+// print normal string
+console.log(str);
+
+// Base64 Encoding in Node.js
 ```
 
 
