@@ -343,9 +343,10 @@ server {
      server_name dev.icashflow.cc;
      listen 8283 ssl;
      location / { 
-         proxy_pass http://websocket;
-         proxy_read_timeout 300s;
-         proxy_send_timeout 300s;
+         proxy_pass http://websocket:8000;
+         # 超时配置
+         proxy_read_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
+         proxy_send_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
 
          proxy_set_header Host $host;
          proxy_set_header X-Real-IP $remote_addr;
@@ -361,6 +362,26 @@ server {
 
 }
 ```
+
+
+
+简化版配置
+
+```nginx
+http{
+    server {
+         	 listen 8000;
+             location / { 
+                 proxy_http_version 1.1;
+                 proxy_set_header Upgrade $http_upgrade;
+                 proxy_set_header Connection "upgrade";
+                 proxy_pass http://websocket:8000;
+             }
+    }
+}
+```
+
+
 
 
 
@@ -610,6 +631,24 @@ st->op2->op3->op4->op5->op6
 
 
 
+
+
+## 4.6 postread阶段
+
+获取用户真实IP
+
+```nginx
+location ^~ /your-service/ {
+    proxy_set_header        X-Real-IP       $remote_addr; # 这一条配置只需要在最外层的反向代理加,比如CDN
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://localhost:60000/your-service/;
+}
+```
+
+
+
+
+
 ## rewrite阶段的rewrite模块
 
 1. return指令语法
@@ -622,7 +661,7 @@ st->op2->op3->op4->op5->op6
    Context: server,location,if
    
    #打印请求uri和request
-   return 200  '$uri = $request';
+   return 200  'uri = $uri args=$args http_host=$http_host http_user_agent=$http_user_agent http_x_forwarded_for=$http_x_forward    ed_for http_x_real_ip=$http_x_real_ip';
    ```
 
 2. 返回状态码
