@@ -3719,6 +3719,9 @@ for(let line of lines){
         for(let i = 1; i < fields.length; i++){
             if(fields[i] != ''){
                 let tps = parseFloat(fields[i]);
+                if(tps_array.length > 1024){
+                    tps_array.splice(0);
+                } 
                 tps_array.push(tps);
                 console.log(`tps = ${tps}`);
                 break;
