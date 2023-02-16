@@ -222,7 +222,8 @@ cmd = zabbix_get -s 127.0.0.1 -p 10050 -k tps
 监控TCP连接数
 
 ```ini
-;配置netstat的权限 chmod +s /bin/netstat
+; netstat 监控进程TCP状态时不要加上参数p,那个必须得有root权限
+; netstat -ant | grep -c ESTABLISHED
 UserParameter=UserParameter=ESTABLISHED,ss -s | sed -n "2p" | awk -F, '{print $1}' | awk '{print $4}'
 
 ;主要用于监控dos攻击
@@ -233,6 +234,12 @@ UserParameter=TIME_WAIT,ss -s | sed -n "2p" | awk -F, '{print $5}' | awk '{print
 
 ; 监控磁盘TPS, queryTps 可以设置为参数
 UserParameter=TPS,curl -s http://127.0.0.1:3004/queryTps
+
+
+;可变key
+;获取值 zabbix_get -s 127.0.0.1 -p 10050 -k tcp[ESTABLISHED]
+;web界面的key要改成tcp[ESTABLISHED]
+UserParameter=tcp[*],netstat -ant | grep -c "$1"
 ```
 
 

@@ -30,14 +30,15 @@
 4. 显示 PID 和进程名称
 
    > ```shell
+   > # 需要root权限,如果zabbix监控就不要加此选项
    > [root@xiesshavip002 ~]# netstat -p
    > ```
 
 5. 查看端口和服务
 
    > ```shell
-   > [root@xiesshavip002 ~]# netstat -antp | grep ssh
-   > [root@xiesshavip002 ~]# netstat -antp | grep 22
+   > [root@xiesshavip002 ~]# netstat -ant | grep ssh
+   > [root@xiesshavip002 ~]# netstat -ant | grep 22
    > ```
    
 6. 查看指定ip的TCP连接
@@ -52,7 +53,7 @@
 7. 列出全部TCP监听的端口
 
    > ```shell
-   > netstat -ltnp
+   > netstat -ltn
    > ```
 
 8. 部分参数介绍
@@ -1197,7 +1198,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                     
+  >                                                                                        
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1221,7 +1222,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                     
+  >                                                                                        
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
