@@ -3798,3 +3798,33 @@ console.log(str);
 
 
 
+### 28.3 压缩
+
+```javascript
+const zlib = require('zlib');
+
+const buf = '我是要被压缩的内容'
+
+// 异步方法
+zlib.brotliCompress(buf, (err, bufferCompressed) => {
+    // 压缩后的内容
+    const result = bufferCompressed.toString();
+})
+
+// 同步方法，直接返回压缩后的 buffer
+const bufferCompressed = zlib.brotliCompressSync(buf);
+
+// 解压
+// 异步方法
+zlib.brotliDecompress(bufferCompressed, (err, bufferDecompressed) => {
+    // 解压后的内容
+    const result = bufferDecompressed.toString();
+})
+
+// 同步方法，直接返回解压后的 buffer
+const bufferDecompressed = zlib.brotliDecompress(bufferCompressed);
+
+```
+
+
+
