@@ -3679,6 +3679,79 @@ export default class HttpClient {
 
 
 
+## 27.2 监控磁盘TPS
+
+```javascript
+import express = require('express');
+import bodyParser = require("body-parser");
+import request from 'request';
+const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
+const cmd = spawn('iostat', ['-d', '1']);
+
+
+const port = 3004;
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+
+let tps_array : number[]= [];
+app.get('/queryTps', async (req, res)=>{
+    if(tps_array.length > 0){
+        res.send(tps_array[tps_array.length - 1].toString());
+    }else{
+        res.send('0');
+    }
+});
+
+
+app.listen(port, '127.0.0.1', ()=>{
+    console.log(`Example app listening on port ${port}`);
+});
+
+
+function calTps(str : string){
+str = str.trim();
+const lines = str.split('\n');
+for(let line of lines){
+    let fields = line.split(' ');
+    if(fields[0] == 'vda'){
+        for(let i = 1; i < fields.length; i++){
+            if(fields[i] != ''){
+                let tps = parseFloat(fields[i]);
+                tps_array.push(tps);
+                console.log(`tps = ${tps}`);
+                break;
+            }
+        }
+    }
+}
+}
+
+// 输出相关的数据
+cmd.stdout.on('data', function(data : any){
+    //const buff = Buffer.from(data, 'utf-8');
+    //const base64 = buff.toString('base64');
+    console.log('data from child: ' + data);
+    calTps(data.toString());
+});
+
+// 错误的输出
+cmd.stderr.on('data', function(data : any){
+    console.log('error from child: ' + data);
+});
+
+// 子进程结束时输出
+cmd.on('close', function(code : any){
+    console.log('child exists with code: ' + code);
+});
+
+```
+
+
+
+
+
 # 第二十八章 base64处理
 
 

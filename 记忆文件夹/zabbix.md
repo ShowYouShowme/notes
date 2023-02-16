@@ -223,7 +223,16 @@ cmd = zabbix_get -s 127.0.0.1 -p 10050 -k tps
 
 ```ini
 ;配置netstat的权限 chmod +s /bin/netstat
-UserParameter=tcp_established_num,netstat -apnt | grep ESTABLISHED -c
+UserParameter=UserParameter=ESTABLISHED,ss -s | sed -n "2p" | awk -F, '{print $1}' | awk '{print $4}'
+
+;主要用于监控dos攻击
+UserParameter=SYN_RECV, ss -o state syn-recv | wc -l
+
+; 监控timewait的连接数
+UserParameter=TIME_WAIT,ss -s | sed -n "2p" | awk -F, '{print $5}' | awk '{print $2}' | awk -F/ '{print $1}'
+
+; 监控磁盘TPS, queryTps 可以设置为参数
+UserParameter=TPS,curl -s http://127.0.0.1:3004/queryTps
 ```
 
 
