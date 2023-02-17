@@ -1198,7 +1198,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                        
+  >                                                                                              
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1222,7 +1222,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                        
+  >                                                                                              
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1415,6 +1415,19 @@ tcp的客户端，测试端口是否处于监听状态。
   # 查找存在内容10.10.10.168 的文件，并且把内容10.10.10.168 替换为${TARGET_HOST}
   sed -i "s/10.10.10.168/${TARGET_HOST}/g" `grep 10.10.10.168 -rl XGame.*/bin/*`
   ```
+  
++ 选取指定行
+
+  ```shell
+  # sed -n "2p" 选择第二行
+  cat /proc/1716/status | grep voluntary_ctxt_switches | sed -n "2p"
+  
+  
+  # 打印文件的第一行
+  sed -n "1p" t1.tmp
+  ```
+
+  
 
 
 
@@ -2848,7 +2861,9 @@ vim /etc/fstab
 5. 存储单位修改
 
    ```shell
-   shift + e
+   # 大写E  改变系统内存的单位
+   
+   # 小写e 改变进程内存的单位
    ```
 
 6. 查看指定进程
@@ -3692,27 +3707,9 @@ Rsyslog可以简单的理解为syslog的超集，系统日志工具。类似Logs
 
 
 
-# centos7 源码编译gcc9.2
+# grep sed 和 awk协作
 
-```shell
-cd /home/build
-GCC_VERSION=9.2.0
-wget https://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz
-tar xzvf gcc-${GCC_VERSION}.tar.gz
-mkdir obj.gcc-${GCC_VERSION}
-cd gcc-${GCC_VERSION}
-./contrib/download_prerequisites
-cd ../obj.gcc-${GCC_VERSION}
-../gcc-${GCC_VERSION}/configure --disable-multilib --enable-languages=c,c++
-make -j $(nproc)
-make install
-
-#卸载已经安装的gcc和g++
-yum remove gcc gcc-c++
-#用户重新登录即可
-```
-
-
+grep 用来查找带有特定字符串的行；sed 选择指定的一行或者多行；awk 将行进行单词分隔。
 
 
 

@@ -634,3 +634,36 @@ zabbix_get -s 127.0.0.1 -p 10050 -k TIME_WAIT
 
 # 第六章 常用服务监控
 
+
+
+
+
+
+
+# 第七章  常见监控项获取
+
+1. 获取进程使用的内存
+
+   ```ini
+   ; 从/proc/${pid}/status 里获取
+   cat /proc/1716/status | grep VmRSS | awk '{print $2}'
+   
+   ; 利用top获取
+   top -p 1716  -b -n 1 | sed -n "8p" | awk '{print $6}'
+   ```
+
+2. 获取进程主动和被动切换次数
+
+   ```ini
+   ; 主动切换次数多 属于  IO密集型
+   ; 被动切换次数多 属于  cpu密集型
+   
+   
+   ; 主动切换次数, IO阻塞会导致主动切换
+   cat /proc/1716/status | grep voluntary_ctxt_switches | sed -n "1p" | awk '{print $2}'
+   
+   ; 被动切换次数, cpu时间到了会触发被动切换
+   cat /proc/1716/status | grep voluntary_ctxt_switches | sed -n "2p" | awk '{print $2}'
+   ```
+
+   
