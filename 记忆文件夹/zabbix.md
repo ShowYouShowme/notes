@@ -666,4 +666,30 @@ zabbix_get -s 127.0.0.1 -p 10050 -k TIME_WAIT
    cat /proc/1716/status | grep voluntary_ctxt_switches | sed -n "2p" | awk '{print $2}'
    ```
 
+3. 列出进程的TCP连接数。可以监控是否有文件描述符的泄露
+
+   ```ini
+   ;查看某个进程的TCP链接
+   ; -a 是 AND, 两个条件同时满足
+   ; -p ${pid}
+   ; -i4 列出全部IPv4链接
+   ; -i6 列出全部IPv6链接
+   ; -i  列出全部Internet链接
+   ; -i:${port}  列出某个端口的InterNet链接
+   cmd = sudo lsof -i -a -p 9437
+   
+   
+   ; 列出两个端口的全部网络连接
+   ; 一般的服务有一个对外的端口,一个admin调用的端口
+   lsof -i:3100,9001
+   ```
+
+   
+
+4. 列出进程打开的文件数
+
+   ```shell
+   sudo lsof -p 10751 | grep REG
+   ```
+
    

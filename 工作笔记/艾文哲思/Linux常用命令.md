@@ -881,18 +881,31 @@ yum install tree -y
 
 作用：列出打开的文件，正常情况超过1024程序就会报错
 
-
-
 ```shell
-# 列出打开的TCP链接，从1开始排序
-lsof -p 1252164 | grep IPv4 | grep  IPv4 -n
+# 查看某个端口的服务的全部链接
+lsof -i:3000
 ```
 
 
 
-```shell
-# 查看某个端口的服务的全部链接
-lsof -i:3000
+```ini
+;查看某个进程的TCP链接
+; -a 是 AND, 两个条件同时满足
+; -p ${pid}
+; -i4 列出全部IPv4链接
+; -i6 列出全部IPv6链接
+; -i  列出全部Internet链接
+; -i:${port}  列出某个端口的InterNet链接
+cmd = sudo lsof -i -a -p 9437
+
+
+; 列出两个端口的全部网络连接
+; 一般的服务有一个对外的端口,一个admin调用的端口
+lsof -i:3100,9001
+
+
+; 列出进程打开的文件数,主要是配置文件
+sudo lsof -p 10751 | grep REG
 ```
 
 
@@ -1198,7 +1211,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                              
+  >                                                                                                 
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1222,7 +1235,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                              
+  >                                                                                                 
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1425,8 +1438,11 @@ tcp的客户端，测试端口是否处于监听状态。
   
   # 打印文件的第一行
   sed -n "1p" t1.tmp
+  
+  # 打印第二、三行
+  sed -n "2,3p" t1.tmp
   ```
-
+  
   
 
 
