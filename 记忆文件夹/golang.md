@@ -9,7 +9,7 @@
    ```shell
    wget https://go.dev/dl/go1.19.linux-amd64.tar.gz
    tar -zxvf go1.19.linux-amd64.tar.gz
-   mv go /usr/local
+   mv go $HOME/local
    ```
 
    
@@ -17,17 +17,34 @@
 2. 设置环境变量
 
    ```shell
-   export GOROOT=/usr/local/go              		#安装目录。
-   export GOPATH=$HOME/go     						#工作环境
+   export GOROOT=$HOME/local/go              		#安装目录。
+   export GOPATH=$HOME/doc/go     						#工作环境
    export GOBIN=$GOPATH/bin           				#可执行文件存放
    export PATH=$GOPATH:$GOBIN:$GOROOT/bin:$PATH    #添加PATH路径ls
    ```
-   
+
 3. 开启go mod并配置代理
 
    ```shell
    go env -w GO111MODULE=on
    go env -w GOPROXY="https://goproxy.io,direct"
+   ```
+
+4. 创建项目
+
+   ```ini
+   mkdir socks5-server
+   cd socks5-server/
+   go mod init s5-server
+   ; 编写代码
+   vim main.go
+   
+   ; 安装依赖
+   go mod tidy
+   
+   ;构建项目, 使用当前目录构建
+   ; 或者  go build .
+   go build
    ```
 
    
@@ -1565,6 +1582,12 @@ os.Exit 与 panic
 获取package
 
 1. 通过go get 获取远程依赖
+
+   ```shell
+   go get github.com/armon/go-socks5
+   ```
+
+   
 
    + go get -u 强制从网络更新远程依赖
 
@@ -4139,7 +4162,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                               
+   >                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5496,3 +5519,46 @@ func main() {
 
 
 网站：https://github.com/go-redis/redis
+
+
+
+
+
+# 第二十七章 socks5代理
+
+xshell 、chrome、火狐浏览器可以配置socks5代理来加速。
+
+
+
+服务实现
+
+1. 安装包
+
+   ```shell
+   go get github.com/armon/go-socks5
+   ```
+
+2. 源码
+
+   ```go
+   package main
+   
+   import "github.com/armon/go-socks5"
+   
+   func main() {
+   	// Create a SOCKS5 server
+   	conf := &socks5.Config{}
+   	server, err := socks5.New(conf)
+   	if err != nil {
+   		panic(err)
+   	}
+   
+   	// Create SOCKS5 proxy on localhost port 8000
+   	if err := server.ListenAndServe("tcp", "0.0.0.0:8000"); err != nil {
+   		panic(err)
+   	}
+   }
+   ```
+
+   
+
