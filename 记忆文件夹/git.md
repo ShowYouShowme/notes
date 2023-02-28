@@ -136,6 +136,10 @@ git commit -m "${comment}"
 
   ```shell
   git push
+  
+  
+  # 连tags 一起推送
+  git push --tags
   ```
 
 + 上载失败

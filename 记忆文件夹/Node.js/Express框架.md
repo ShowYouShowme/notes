@@ -1,14 +1,8 @@
-## 2-1 初识Express框架
-
-> 精简的、灵活的Node.js Web程序框架，为构建单页、多页以及混合的Web程序提供了一系列健壮的功能特性。
 
 
+# 第一章 Express
 
-## 2-2 简单使用Express
-
-### 安装Express
-
-***
+## 1.1 安装Express
 
 + 安装包
 
@@ -37,9 +31,10 @@
   npm list express
   ```
 
-### 简单实例
 
-***
+
+## 1.2 简单实例
+
 
 ```javascript
 import express = require("express");
@@ -62,9 +57,10 @@ let server = app.listen(port, host, ():void=>{
 });
 ```
 
-### 请求和响应讲解
 
-***
+
+## 1.3 请求和响应讲解
+
 
 + 文档 [链接](http://www.expressjs.com.cn/4x/api.html)
 
@@ -95,9 +91,10 @@ let server = app.listen(port, host, ():void=>{
   });
   ```
 
-### 路由功能
 
-***
+
+## 1.4 路由功能
+
 
 ```javascript
 import express = require("express");
@@ -134,9 +131,8 @@ let server = app.listen(port, host, ():void=>{
 
 
 
-### 静态文件
+## 1.5 静态文件
 
-***
 
 ```javascript
 // 请求：http://127.0.0.1:8081/about.html
@@ -159,9 +155,8 @@ let server = app.listen(port, host, ():void=>{
 
 
 
-### GET、POST方法
+## 1.6 GET、POST方法
 
-***
 
 + GET方法
 
@@ -265,9 +260,8 @@ let server = app.listen(port, host, ():void=>{
 
   
 
-### 文件上传
+## 1.7 文件上传
 
-***
 
 ```html
 <!DOCTYPE html>
@@ -395,9 +389,8 @@ let server = app.listen(8081);
 
 
 
-### cookie管理
+## 1.8 cookie管理
 
-***
 
 + 定义
 
@@ -487,8 +480,7 @@ let server = app.listen(8081);
 
 
 
-### 中间件
-***
+## 1.9 中间件
 
 + bodyParser()
 
@@ -536,9 +528,8 @@ let server = app.listen(8081);
 
 
 
-### 例子
+## 2.0 例子
 
-***
 
 + 说明
 
@@ -708,7 +699,7 @@ let server = app.listen(8081);
 
 
 
-# 第三章  express 4
+# 第二章  express 4
 
 ```javascript
 // 处理带json数据的post请求代码和express 3不一样了

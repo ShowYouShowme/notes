@@ -907,6 +907,8 @@ let b1 : Buffer = new Buffer(10);
 let b2 : Buffer = new Buffer([10, 20, 30, 40, 50]);
 let b3 : Buffer = new Buffer("www.runoob.com", "utf-8");
 let b4 : Buffer = Buffer.from("hello, i am big one!");
+let b5 : Buffer = Buffer.from([0x01, 0x02, 0x03, 0x04]);
+let b6 = Buffer.alloc(1024); // 创建一个Buffer,长度是1024个字节
 ```
 
 
@@ -2402,6 +2404,30 @@ console.log(".......")
     console.log(`关闭全部日志....`);
     process.exit(0);
   })
+```
+
+
+
+### 20.2.6 日志封装为模块
+
+```javascript
+// log.ts
+import log4js from "log4js";
+const baseLogDir = 'logs';
+log4js.configure({
+    appenders: {
+      defaultLogs:             { type: "file", filename: `${baseLogDir}/default.log` },
+      webLogs:              { type: "file", filename: `${baseLogDir}/web.log` },
+      console:              { type: 'console' },
+    },
+    categories: {
+      default:        { appenders: ['console', 'defaultLogs'], level: 'info' },
+      web:           { appenders: ['console', 'webLogs'], level: 'trace' },
+    },
+  });
+
+export let logger = log4js.getLogger();
+export let webLogger = log4js.getLogger('web');
 ```
 
 
