@@ -650,6 +650,211 @@ zabbix_get -s 127.0.0.1 -p 10050 -k TIME_WAIT
 
 
 
+**监控步骤**
+
+1. 开启监控页面
+
+   ```ini
+   1 = 点击配置
+   2 = 点击模板
+   3 = 导入模板
+   ```
+
+2. 导入模板
+
+3. 上传配置文件到zabbix-agent目录，上传脚本到指定目录，重启zabbix-agent
+
+   > 配置文件通过执行shell脚本来获取监控项
+
+4. 用zabbix-get测试能否正确获取到监控项
+
+5. 链接模板，可能需要手动配置宏
+
+
+
+## 6.1 监控Nginx
+
+1. 开启状态页面
+
+   ```nginx
+   location = /basic_status {
+       stub_status;
+   }
+   ```
+
+2. 查看状态
+
+   ```shell
+   curl -s http://127.0.0.1:9000/basic_status
+   ```
+
+3. 配置监控项
+
+   ```shell
+   UserParameter=NGINX_ActiveConnections,curl -s http://127.0.0.1:9000/basic_status | sed -n "1p" | awk '{print $3}'
+   UserParameter=NGINX_AcceptConnections, curl -s http://127.0.0.1:9000/basic_status | sed -n "3p" | awk '{print $1}'
+   UserParameter=NGINX_HandledConnections,curl -s http://127.0.0.1:9000/basic_status | sed -n "3p" | awk '{print $2}'
+   UserParameter=NGINX_Requests,curl -s http://127.0.0.1:9000/basic_status | sed -n "3p" | awk '{print $3}'
+   UserParameter=NGINX_Reading,curl -s http://127.0.0.1:9000/basic_status | sed -n "4p" | awk '{print $2}'
+   UserParameter=NGINX_Writing,curl -s http://127.0.0.1:9000/basic_status | sed -n "4p" | awk '{print $4}'
+   UserParameter=NGINX_Waiting,curl -s http://127.0.0.1:9000/basic_status | sed -n "4p" | awk '{print $6}'
+   ```
+
+   
+
+
+
+## 6.2 监控php-fpm
+
+1. 开启状态页面
+
+   ```ini
+   ;pm.status_path = /status
+   ; 改成下面这样
+   pm.status_path = /php_status
+   ```
+
+2. 配置nginx
+
+   ```ini
+   location / {
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_pass  http://127.0.0.1:9002;
+   
+   }
+   ```
+
+   
+
+3. 请求数据
+
+   ```shell
+   curl http://127.0.0.1:9002/php_status
+   ```
+
+4. 各种常用监控项
+
+   ```ini
+   startSince 			= curl -s http://127.0.0.1:9002/php_status | grep 'start since' | awk -F: '{print $2}'
+   acceptedConn 		= curl -s http://127.0.0.1:9002/php_status | grep 'accepted conn' | awk -F: '{print $2}'
+   listenQueue  		= curl -s http://127.0.0.1:9002/php_status | grep '^listen queue:' | awk -F: '{print $2}'
+   maxListenQueue 		= curl -s http://127.0.0.1:9002/php_status | grep '^max listen queue:' | awk -F: '{print $2}'
+   listenQueueLen 		= curl -s http://127.0.0.1:9002/php_status | grep '^listen queue len:' | awk -F: '{print $2}'
+   idleProcesses  		= curl -s http://127.0.0.1:9002/php_status | grep '^idle processes:'| awk -F: '{print $2}'
+   activeProcesses 	= curl -s http://127.0.0.1:9002/php_status | grep '^active processes'| awk -F: '{print $2}'
+   totalProcesses 		= curl -s http://127.0.0.1:9002/php_status | grep '^total processes'| awk -F: '{print $2}'
+   maxActiveProcesses 	= curl -s http://127.0.0.1:9002/php_status | grep '^max active processes'| awk -F: '{print $2}'
+   maxChildrenReached 	= curl -s http://127.0.0.1:9002/php_status | grep '^max children reached'| awk -F: '{print $2}'
+   slowRequests 		= curl -s http://127.0.0.1:9002/php_status | grep '^slow requests'| awk -F: '{print $2}'
+   ```
+
+   
+
+
+
+## 6.3 监控redis
+
+1. 查看redis指标命令
+
+   ```
+   redis-cli info
+   ```
+
+2. 监控key的数量
+
+   ```shell
+   redis-cli info | grep db0 | awk -F, '{print $1}' | awk -F= '{print $2}'
+   ```
+
+3. 监控redis使用的内存
+
+   ```shell
+   redis-cli info | grep used_memory_rss: | awk -F: '{print $2}'
+   ```
+
+4. redis版本
+
+   ```shell
+   redis-cli info | grep redis_version | awk -F: '{print $2}'
+   ```
+
+5. 运行时间
+
+   ```ini
+   运行秒数 = redis-cli info | grep uptime_in_seconds | awk -F: '{print $2}'
+   
+   运行天数 = redis-cli info | grep uptime_in_days | awk -F: '{print $2}'
+   ```
+
+6. 链接客户端数
+
+   ```shell
+   redis-cli info | grep connected_clients | awk -F: '{print $2}'
+   ```
+
+7. cpu占用
+
+   ```ini
+   内核态 = redis-cli info | grep used_cpu_sys: | awk -F: '{print $2}'
+   用户态 = redis-cli info | grep used_cpu_user: | awk -F: '{print $2}'
+   ```
+
+8. 持久化
+
+   ```ini
+   是否开启aof = redis-cli info | grep aof_enabled | awk -F: '{print $2}'
+   
+   ; #上次保存数据库之后，执行命令的次数
+   rdb_changes_since_last_save = redis-cli info | grep rdb_changes_since_last_save | awk -F: '{print $2}'
+   
+   ; 上次保存的耗时
+   rdb_last_bgsave_time_sec = redis-cli info | grep rdb_last_bgsave_time_sec | awk -F: '{print $2}'
+   
+   ; 上次保存文件的时间戳
+   rdb_last_save_time = redis-cli info | grep rdb_last_save_time  | awk -F: '{print $2}'
+   ```
+
+9. 持久化相关监控项介绍
+
+   ```ini
+   [RDB文件状态]
+   rdb_changes_since_last_save = 上次RDB保存以后改变的key次数
+   rdb_bgsave_in_progress      = 当前是否在进行bgsave操作。是为1
+   rdb_last_save_time          =上次保存RDB文件的时间戳
+   rdb_last_bgsave_time_sec    =上次保存的耗时
+   rdb_last_bgsave_status      =上次保存的状态
+   rdb_current_bgsave_time_sec =目前保存RDB文件已花费的时间
+   
+   [AOF文件状态]
+   aof_enabled               =AOF文件是否启用
+   aof_rewrite_in_progress   =表示当前是否在进行写入AOF文件操作
+   aof_rewrite_scheduled
+   aof_last_rewrite_time_sec =上次写入的时间戳
+   aof_current_rewrite_time_sec:-1
+   aof_last_bgrewrite_status:ok  = 上次写入状态
+   aof_last_write_status:ok      = 上次写入状态
+   ```
+
+
+
+## 6.4 监控MySQL
+
+1. 查看监控项
+
+   ```shell
+   mysql -e "show status\G" -uroot -ptars2015;
+   ```
+
+2. 监控
+
+   ```ini
+   1 = 利用percona的插件监控
+   2 = 利用lepus监控
+   ```
+
+   
+
 
 
 

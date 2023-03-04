@@ -308,18 +308,6 @@ ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
 
 
 
-## jenkins部署
-
-```shell
-# step-1 在开发机上配置jenkins
-
-# step-2 提交代码
-
-# step-3 使用jenkins自动构建和发布
-```
-
-
-
 
 
 # sudo
@@ -872,6 +860,18 @@ yum install tree -y
    netstat -apnt | grep ESTABLISHED -c
    ```
 
+9. 查找带有空格的行
+
+   ```shell
+   curl -s http://127.0.0.1:9002/php_status | grep 'start since'
+   ```
+
+10. 查找以特定字符字符开头的行
+
+   ```shell
+   curl -s http://127.0.0.1:9002/php_status | grep '^listen queue:'
+   ```
+
    
 
 
@@ -1211,7 +1211,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                 
+  >                                                                                                          
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1235,7 +1235,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                 
+  >                                                                                                          
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1857,6 +1857,14 @@ du -sh ./protobuf/
 ```
 
 
+
+
+
+# 目录权限
+
+1. 执行权限：拥有执行权限的用户可以cd进入该目录
+2. 读取权限：可以浏览目录，即执行ls 命令
+3. 目录权限使用：当把nginx和php-fpm的文件夹放在root目录时，记得将root目录给other 加上 r和x的权限，并且将htdoc属主设置为nginx和php-fpm的启动用户
 
 
 
@@ -3667,6 +3675,24 @@ sudo apt install virtualbox  -y -o Acquire::http::proxy="http://127.0.0.1:8090/"
    ```shell
    # 间隔符可以自定义,比如用/ 或者 # 或者@
    :%s#${原字符串}#${新字符串}#g
+   ```
+
+6. 移动光标到行首和行尾
+
+   ```ini
+   ; 到行尾  $
+   
+   ; 到行首  ^
+   ```
+
+7. 删除到行尾和行首
+
+   ```ini
+   ; 删除到行尾 d$
+   
+   ; 删除到行首 d^
+   
+   ; dtc  删除当前行直到下一个字符“c”所出现位置之间的内容
    ```
 
    

@@ -1,4 +1,4 @@
-## 什么是MongoDB
+# 第一章 MongoDB介绍
 
 > MongoDB将数据存储为文档，数据结构有键值对组成。MongoDB文档类似于JSON对象。字段值可以包含其他文档，数组和文档数组。
 >
@@ -128,19 +128,11 @@
 
 ## 启动
 
-> 1. 设置环境变量
->
-> 2. 创建存储数据的文件夹
->
->    ```shell
->    mkdir mdb
->    ```
->
-> 3. 启动mongonDB
->
->    ```shell
->    mongod --dbpath D:\MyCode\mdb
->    ```
+```shell
+systemctl start mongod
+```
+
+
 
 
 
@@ -306,15 +298,15 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >   ```javascript
 >   import Mongodb = require("mongodb");
 >   import {MongoClient, MongoError} from "mongodb";
->         
+>           
 >   let url = "mongodb://localhost:27017/testdb";
->         
+>           
 >   // 连接数据库,不存在则创建
 >   Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >       if (err) throw err;
->         
+>           
 >       let dbase = db.db("testdb");
->         
+>           
 >       let myInfo  = [
 >           {name:"jim", age:18},
 >           {name:"lilei", age:26},
@@ -326,7 +318,7 @@ Mongodb.MongoClient.connect(url, (err : MongoError, db : MongoClient):void=>{
 >           db.close();
 >       })
 >   });
->         
+>           
 >   ```
 >
 
