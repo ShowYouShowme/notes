@@ -67,3 +67,41 @@ useradd jenkins
 
 # 第三章 Java安装
 
+
+
+1. 下载openjdk11源码包
+
+   ```shell
+   wget https://builds.openlogic.com/downloadJDK/openlogic-openjdk/11.0.18+10/openlogic-openjdk-11.0.18+10-linux-x64.tar.gz
+   ```
+
+   
+
+2. 生成jre
+
+   ```shell
+   cd openlogic-openjdk-11.0.18+10-linux-x64/bin/
+   ./jlink --module-path jmods --add-modules java.desktop --output ../jre
+   ```
+
+3. 配置环境变量
+
+   ```shell
+   vim ~/.bashrc
+   
+   JAVA_HOME=$HOME/local/openlogic-openjdk-11.0.18+10-linux-x64
+   JRE_HOME=$JAVA_HOME/jre
+   CLASS_PATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
+   PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
+   export JAVA_HOME JRE_HOME CLASS_PATH PATH
+   ```
+
+   
+
+4. 查看java版本
+
+   ```shell
+   java --version
+   ```
+
+   
