@@ -335,6 +335,7 @@ let server = app.listen(8081);
    ```shell
    # 或者 npm install formidable@v
    npm install  formidable@2.1.1
+   npm install  express@4.18.1 --save
    ```
 
 2. 示例代码
@@ -365,7 +366,7 @@ let server = app.listen(8081);
            uploadDir : path.join(process.cwd(), 'public', 'files'),
            multiples : false,
            maxFileSize : 200 * 1024 * 1024,
-           filename : (name: string, ext: string, part: formidable.Part, form: any)  => {
+           filename : (name: string, ext: string, part: formidable.Part, form: any): string  => {
                return part['originalFilename'];
            }
        });
