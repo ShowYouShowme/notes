@@ -165,3 +165,67 @@ useradd jenkins
 
 
 
+
+
+
+
+# 第三章 配置git
+
+
+
+1. 源码安装git
+
+2. 全局工具里面配置git的路径
+
+   ```shell
+   主页面 > 系统管理 > 全局工具配置 > Path to Git executable
+   
+   填入 = /home/terry/local/git/bin/git
+   ```
+
+
+
+
+
+
+# 第四章 构建配置
+
+1. General
+
+   ```shell
+   # 必须先安装插件 Git Parameter
+   # 好像根据tag参数构建并未生效
+   1. 勾选参数化构建过程
+   2. 选择Git参数
+   3. 名称 = tag
+   4. 描述 = 选择线上tag
+   5. 参数类型 = 标签
+   6. 默认值 = v1.0.0
+   ```
+
+   
+
+2. 源码管理：配置git的仓库地址和证书
+
+3. 构建环境：Add timestamps to the Console Output
+
+4. 构建：执行shell
+
+   ```shell
+   # 执行$HOME/.bashrc 更新PATH
+   # $JOB_NAME 是任务名，比如game
+   source $HOME/.bashrc
+   echo "job name = $JOB_NAME"
+   ls -l
+   npm install
+   tsc
+   rm -rf $HOME/app/$JOB_NAME
+   cd ..
+   mv $JOB_NAME $HOME/app/
+   cd $HOME/app/$JOB_NAME
+   echo $PWD
+   pm2 delete jenkins_demo
+   pm2 start bin/index.js --name jenkins_demo
+   ```
+
+   

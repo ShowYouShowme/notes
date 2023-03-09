@@ -743,7 +743,7 @@ git push -u origin dev
  #安装
  make prefix=$HOME/local/git install -j8
  #配置环境变量
- export PATH=$PATH:/home/andy/local/git/bin
+ export PATH=$PATH:$HOME/local/git/bin
 ```
 
 

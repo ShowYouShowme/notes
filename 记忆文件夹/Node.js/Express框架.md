@@ -708,6 +708,7 @@ let server = app.listen(8081);
 // 版本 4.18.1
 
 // 安装:npm install  express@4.18.1 --save
+// 安装类型注解 npm i --save-dev @types/express
 import express = require('express');
 import bodyParser = require("body-parser");
 const port = 3001;
