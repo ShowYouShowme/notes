@@ -1211,7 +1211,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                          
+  >                                                                                                             
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1235,7 +1235,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                          
+  >                                                                                                             
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1744,7 +1744,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
    ```shell
    # /etc/ssh/sshd_config
-   ClientAliveInterval 60     # 每分钟发送一次心跳，然后客户端响应，从而保持链接                                                     
+   ClientAliveInterval 20     # 每20s发送一次心跳，然后客户端响应，从而保持链接                                                     
    ClientAliveCountMax 3      # 客户端3次不响应心跳就断开链接 
    ```
 
