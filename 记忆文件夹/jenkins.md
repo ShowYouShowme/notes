@@ -194,7 +194,6 @@ useradd jenkins
 
    ```shell
    # 必须先安装插件 Git Parameter
-   # 好像根据tag参数构建并未生效
    1. 勾选参数化构建过程
    2. 选择Git参数
    3. 名称 = tag
@@ -206,6 +205,14 @@ useradd jenkins
    
 
 2. 源码管理：配置git的仓库地址和证书
+
+   ```shell
+   Branches to build
+   	# 上面的参数化过程的名称
+   	指定分支 = ${tag}
+   ```
+
+   
 
 3. 构建环境：Add timestamps to the Console Output
 
