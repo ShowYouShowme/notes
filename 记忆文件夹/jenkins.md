@@ -124,6 +124,30 @@ systemctl enable tomcat
    cmd = curl http://120.25.248.58:8080/jenkins/
    ```
 
+6. 另一种启动方式
+
+   ```shell
+   # [推荐]不需要tomcat，此时访问url就是 http://120.25.248.58:8080/ 
+   java -jar jenkins.war
+   
+   
+   # jenkins.service
+   
+   [Unit]
+   Description=jenkins daemon
+   After=network.target
+   
+   [Service]
+   Group = terry
+   User  = terry
+   Type=simple
+   ExecStart=/home/terry/local/openjdk8/bin/java -jar /home/terry/doc/jenkins.war
+   WorkingDirectory=/home/terry/log
+   
+   [Install]
+   WantedBy=multi-user.target
+   ```
+   
    
 
 
