@@ -9,12 +9,29 @@
 
 2. 安装php-fpm
 
-   ```shell
-   sudo apt install php php-cli php-fpm php-json php-pdo php-mysql php-zip php-gd  php-mbstring php-curl php-xml php-pear php-bcmath
-   
-   # 启动php-fpm
-   systemctl status php7.4-fpm.service
-   ```
+   + ubuntu
+
+     ```shell
+     sudo apt install php php-cli php-fpm php-json php-pdo php-mysql php-zip php-gd  php-mbstring php-curl php-xml php-pear php-bcmath
+     
+     # 启动php-fpm
+     systemctl status php7.4-fpm.service
+     ```
+
+   + centos7
+
+     ```ini
+     [php5.4.16]
+     yum -y install php php-fpm php-gd php-mysql php-common php-pear php-mbstring php-mcrypt
+     systemctl status php-fpm
+     systemctl start php-fpm
+     systemctl enable php-fpm
+     
+     [php7.4]
+     
+     ```
+
+     
 
 3. 配置nginx
 

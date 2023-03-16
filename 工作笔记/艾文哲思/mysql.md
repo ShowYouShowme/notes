@@ -20,11 +20,15 @@
    mysql_secure_installation
    
    ## 
-   0. 设置root密码(设置不设置都可以)  n
-   1. 去除匿名用户 y
-   2. 去除root远程登陆权限 y
-   3. 删除test库 y
-   4. 重新加载权限表 y
+   0. Enter current password for root  直接按下回车
+   1. 设置root密码(设置不设置都可以)  n
+   2. 去除匿名用户 y
+   3. 去除root远程登陆权限 y
+   4. 删除test库 y
+   5. 重新加载权限表 y
+   
+   ## 登录
+   mysql -uroot -p   直接回车,没有密码
    ```
 
 2. mysql
