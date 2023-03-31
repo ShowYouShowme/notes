@@ -321,6 +321,9 @@
 
 
 
+
+
+
 ## 3.2 操作命令
 
 ```ini
@@ -550,9 +553,169 @@ wget https://github.com/top-think/think/archive/refs/tags/v5.0.24.zip
 3. 接口测试
 
    ```
-   http://127.0.0.1:8000/tp5/public/
+   http://127.0.0.1:8000/
    ```
 
    
 
    
+
+   
+
+## 5.3 目录介绍
+
+   ```
+   project  应用部署目录
+   ├─application           应用目录（可设置）
+   │  ├─common             公共模块目录（可更改）
+   │  ├─index              模块目录(可更改)
+   │  │  ├─config.php      模块配置文件
+   │  │  ├─common.php      模块函数文件
+   │  │  ├─controller      控制器目录
+   │  │  ├─model           模型目录
+   │  │  ├─view            视图目录
+   │  │  └─ ...            更多类库目录
+   │  ├─command.php        命令行工具配置文件
+   │  ├─common.php         应用公共（函数）文件
+   │  ├─config.php         应用（公共）配置文件
+   │  ├─database.php       数据库配置文件
+   │  ├─tags.php           应用行为扩展定义文件
+   │  └─route.php          路由配置文件
+   ├─extend                扩展类库目录（可定义）
+   ├─public                WEB 部署目录（对外访问目录）
+   │  ├─static             静态资源存放目录(css,js,image)
+   │  ├─index.php          应用入口文件
+   │  ├─router.php         快速测试文件
+   │  └─.htaccess          用于 apache 的重写
+   ├─runtime               应用的运行时目录（可写，可设置）
+   ├─vendor                第三方类库目录（Composer）
+   ├─thinkphp              框架系统目录
+   │  ├─lang               语言包目录
+   │  ├─library            框架核心类库目录
+   │  │  ├─think           Think 类库包目录
+   │  │  └─traits          系统 Traits 目录
+   │  ├─tpl                系统模板目录
+   │  ├─.htaccess          用于 apache 的重写
+   │  ├─.travis.yml        CI 定义文件
+   │  ├─base.php           基础定义文件
+   │  ├─composer.json      composer 定义文件
+   │  ├─console.php        控制台入口文件
+   │  ├─convention.php     惯例配置文件
+   │  ├─helper.php         助手函数文件（可选）
+   │  ├─LICENSE.txt        授权说明文件
+   │  ├─phpunit.xml        单元测试配置文件
+   │  ├─README.md          README 文件
+   │  └─start.php          框架引导文件
+   ├─build.php             自动生成定义文件（参考）
+   ├─composer.json         composer 定义文件
+   ├─LICENSE.txt           授权说明文件
+   ├─README.md             README 文件
+   ├─think                 命令行入口文件
+   ```
+
+
+
+## 5.4 路由配置
+
+1. 开启强制路由
+
+   ```php
+   // application/config.php
+   'url_route_on'  		=>  true,
+   'url_route_must'		=>  true,
+   ```
+
+2. 路由定义
+
+   ```php
+   // application/route.php
+   
+   use think\Route;
+   // 定义路由, Get请求
+   Route::get('hello','great_wall/BlackPerson/hello');
+   Route::get('greatWall/sayHello','great_wall/BlackPerson/sayHello');
+   
+   // 定义Post请求路由规则
+   // Route::post('hello','index/demo/hello');
+   
+   Route::get('showHello',function(){
+       return 'my learner, Hello,world!';
+   });
+   // buyTicket
+   Route::post('greatWall/buyTicket','great_wall/BlackPerson/buyTicket');
+   
+   // 首页的接口
+   Route::get('',function(){
+       return 'hello, this is our homepage!';
+   });
+   
+   return [
+       '__pattern__' => [
+           'name' => '\w+',
+       ] 
+   ];
+   ```
+
+3. 控制器编写
+
+   + 创建目录和文件
+
+     ```
+     mkdir -p application/great_wall/controller/
+     cd application/great_wall/controller/
+     touch BlackPerson.php
+     ```
+
+   + 编写控制器代码
+
+     ```php
+     <?php
+     namespace app\great_wall\controller;
+     
+     use think\Request;
+     class BlackPerson
+     {
+         public function sayHello()
+         {
+             return 'welcome to great wall!';
+         }
+     
+         public function hello()
+         {
+             // 这里会直接返回json给client
+             return ['name'=>'thinkphp','status'=>1];
+         }
+     
+         public function buyTicket()
+         {
+             $request = Request::instance();
+             echo '请求方法：' . $request->method() . '<br/>';
+             echo '资源类型：' . $request->type() . '<br/>';
+             echo '访问ip地址：' . $request->ip() . '<br/>';
+             echo '是否AJax请求：' . var_export($request->isAjax(), true) . '<br/>';
+             echo '请求参数：';
+             dump($request->param());
+     
+             $name = $request->param()['name'];
+             $age = $request->param()['age'];
+             echo 'name = ' . $name . ' age = ' . $age;
+         }
+     }
+     ```
+
+4. 设置返回json
+
+   ```php
+   // config.php 默认的输出类型是html
+   'default_return_type'   => 'json',
+   
+   // 控制器里面采用return语句返回
+   return ['name'=>'thinkphp','status'=>1];
+   ```
+
+   
+
+   
+
+
+
