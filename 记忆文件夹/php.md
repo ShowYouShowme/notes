@@ -324,6 +324,8 @@
 
 
 
+
+
 ## 3.2 操作命令
 
 ```ini
@@ -488,6 +490,76 @@ RUN /root/bin/php-fpm configtest
 
 # 第五章 thinkphp
 
+
+
+## 5.0 运行环境搭建
+
+1. 安装nginx
+
+   ```ini
+   [CMD]
+   sudo yum install -y epel-release
+   sudo yum install -y nginx
+   
+   [配置]
+   ;默认网站目录
+   WEB_PATH= /usr/share/nginx/html
+   
+   ;默认配置文件
+   CONFIG_PATH=/etc/nginx/nginx.conf
+   
+   ;自定义配置文件目录, http模块里有 include /etc/nginx/conf.d/*.conf;
+   CUSTOM_CONFIG_PATH = /etc/nginx/conf.d/
+   
+   ;日志目录
+   path = /var/log/nginx
+   
+   ;配置启动用户为apache
+   ;nginx.conf
+   user apache;
+   
+   [启动服务]
+   docker容器 = /usr/sbin/nginx
+   非docker = systemctl start nginx
+   ```
+
+2. 安装php-fpm
+
+   ```ini
+   [php5.4.16]
+   yum -y install php php-fpm php-gd php-mysql php-common php-pear php-mbstring php-mcrypt
+   systemctl status php-fpm
+   systemctl start php-fpm
+   systemctl enable php-fpm
+   
+   [启动命令]
+   ; 后台启动
+   /usr/sbin/php-fpm --daemonize
+   ; 前台启动
+   /usr/sbin/php-fpm --nodaemonize
+   
+   [配置文件]
+   ;路径
+   /etc/php-fpm.d/www.conf
+   
+   
+   [日志目录]
+   path = /var/log/php-fpm
+   ```
+
+3. 创建web root，并且设置权限
+
+   ```shell
+   mkdir /data
+   chown -R apache:apache /data
+   ```
+
+4. 将网站的文件放到web root即可
+
+
+
+thinkPHP的资料
+
 ```ini
 [github]
 url = https://github.com/top-think/think/
@@ -499,8 +571,12 @@ url = https://static.kancloud.cn/manual/thinkphp5/118003
 
 ## 5.1 安装
 
-```
-wget https://github.com/top-think/think/archive/refs/tags/v5.0.24.zip
+```shell
+# thinkphp_5.0.10_full.zip, github上下载的包好像缺少东西
+wget https://www.thinkphp.cn/download/1015.html
+
+# 测试是否能跑起来
+php ./thinkphp_5.0.10_full/public/index.php 
 ```
 
 
@@ -512,7 +588,7 @@ wget https://github.com/top-think/think/archive/refs/tags/v5.0.24.zip
 1. 配置nginx
 
    ```nginx
-   # 注意将php-fpm的启动用户设置为nginx的启动用户
+   # php-fpm的启动用户和nginx要相同
    server {
        listen 8000;
        server_name localhost;
