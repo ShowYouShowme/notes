@@ -27,10 +27,39 @@
      systemctl start php-fpm
      systemctl enable php-fpm
      
+     [启动命令]
+     ; 后台启动
+     /usr/sbin/php-fpm --daemonize
+     ; 前台启动
+     /usr/sbin/php-fpm --nodaemonize
+     
+     [配置文件]
+     ;路径
+     /etc/php-fpm.d/www.conf
+     
+     ;配置启动用户
+     ;编译安装的nginx，以运行命令的用户启动，比如roglic
+     ;如果要让php文件能被正常访问，需要
+     ;1、资源文件放在nginx的html目录
+     ;2、将php-fpm的启动用户设置为nginx的启动用户
+     
+     ;nginx配置
+             location / {
+                 root   html;
+                 index  index.html index.htm index.php;
+             }
+     
+             location ~ \.php$ {
+                     root           html;
+                     fastcgi_pass   127.0.0.1:9000;
+                     fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+                     include        fastcgi_params;
+             }
+     
      [php7.4]
      
      ```
-
+     
      
 
 3. 配置nginx
@@ -291,6 +320,7 @@
 
 
 
+
 ## 3.2 操作命令
 
 ```ini
@@ -448,4 +478,81 @@ RUN /root/bin/php-fpm configtest
    ?>
    ```
    
+
+
+
+
+
+# 第五章 thinkphp
+
+```ini
+[github]
+url = https://github.com/top-think/think/
+
+[开发文档]
+; tp5 doc
+url = https://static.kancloud.cn/manual/thinkphp5/118003
+```
+
+## 5.1 安装
+
+```
+wget https://github.com/top-think/think/archive/refs/tags/v5.0.24.zip
+```
+
+
+
+
+
+## 5.2 运行
+
+1. 配置nginx
+
+   ```nginx
+   # 注意将php-fpm的启动用户设置为nginx的启动用户
+   server {
+       listen 8000;
+       server_name localhost;
+       root   /data/tp5/public;
+       index  index.php index.html index.htm;
+     
+     location ~* ^.+.(jpg|jpeg|gif|css|png|js|thumb) {
+          expires 30d;
+      }
+      location / {
+       try_files $uri @default;
+   }
+   
+   location @default {
+       fastcgi_pass            127.0.0.1:9000;
+       fastcgi_param           SCRIPT_FILENAME $document_root/index.php;
+       fastcgi_param           PATH_INFO       $fastcgi_script_name;
+       fastcgi_param           PATH_TRANSLATED $document_root/index.php;
+       include                 fastcgi_params;
+   }
+   
+   location ~ \.php($|/) {
+       fastcgi_pass            127.0.0.1:9000;
+       fastcgi_split_path_info ^(.+?\.php)(/.+)$;
+       fastcgi_param           SCRIPT_FILENAME $document_root$fastcgi_script_name;
+       fastcgi_param           PATH_INFO       $fastcgi_path_info;
+       fastcgi_param           PATH_TRANSLATED $document_root$fastcgi_script_name;
+       include                 fastcgi_params;
+   }
+   
+   }
+   ```
+
+   
+
+2. 将压缩包放到web根目录下的tp5目录，然后解压
+
+3. 接口测试
+
+   ```
+   http://127.0.0.1:8000/tp5/public/
+   ```
+
+   
+
    
