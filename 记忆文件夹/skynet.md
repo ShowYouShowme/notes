@@ -499,6 +499,19 @@ end)
 
 
 
+## 2.10 rpc相关的api
+
+```
+skynet.send(addr,type,...)  //addr 可以是服务句柄也可以是别名  type消息类型  ... 参数 非阻塞 不需要应答
+
+skynet.call(addr,type,...) //阻塞 需要应答
+
+skynet.ret(msg,sz)  //回应消息
+
+```
+
+
+
 
 
 # 第三章 安装
@@ -766,4 +779,155 @@ cd skynet
    telnet 127.0.0.1 8000
    ```
 
+
+
+## 4.4 微服务
+
+1. 定义服务
+
+   ```lua
+   -- draw.lua
    
+   local skynet = require "skynet"
+   require "skynet.manager"	-- import skynet.register
+   local db = {}
+   
+   local command = {}
+   
+   function command.ADD(key)
+   	return key + 1
+   end
+   
+   function command.MUL(key)
+   	return key * key
+   end
+   
+   skynet.start(function()
+       -- 类似于onMessage函数,处理其它服务的请求
+   	skynet.dispatch("lua", function(session, address, cmd, ...)
+   		local f = command[cmd]
+   		if f then
+   			skynet.ret(skynet.pack(f(...)))
+   		else
+   			error(string.format("Unknown command %s", tostring(cmd)))
+   		end
+   	end)
+   	skynet.register "SIMPLEDB"
+   end)
+   ```
+
+2. 创建服务
+
+   ```lua
+   -- draw 是文件的名字
+   -- 每调用一次创建接口就会创建出一个对应的服务实例，可以同时创建成千上万个，用唯一的id来区分每个服务实例
+   workerID = skynet.newservice("draw")
+   
+   
+   -- 全局唯一的服务等同于单例，即不管调用多少次创建接口，最后都只会创建一个此类型的服务实例，且全局唯一
+   skynet.uniqueservice(servicename, ...) 
+   ```
+
+3. 客户端请求服务，类似于http的Get获取post
+
+   ```lua
+   -- worker 是服务ID
+   -- "lua" 写死
+   -- "MUL" 是command 的成员函数名
+   -- value 是传入的参数
+   local ret = skynet.call(worker, "lua", "MUL", value)
+   ```
+
+
+
+## 4.5 http服务
+
+```lua
+--myhttp.lua
+
+local skynet = require "skynet"
+local socket = require "skynet.socket"
+local httpd = require "http.httpd"
+local sockethelper = require "http.sockethelper"
+local urllib = require "http.url"
+local table = table
+local string = string
+
+
+local protocol = "http"
+
+local function response(id, write, ...)
+	local ok, err = httpd.write_response(write, ...)
+	if not ok then
+		-- if err == sockethelper.socket_error , that means socket closed.
+		skynet.error(string.format("fd = %d, %s", id, err))
+	end
+end
+
+local function  gen_interface(protocol, fd)
+    return {
+        init = nil,
+        close = nil,
+        read = sockethelper.readfunc(fd),
+        write = sockethelper.writefunc(fd),
+    }
+end
+
+local function onMessage(id)
+		socket.start(id)
+		local interface = gen_interface(protocol, id)
+		if interface.init then
+			interface.init()
+		end
+		-- limit request body size to 8192 (you can pass nil to unlimit)
+		local code, url, method, header, body = httpd.read_request(interface.read, 8192)
+		if code then
+			if code ~= 200 then
+				response(id, interface.write, code)
+			else
+				local tmp = {}
+				if header.host then
+					table.insert(tmp, string.format("host: %s", header.host))
+				end
+				local path, query = urllib.parse(url)
+				table.insert(tmp, string.format("path: %s", path))
+				if query then
+					local q = urllib.parse_query(query)
+					for k, v in pairs(q) do
+						table.insert(tmp, string.format("query: %s= %s", k,v))
+					end
+				end
+				table.insert(tmp, "-----header----")
+				for k,v in pairs(header) do
+					table.insert(tmp, string.format("%s = %s",k,v))
+				end
+				table.insert(tmp, "-----body----\n" .. body)
+				response(id, interface.write, code, table.concat(tmp,"\n"))
+			end
+		else
+			if url == sockethelper.socket_error then
+				skynet.error("socket closed")
+			else
+				skynet.error(url)
+			end
+		end
+		socket.close(id)
+		if interface.close then
+			interface.close()
+		end
+    end
+
+local function onConnect(cID, addr)
+    skynet.error(addr .. " accepted")
+    skynet.fork(onMessage, cID)
+end
+
+skynet.start(function ()
+    local addr = "0.0.0.0:8002"
+    skynet.error('listen ' .. addr)
+    local sID = socket.listen(addr)
+    skynet.error('sID ' .. sID)
+    socket.start(sID, onConnect)
+end)
+```
+
