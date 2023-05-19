@@ -54,6 +54,10 @@ git status
 
 ```shell
 git clone https://github.com/ShowYouShowme/notes.git
+
+
+# 打印日志
+GIT_TRACE=2 git clone https://github.com/cloudwu/skynet.git
 ```
 
 

@@ -497,3 +497,273 @@ skynet.start(function()
 end)
 ```
 
+
+
+
+
+# 第三章 安装
+
+
+
+## 3.1 安装依赖
+
+```shell
+yum install -y git
+yum install -y autoconf
+
+# 安装gcc9.3
+yum -y install centos-release-scl
+yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+```
+
+
+
+## 3.2 构建skynet
+
+```shell
+# 下载代码
+GIT_TRACE=2 git clone https://github.com/cloudwu/skynet.git
+cd skynet
+
+# 切换到指定版本
+git checkout v1.6.0
+
+# 编译代码
+make linux
+```
+
+
+
+# 第四章 启动服务
+
+
+
+## 4.1 启动命令
+
+```shell
+# 进入根目录
+cd skynet
+
+# 启动服务
+./skynet examples/config
+```
+
+
+
+## 4.2 配置文件参数
+
+
+
+### 4.2.1 配置文件示例
+
+1. 官方配置
+
+   ```lua
+   root = "./"
+   luaservice = root.."service/?.lua;"..root.."test/?.lua;"..root.."examples/?.lua;"..root.."test/?/init.lua"
+   lualoader = root .. "lualib/loader.lua"
+   lua_path = root.."lualib/?.lua;"..root.."lualib/?/init.lua"
+   lua_cpath = root .. "luaclib/?.so"
+   snax = root.."examples/?.lua;"..root.."test/?.lua"
+   -- preload = "./examples/preload.lua"	-- run preload.lua before every lua service run
+   thread = 8
+   logger = nil
+   logpath = "."
+   harbor = 1
+   address = "127.0.0.1:2526"
+   master = "127.0.0.1:2013"
+   start = "main"	-- main script
+   bootstrap = "snlua bootstrap"	-- The service for bootstrap
+   standalone = "0.0.0.0:2013"
+   -- snax_interface_g = "snax_g"
+   cpath = root.."cservice/?.so"
+   -- daemon = "./skynet.pid"
+   ```
+
+   
+
+2. 精简配置
+
+   ```lua
+   root = "./"
+   luaservice = root.."service/?.lua;"..root.."test/?.lua;"..root.."examples/?.lua;"..root.."test/?/init.lua"
+   lualoader = root .. "lualib/loader.lua"
+   lua_path = root.."lualib/?.lua;"..root.."lualib/?/init.lua"
+   lua_cpath = root .. "luaclib/?.so"
+   thread = 8
+   logger = nil
+   harbor = 0
+   start = "main"	-- main script
+   bootstrap = "snlua bootstrap"	-- The service for bootstrap
+   cpath = root.."cservice/?.so"
+   ```
+
+
+
+### 4.2.2 参数分类
+
+1. 必要配置
+
+   ```ini
+   # thread表示启动的工作线程数量，通常不要将工作线程的数量设置的超过实际拥有的CPU的核心数量
+   thread = 8
+   
+   # Skynet中log和bootstrap是启动时的两个服务，默认的boostrap配置项为snlua bootstrap，意味着Skynet会启动snlua这个服务，并将bootstrap作为参数传递给它。
+   
+   # bootstrap设置Skynet启动时的第一个服务以及其启动参数，默认配置为snlua bootstrap，即启动一个名为bootstrap的lua服务，通常指的是service/bootstrap.lua
+   
+   bootstrap = "snalu bootstrap"
+   
+   # start设置的是bootstrap的最后一个节点，也就是将要启动的Lua服务,即我们的应用
+   start = "main"
+   
+   # cpath设置使用C编写的服务模块的位置，通常指cservice目录下.so文件
+   # 通常是第三方的sdk
+   cpath = skynet_root.."cservice/?.so"
+   
+   
+   # 日志配置
+   # 若logger设置为nil则表示输出到标准输出，可以指定一个路径和文件名用来将日志输入到文件中。
+   logger = nil
+   
+   # logservice配置用户定制的日志服务
+   logservice = "logger"
+   
+   # logpath配置日志保存的文件名，当运行时为某个服务打开log时，这个服务所有的输入消息都会被记录到此目录下，文件名为服务地址
+   logpath = ""
+   ```
+
+   
+
+2. 网络配置
+
+   ```ini
+   [harbor]
+   ; 节点唯一性编号。harbor可以是1到255之间的任意整数，一个Skynet网络最多支持255个节点。每个节点必有一个唯一的编号。如果harbor为0则表示Skynet工作在单节点模式下（单点模式），此时master、address、standalone都不必设置
+   
+   [master]
+   
+   [address]
+   
+   [standalone]
+   
+   [cluster]
+   ```
+
+   
+
+3. Lua环境配置项
+
+   ```ini
+   [lualoader]
+   ; lualoader用于配置调用哪一段Lua代码加载Lua服务，通常配置为lualib/loader.lua，由这段代码解析服务名称，进一步加载Lua代码
+   lualoader = skynet_root.."lualib/loader.lua"
+   
+   [luaservice]
+   ; luaservice指定了Lua服务代码所在的位置，可配置多项以分号;分隔
+   
+   [lua_path]
+   ; 将添加到package.path中的路径提供给require调用
+   lua_path = skynet_root.."lualib/?.lua;"..skynet_root.."lualib/?/init.lua"
+   
+   [lua_cpath]
+   ; 将添加到package.cpath中的路径提供给require调用
+   lua_cpath = skynet_root.."luaclib/?.so;"
+   
+   [preload]
+   ; 在设置完package中的路径后，加载Lua服务代码前，loader会尝试先运行一个preload指定的脚本，默认为空。
+   preload = ""
+   
+   [snax]
+   ; 使用snax框架编写的服务的查找路径
+   snax = ""
+   ```
+
+   
+
+4. 集群配置项
+
+5. 其它配置项
+
+   ```ini
+   [root]
+   ; root表示根目录是Skynet启动时的目录，用于设置当前项目的根目录
+   root = "./"
+   
+   [skynet_root]
+   ; 设置Skynet的根目录
+   skynet_root = "lib/skynet/"
+   
+   [daemon]
+   ; daemon可以以后台模式启动Skynet，注意需同时配置logger项的输出log
+   daemon = "./skynet.pid"
+   ```
+
+
+
+## 4.3 第一个服务
+
+1. 配置文件：config_hello_world
+
+   ```lua
+   root = "./"
+   luaservice = root.."service/?.lua;"..root.."test/?.lua;"..root.."examples/?.lua;"..root.."test/?/init.lua"
+   lualoader = root .. "lualib/loader.lua"
+   lua_path = root.."lualib/?.lua;"..root.."lualib/?/init.lua"
+   lua_cpath = root .. "luaclib/?.so"
+   thread = 8
+   logger = nil
+   harbor = 0
+   start = "hello"	-- main script
+   bootstrap = "snlua bootstrap"	-- The service for bootstrap
+   cpath = root.."cservice/?.so"
+   ```
+
+2. 代码 hello.lua
+
+   ```lua
+   local skynet = require "skynet"
+   local socket = require "skynet.socket"
+   
+   local function onMessage(cID, addr)
+       socket.start(cID)
+       while true do
+           local buf = socket.read(cID)
+           if buf then
+               skynet.error('recv ' .. buf)
+           else
+               socket.close(cID)
+               skynet.error(cID, addr)
+               return
+           end
+       end
+   end
+   
+   local function onConnect(cID, addr)
+       skynet.error(addr .. " accepted")
+       skynet.fork(onMessage, cID, addr)
+   end
+   
+   skynet.start(function ()
+       local addr = "0.0.0.0:8000"
+       skynet.error('listen ' .. addr)
+       local sID = socket.listen(addr)
+       skynet.error('sID ' .. sID)
+       socket.start(sID, onConnect)
+   end)
+   ```
+
+3. 启动服务
+
+   ```shell
+   ./skynet examples/config_hello_world
+   ```
+
+4. 测试
+
+   ```shell
+   telnet 127.0.0.1 8000
+   ```
+
+   
