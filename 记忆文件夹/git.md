@@ -752,3 +752,29 @@ git push -u origin dev
 
 
 
+
+
+# 常见问题处理
+
+1. 虚拟机git访问github慢
+
+   + 在win上开启letsvpn
+
+   + 在win上开启squid，默认配置即可
+
+   + 关闭win的防火墙
+
+   + 配置linux上的git的代理
+
+     ```shell
+     # ~/.gitconfig
+     [http]
+     proxy = http://192.168.110.231:3128
+     [https]
+     proxy = https://192.168.110.231:3128
+     ```
+
+     
+
+   
+

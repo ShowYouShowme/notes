@@ -2275,6 +2275,24 @@ class HttpClient {
 
 
 
+## 18.5 利用post请求发送二进制数据
+
+```js
+let buffer = Buffer.from([0x11,0x12,0x17,0x99]);
+request.post('http://127.0.0.1:3001/user', {
+    body : buffer,
+    headers : {
+        "Content-Type" : "application/octet-stream"
+    }
+}, (error: any, response: any, body: any)=>{
+    if(error)
+        throw error;
+    console.log(`response = ${response}, body = ${body}`);
+});
+```
+
+
+
 
 
 # 第十九章  技巧

@@ -740,5 +740,14 @@ app.listen(port, '127.0.0.1', ()=>{
 
 
 
+## 4.2 解析protobuf等二进制
+
+```javascript
+app.post('/user', express.raw({ type: '*/*' }), (req, res)=>{
+    let buffer = Buffer.from(req.body);
+    console.error(`buffer : ${buffer}`);
+});
+```
+
 
 

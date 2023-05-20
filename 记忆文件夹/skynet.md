@@ -59,6 +59,29 @@ standalone = nil
 
 # 第二章 网络编程
 
+# 2.0 框架api
+
+```lua
+-- 创建服务,同类型服务可创建多个
+skynet.newservice
+
+-- 创建服务,同一类型服务只能创建一个
+skynet.uniqueservice
+
+-- 启动一个协程 
+skynet.fort 
+
+-- 服务启动回调
+skynet.start
+
+-- 类似ws的onMessage,处理其它服务的请求
+skynet.dispatch("lua", function(session, address, cmd, ...)
+    
+    end)
+```
+
+
+
 
 
 ## 2.1 常用api
@@ -673,9 +696,13 @@ cd skynet
    ; lualoader用于配置调用哪一段Lua代码加载Lua服务，通常配置为lualib/loader.lua，由这段代码解析服务名称，进一步加载Lua代码
    lualoader = skynet_root.."lualib/loader.lua"
    
+   
+   ; **** 定义的skynet 服务在这里
    [luaservice]
    ; luaservice指定了Lua服务代码所在的位置，可配置多项以分号;分隔
    
+   
+   ; ***** 自己写的模块放到这里, 比如common utils net  等等
    [lua_path]
    ; 将添加到package.path中的路径提供给require调用
    lua_path = skynet_root.."lualib/?.lua;"..skynet_root.."lualib/?/init.lua"

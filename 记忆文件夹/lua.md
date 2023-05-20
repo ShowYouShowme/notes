@@ -143,4 +143,30 @@ assert(type(a) == "number", "a 不是一个数字")
    jenkins自动构建发布
    ```
 
+
+
+
+# 第五章  特性
+
+1. 函数只有一个参数且参数是字符串或者表时可以不用加括号
+
+   ```lua
+   print "Hello" 等价 print ("Hello")
+   ```
+
+2. 字符串表示
+
+   ```lua
+   local  s1 = "this is string1"
+   local  s2 = 'this is string2'
+   local  s3 = [[
+   <html>
+   <head></head>
+   <body>
+       <a href="http://www.runoob.com/">菜鸟教程</a>
+   </body>
+   </html>
+   ]]
+   ```
+
    
