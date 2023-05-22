@@ -2278,17 +2278,21 @@ class HttpClient {
 ## 18.5 利用post请求发送二进制数据
 
 ```js
-let buffer = Buffer.from([0x11,0x12,0x17,0x99]);
-request.post('http://127.0.0.1:3001/user', {
-    body : buffer,
-    headers : {
-        "Content-Type" : "application/octet-stream"
-    }
-}, (error: any, response: any, body: any)=>{
-    if(error)
-        throw error;
-    console.log(`response = ${response}, body = ${body}`);
-});
+app.get('/sendBianry', (req, res)=>{
+    let buffer = Buffer.from([0x08,0x12,0x17,0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF]);
+    request.post('http://127.0.0.1:3001/user', {
+        body : buffer,
+        headers : {
+            "Content-Type" : "application/octet-stream"
+        },
+        encoding: null   // 返回二进制数据, 回调函数里面的body 是Buffer, 默认返回的是utf8编码的字符串
+    }, (error: any, response: any, body: any)=>{
+        if(error)
+            throw error;
+        res.set('Content-Type', 'application/octet-stream')
+        res.send(body);
+    });
+})
 ```
 
 

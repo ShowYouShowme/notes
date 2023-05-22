@@ -742,12 +742,30 @@ app.listen(port, '127.0.0.1', ()=>{
 
 ## 4.2 解析protobuf等二进制
 
-```javascript
-app.post('/user', express.raw({ type: '*/*' }), (req, res)=>{
-    let buffer = Buffer.from(req.body);
-    console.error(`buffer : ${buffer}`);
-});
-```
+1. 处理body为二进制数据的post请求
+
+   ```javascript
+   // Content-Type : application/octet-stream
+   app.post('/user', express.raw({ type: '*/*' }), (req, res)=>{
+       let buffer = Buffer.from(req.body);
+       console.error(`buffer : ${buffer}`);
+   });
+   ```
+
+   
+
+2. 返回二进制数据给client
+
+   ```javascript
+   app.post('/user', express.raw({ type: '*/*' }), (req, res)=>{
+        let buffer = Buffer.from(req.body);
+       // let buffer = Buffer.from([0x22,0x33,0x44,0x55, 0XA0,0XB0]);
+       res.set('Content-Type', 'application/octet-stream')
+       res.send(buffer);
+   });
+   ```
+
+   
 
 
 
