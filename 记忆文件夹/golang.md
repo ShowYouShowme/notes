@@ -17,10 +17,13 @@
 2. 设置环境变量
 
    ```shell
-   export GOROOT=$HOME/local/go              		#安装目录。
-   export GOPATH=$HOME/doc/go     						#工作环境
+   export GOROOT=$HOME/local/go              		#go安装目录。
+   export GOPATH=$HOME/doc/go     				    #保持第三方依赖包,goland里面需要配置
    export GOBIN=$GOPATH/bin           				#可执行文件存放
    export PATH=$GOPATH:$GOBIN:$GOROOT/bin:$PATH    #添加PATH路径ls
+   
+   
+   # windows 安装,使用goland或者vscode开发,需要配置环境变量GOROOT和GOPATH
    ```
 
 3. 开启go mod并配置代理
@@ -1944,6 +1947,112 @@ func Square(input int)int  {
 
 1. 使用GOPATH 时，所有代码必须放在$GOPATH/src目录下
 2. 使用go mod则无此要求，记得使用go env 查看GO111MODULE是否为on
+
+
+
+
+## 8.4 安装第三方生态应用
+
+go install
+
+```shell
+# 安装 protoc
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+```
+
+
+
+## 8.5 vscode搭建开发环境
+
+1. 安装golang插件
+
+   ```shell
+   Go Team at Google go.dev
+   ```
+
+2. 安装go的工具
+
+   + dlv：调试用的插件
+
+     ```shell
+     go install github.com/go-delve/delve/cmd/dlv@latest
+     ```
+
+   + gopls：代码提示插件
+
+     ```shell
+     go install golang.org/x/tools/gopls@latest
+     ```
+
+   + protoc-gen-go：生成protobuf的工具
+
+     ```shell
+     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+     ```
+
+     
+
+3. 创建项目
+
+   ```shell
+   mkdir helloWorld
+   cd helloWorld
+   go mod init helloWorld
+   
+   
+   # 安装模块,类似npm install
+   go mod tidy
+   
+   
+   # 编译
+   go build
+   
+   # 调式
+   按下F5,需要配置launch.json
+   ```
+
+4. 配置调试：launch.json
+
+   ```json
+   {
+       // Use IntelliSense to learn about possible attributes.
+       // Hover to view descriptions of existing attributes.
+       // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+       "version": "0.2.0",
+       "configurations": [
+           {
+               "name": "Launch Package",
+               "type": "go",
+               "request": "launch",
+               "mode": "auto",
+               "program": "${fileDirname}"
+           }
+       ]
+   }
+   ```
+
+   
+
+   配置文件参数介绍
+
+   | 属性    | 说明                                                         |
+   | ------- | ------------------------------------------------------------ |
+   | name    | 定义配置名字                                                 |
+   | type    | 指定语言，这里填写go即可                                     |
+   | request | 对于已经运行的程序用attach，其它情况用launch                 |
+   | mode    | 对于 `launch` 有 `auto`, `debug`, `remote`, `test`, `exec`, 对于 `attach`只有`local`,`remote` |
+   | program | 指定包, 文件或者是二进制的绝对路径                           |
+   | env     | 调试程序时需要注入的环境变量, 例如:`{ "ENVNAME": "ENVVALUE" }` |
+   | envFile | 绝对路径,`env`的值会覆盖`envFile`的值                        |
+   | args    | 需要传给调试程序的命令行参数                                 |
+   | showLog | 布尔值，是否在调试控制台打印日志, 一般为`true`               |
+   |         |                                                              |
+
+   调试时使用vsCode内置变量
+
+   + `${workspaceFolder}` 在工作区的的根目录调试程序
+   + `${file}` 调试当前文件
+   + `${fileDirname}` 调试当前文件所属的程序包
 
 
 
@@ -4162,7 +4271,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                 
+   >                                           
    >   # 2-- 检查进程是否存在
    >   ```
    >
