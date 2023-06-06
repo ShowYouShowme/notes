@@ -1560,7 +1560,60 @@ os.Exit 与 panic
    
    ```
 
-   
+
+
+
+## 7.3 错误处理通用流程
+
+```go
+package main
+
+import "log"
+
+// panic 类似Java异常,可以让调用方自己来处理
+// 错误处理的第一种方式,直接panic,让调用方自己处理
+func add(a int32, b int32) int32 {
+	if a < 0 || b < 0 {
+		panic("invalid param")
+	}
+	return a + b
+}
+
+// 错误处理的第二种方式,增加一个变量表示error
+// 建议用第一种方式,代码更加简洁
+func sub(a int32, b int32) (result int32, reason any) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("error : %v", err)
+			result = -1
+			reason = err
+		}
+	}()
+	if a < b {
+		panic("a must greater than b")
+	}
+	return a - b, nil
+}
+
+func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("err : %v", err)
+		}
+	}()
+	var a int32 = 50
+	var b int32 = 10
+	//var c int32 = add(a, b)
+	c, err := sub(a, b)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("a = %v, b = %v, c = %v", a, b, c)
+}
+
+```
+
+
 
 
 
@@ -2055,6 +2108,67 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
    + `${fileDirname}` 调试当前文件所属的程序包
 
 
+
+
+
+## 8.6 多文件编程
+
+### 8.6.1 同一目录下多文件编程
+
+1. 同一目录下的所有的Go文件必须是同一个package
+2. 同一个目录下调用其他文件的函数不需要加package名称
+
+
+
+### 8.6.2 不同目录下多文件编程
+
+1. 不同目录指的是不同的go源文件位于不同的路径下
+
+2. 目录结构
+
+   ```shell
+   src
+   |
+   |
+   |--------test
+   |          |
+   |          |
+   |          |----test.go
+   |
+   |---main.go
+   ```
+
+3. 项目模块名：journey
+
+4. 文件代码
+
+   main.go
+
+   ```go
+   // main.go
+   package main
+   
+   import "journey/Test"
+   
+   func main() {
+   	Test.Myprint()
+   }
+   ```
+
+   test.go
+
+   ```go
+   // test.go
+   package Test
+   
+   import "fmt"
+   
+   func Myprint() {
+   	fmt.Println("hello")
+   }
+   ```
+
+   
 
 
 
@@ -4271,7 +4385,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                           
+   >                                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5050,7 +5164,7 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
    ```protobuf
    syntax = "proto3";
    package example;
-   option go_package="./;protocol"; // go语言必须加这行,分号前是生成文件路径;后面是package名称
+   option go_package="./;example"; // go语言必须加这行,分号前是生成文件路径;后面是package名称
    
    message person {    //  aa 会生成 Aa 命名的结构体
      int32 id = 1;
