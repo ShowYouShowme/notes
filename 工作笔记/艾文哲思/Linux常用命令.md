@@ -1211,7 +1211,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                             
+  >                                                                                                                
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1235,7 +1235,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                             
+  >                                                                                                                
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -3675,6 +3675,9 @@ sudo apt install virtualbox  -y -o Acquire::http::proxy="http://127.0.0.1:8090/"
    ```shell
    # 间隔符可以自定义,比如用/ 或者 # 或者@
    :%s#${原字符串}#${新字符串}#g
+   
+   # 例子
+   :%s#JUSTIN#trump#g
    ```
 
 6. 移动光标到行首和行尾

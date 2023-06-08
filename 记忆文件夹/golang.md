@@ -4385,7 +4385,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                             
+   >                                               
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5784,4 +5784,78 @@ xshell 、chrome、火狐浏览器可以配置socks5代理来加速。
    ```
 
    
+
+
+
+# 第二十八章  Gin
+
+1. 示例
+
+   ```go
+   package main
+   
+   import (
+   	"net/http"
+   
+   	"github.com/gin-gonic/gin"
+   )
+   
+   func main() {
+   	r := gin.Default()
+   	r.GET("/ping", func(c *gin.Context) {
+   		c.JSON(http.StatusOK, gin.H{
+   			"message": "pong",
+   		})
+   	})
+   	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+   }
+   
+   ```
+
+2. 编译
+
+   ```shell
+   go mod tidy
+   go build
+   ```
+
+
+
+# 第二十九章  日志
+
+ 常用的日志库logrus
+
+
+
+用法
+
+```go
+log "github.com/sirupsen/logrus"
+
+// 其它地方的API 接口就和系统自带的log完全一样
+```
+
+
+
+
+
+示例代码
+
+```go
+package main
+
+import (
+	log "github.com/sirupsen/logrus"
+)
+
+func main() {
+	log.SetLevel(log.TraceLevel)
+	log.Info("hello")
+	log.Trace("this is trace msg")
+	log.Debug("this is debug msg")
+	log.Warn("this is warn msg")
+	log.Error("this is error msg")
+	log.Fatal("this is fatal msg")
+}
+```
 

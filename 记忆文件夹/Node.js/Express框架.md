@@ -765,6 +765,26 @@ app.listen(port, '127.0.0.1', ()=>{
    });
    ```
 
+
+
+
+## 4.3 跨域处理
+
+1. 安装跨域组件
+
+   ```shell
+   npm install cors --save
+   ```
+
+2. 代码
+
+   ```shell
+   const cors = require('cors')
+   const port = 7100;
+   const app = express();
+   app.use(cors())
+   ```
+
    
 
 
