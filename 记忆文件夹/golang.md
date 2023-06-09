@@ -4385,7 +4385,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                               
+   >                                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5819,6 +5819,23 @@ xshell 、chrome、火狐浏览器可以配置socks5代理来加速。
    go build
    ```
 
+3. 解决跨域问题
+
+   ```go
+   import (
+   	"github.com/gin-contrib/cors"
+   	"github.com/gin-gonic/gin"
+   )
+   
+   func main() {
+   	app := gin.New()
+   	app.Use(cors.Default())
+   
+   }
+   ```
+
+   
+
 
 
 # 第二十九章  日志
@@ -5857,5 +5874,347 @@ func main() {
 	log.Error("this is error msg")
 	log.Fatal("this is fatal msg")
 }
+```
+
+
+
+
+
+# 第三十章  Mongodb
+
+
+
+使用MongoDB的版本 4.2.24
+
+
+
+驱动版本：go.mongodb.org/mongo-driver v1.11.7
+
+
+
+
+
+## 30.1 连接
+
+```go
+func testMongoConnect() {
+
+	// The Stable API feature requires MongoDB Server 5.0 or later.
+	// Stable API 要求MongoDB 服务版本在5.0 之后
+	// Use the SetServerAPIOptions() method to set the Stable API version to 1
+	//serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	//opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(uri)
+
+	// Create a new client and connect to the server
+	// 发起链接
+	client, err := mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		// 断开链接
+		if err = client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	// Send a ping to confirm a successful connection
+	var result bson.M
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+		panic(err)
+	}
+	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+}
+```
+
+
+
+
+
+## 30.2 插入数据
+
+```go
+type Address struct {
+       Street string
+       City   string
+       State  string
+}
+
+type Student struct {
+       FirstName string  `bson:"first_name,omitempty"`
+       LastName  string  `bson:"last_name,omitempty"`      // 没有赋值,就不插入
+       Address   Address 
+       Age       int
+}
+
+coll := client.Database("school").Collection("students")
+address1 := Address{ "1 Lakewood Way", "Elwood City", "PA" }
+student1 := Student{ FirstName : "Arthur", Address : address1, Age : 8}
+_, err = coll.InsertOne(context.TODO(), student1)
+```
+
+
+
+
+
+## 30.3 查询单条记录
+
+```go
+func testQuery() {
+	opts := options.Client().ApplyURI(uri)
+	// Create a new client and connect to the server
+	// 发起链接
+	client, err := mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		// 断开链接
+		if err = client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+    
+	// Send a ping to confirm a successful connection
+	var result bson.M
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+		panic(err)
+	}
+
+	// 查询一条记录, 并将其转换为json
+	coll := client.Database("school").Collection("students")
+	filter := bson.D{{"id", 1001}}
+	type Student struct {
+		Id       int
+		NickName string
+		Gold     int
+	}
+	// 指定数据类型后可以直接解析
+	var student Student
+	err = coll.FindOne(context.TODO(), filter).Decode(&student)
+	if err != nil {
+		panic(err)
+	}
+
+	//转换为JSON
+	str, err := json.Marshal(student)
+	log.Println(str)
+}
+```
+
+
+
+## 30.4 查询多条记录
+
+```go
+func testQueryMany() {
+	opts := options.Client().ApplyURI(uri)
+
+	// Create a new client and connect to the server
+	// 发起链接
+	client, err := mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		// 断开链接
+		if err = client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	// Send a ping to confirm a successful connection
+	var result bson.M
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+		panic(err)
+	}
+
+	// 查询一条记录, 并将其转换为json
+	coll := client.Database("school").Collection("students")
+	filter := bson.D{{}}
+	type Student struct {
+		Id       int
+		NickName string
+		Gold     int
+	}
+	// 指定数据类型后可以直接解析
+	var students []Student
+	cursor, err := coll.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	if err = cursor.All(context.TODO(), &students); err != nil {
+		panic(err)
+	}
+	str, err := json.Marshal(students)
+	log.Println(str)
+}
+```
+
+
+
+
+
+## 30.5 更新记录
+
+1. 直接使用bson更新
+
+   ```go
+   func testUpdate() {
+   	opts := options.Client().ApplyURI(uri)
+   
+   	// Create a new client and connect to the server
+   	// 发起链接
+   	client, err := mongo.Connect(context.TODO(), opts)
+   	if err != nil {
+   		panic(err)
+   	}
+   	defer func() {
+   		// 断开链接
+   		if err = client.Disconnect(context.TODO()); err != nil {
+   			panic(err)
+   		}
+   	}()
+   	// Send a ping to confirm a successful connection
+   	var result bson.M
+   	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+   		panic(err)
+   	}
+   
+   	// 查询一条记录, 并将其转换为json
+   	coll := client.Database("school").Collection("students")
+   	filter := bson.D{{"id", 1002}}
+   	update := bson.D{{"$set", bson.D{{"gold", 90000}}}}
+   	type Student struct {
+   		Id       int
+   		NickName string
+   		Gold     int
+   	}
+   	// 指定数据类型后可以直接解析
+   	//var student Student
+   	r2, err := coll.UpdateOne(context.TODO(), filter, update)
+   	if err != nil {
+   		panic(err)
+   	}
+   
+   	// TODO 如何转换为JSON
+   
+   	//str, err := json.Marshal(student)
+   
+   	log.Println(r2)
+   }
+   ```
+
+2. 使用结构体更新
+
+   ```shell
+   func testUpdate() {
+   	opts := options.Client().ApplyURI(uri)
+   
+   	// Create a new client and connect to the server
+   	// 发起链接
+   	client, err := mongo.Connect(context.TODO(), opts)
+   	if err != nil {
+   		panic(err)
+   	}
+   	defer func() {
+   		// 断开链接
+   		if err = client.Disconnect(context.TODO()); err != nil {
+   			panic(err)
+   		}
+   	}()
+   	// Send a ping to confirm a successful connection
+   	var result bson.M
+   	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+   		panic(err)
+   	}
+   
+   	// 查询一条记录, 并将其转换为json
+   	coll := client.Database("school").Collection("students")
+   	filter := bson.D{{"id", 1002}}
+   
+   	type Student struct {
+   		Id       int
+   		NickName string
+   		Gold     int
+   	}
+   
+   	var student Student = Student{1002, "trump", 790000}
+   
+   	update := bson.D{{"$set", student}}
+   
+   	// 指定数据类型后可以直接解析
+   	//var student Student
+   	r2, err := coll.UpdateOne(context.TODO(), filter, update)
+   	if err != nil {
+   		panic(err)
+   	}
+   
+   	// TODO 如何转换为JSON
+   
+   	//str, err := json.Marshal(student)
+   
+   	log.Println(r2)
+   }
+   ```
+
+   
+
+
+
+## 30.6 删除记录
+
+```go
+func testDelete() {
+	opts := options.Client().ApplyURI(uri)
+
+	// Create a new client and connect to the server
+	// 发起链接
+	client, err := mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		// 断开链接
+		if err = client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+	// Send a ping to confirm a successful connection
+	var result bson.M
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+		panic(err)
+	}
+
+	// 查询一条记录, 并将其转换为json
+	coll := client.Database("school").Collection("students")
+	filter := bson.D{{"id", 1001}}
+	type Student struct {
+		Id       int
+		NickName string
+		Gold     int
+	}
+	// 指定数据类型后可以直接解析
+	result2, err := coll.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO 如何转换为JSON
+
+	//str, err := json.Marshal(result2)
+
+	log.Println(result2)
+}
+```
+
+
+
+
+
+## 30.7 更新记录时，不存在则插入
+
+```go
+	opts := options.Update().SetUpsert(true)
+	_, err = coll.UpdateOne(context.TODO(), filter, update, opts)
 ```
 
