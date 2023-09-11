@@ -17,6 +17,10 @@
 2. 设置环境变量
 
    ```shell
+   mkdir doc local app tmp
+   ```
+
+   ```shell
    export GOROOT=$HOME/local/go              		#go安装目录。
    export GOPATH=$HOME/doc/go     				    #保持第三方依赖包,goland里面需要配置
    export GOBIN=$GOPATH/bin           				#可执行文件存放
@@ -4385,7 +4389,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                 
+   >                                                     
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6216,5 +6220,168 @@ func testDelete() {
 ```go
 	opts := options.Update().SetUpsert(true)
 	_, err = coll.UpdateOne(context.TODO(), filter, update, opts)
+```
+
+
+
+
+
+# 第三十一章 GRPC
+
+
+
+## 31.1 安装protoc
+
+参考上面的教程
+
+
+
+
+
+## 31.2 安装protoc的Golang gRPC插件
+
+```shell
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```
+
+
+
+
+
+## 31.3 编写proto文件
+
+```protobuf
+syntax = "proto3";
+
+option go_package="/proto";
+
+package Business;
+
+service Hello {
+  rpc Say (SayRequest) returns (SayResponse);
+}
+
+message SayResponse {
+  string Message = 1;
+}
+
+message SayRequest {
+  string Name = 1;
+}
+```
+
+
+
+
+
+## 31.4 生成代码
+
+```shell
+protoc --go_out=.  --go-grpc_out=. proto/hello.proto
+```
+
+
+
+
+
+## 31.5 服务端代码
+
+服务端的项目名称为 grpcdemo
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "grpcdemo/proto"
+    "net"
+
+    "google.golang.org/grpc"
+)
+
+type server struct {
+    proto.UnimplementedHelloServer
+}
+
+func (s *server) Say(ctx context.Context, req *proto.SayRequest) (*proto.SayResponse, error) {
+    fmt.Println("request:", req.Name)
+    return &proto.SayResponse{Message: "Hello " + req.Name}, nil
+}
+
+func main() {
+    listen, err := net.Listen("tcp", ":8001")
+    if err != nil {
+        fmt.Printf("failed to listen: %v", err)
+        return
+    }
+    s := grpc.NewServer()
+    proto.RegisterHelloServer(s, &server{})
+    //reflection.Register(s)
+
+    defer func() {
+        s.Stop()
+        listen.Close()
+    }()
+
+    fmt.Println("Serving 8001...")
+    err = s.Serve(listen)
+    if err != nil {
+        fmt.Printf("failed to serve: %v", err)
+        return
+    }
+}
+```
+
+
+
+
+
+
+
+## 31.6 客户端代码
+
+客户端的项目名称为grpchello
+
+```go
+package main
+
+import (
+    "bufio"
+    "context"
+    "fmt"
+    "grpchello/proto"
+    "os"
+
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/credentials/insecure"
+)
+
+func main() {
+
+    var serviceHost = "127.0.0.1:8001"
+
+    conn, err := grpc.Dial(serviceHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
+    if err != nil {
+        fmt.Println(err)
+    }
+    defer conn.Close()
+
+    client := proto.NewHelloClient(conn)
+    rsp, err := client.Say(context.TODO(), &proto.SayRequest{
+        Name: "BOSIMA",
+    })
+
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    fmt.Println(rsp)
+
+    fmt.Println("按回车键退出程序...")
+    in := bufio.NewReader(os.Stdin)
+    _, _, _ = in.ReadLine()
+}
 ```
 
