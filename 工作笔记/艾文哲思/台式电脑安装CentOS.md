@@ -18,9 +18,28 @@ CentOS-7-x86_64-Minimal-1810.iso
 
 
 
+# 配置方式一  最简单
 
+1. 修改网卡配置`vi /etc/sysconfig/network-scripts/ifcfg-ens32`
 
-# 配置
+   ```shell
+   # 自动获取ip地址,DHCP方式
+   ONBOOT=yes # 将no改为yes
+   ```
+
+2. 重启网卡
+
+   ```shell
+   service network restart
+   ```
+
+3. 查看ip地址
+
+   ```shell
+   ip a
+   ```
+
+# 配置方式二  稍微麻烦
 
 1. 修改网卡配置`vi /etc/sysconfig/network-scripts/ifcfg-ens32`
 
@@ -96,5 +115,4 @@ CentOS-7-x86_64-Minimal-1810.iso
    # 和 centos7 不一样
    systemctl restart NetworkManager
    ```
-
 
