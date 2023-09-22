@@ -307,6 +307,7 @@ rummy
 
 1. netMessage 里面存放pb生成的文件和grpc文件
 2. proto里面存放定义的proto文件
+3. proto里面全部文件的option go_package="/netMessage";
 
 
 
