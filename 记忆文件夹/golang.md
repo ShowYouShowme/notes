@@ -4389,7 +4389,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                     
+   >                                                       
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5167,8 +5167,8 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
 
    ```protobuf
    syntax = "proto3";
-   package example;
-   option go_package="./;example"; // go语言必须加这行,分号前是生成文件路径;后面是package名称
+   package Business;
+   option go_package="/netMessage"; // go语言必须加这行,分号前是生成文件路径;后面是package名称
    
    message person {    //  aa 会生成 Aa 命名的结构体
      int32 id = 1;
@@ -5180,10 +5180,10 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
    }
    ```
 
-2. 编译
+2. 编译，项目根目录执行
 
    ```shell
-   protoc --go_out=. person.proto
+   protoc --go_out=. .\message.proto
    ```
 
 

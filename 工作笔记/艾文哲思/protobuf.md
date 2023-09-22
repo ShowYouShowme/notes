@@ -243,3 +243,175 @@ message Person {
    ```
 
    
+
+
+
+## 2.3 常见语法
+
+```ini
+[package]
+desc = 用于避免命名冲突的，会生成命名空间，比如C++语言，go语言里没用
+
+[go_package]
+desc = package名，生成的代码会存放在${go_package}文件夹里面;go语言专用
+
+[syntax]
+desc = proto版本，可选的值是proto2 或者 proto3
+
+[import]
+desc = 导入变量
+```
+
+
+
+示例
+
+```protobuf
+// person.proto
+syntax = "proto3";
+package witeHouse;  // go 语言不需要,c++ 里是命名空间名称
+option go_package="/witeHouse"; // go语言必须加这行,分号前是生成文件路径;后面是package名称
+import "common.proto";
+message all_person {    //  aa_bb 会生成 AaBb 的驼峰命名的结构体
+  repeated person Per = 1;
+}
+```
+
+
+
+必须先编译common.proto，然后再编译person.proto，最后才能在代码里面使用
+
+
+
+
+
+# 第三章 golang项目规范
+
+
+
+## 3.1 代码结构
+
+```shell
+rummy
+|
+|------netMessage
+|
+|------proto
+|
+|------main.go
+```
+
+
+
+## 3.2 说明
+
+1. netMessage 里面存放pb生成的文件和grpc文件
+2. proto里面存放定义的proto文件
+
+
+
+## 3.3 生成的命令
+
+```shell
+# 项目根目录执行
+protoc --go_out=..\  --go-grpc_out=..\ .\cmd.proto
+protoc --go_out=..\  --go-grpc_out=..\ .\gateway.proto
+protoc --go_out=..\  --go-grpc_out=..\ .\rummy.proto
+```
+
+
+
+## 3.4 proto文件
+
+1. cmd.proto
+
+   ```protobuf
+   syntax = "proto3";
+   package cmd;
+   option go_package ="/netMessage";
+   
+   // ServiceId 服务代码 固定为两位
+   enum ServiceId {
+     UNKNOWN = 0;
+     SYS     = 10;
+     BFF_API = 11;
+     BFF_GM = 12;
+     SERVICE_AUTH = 13;
+     SERVICE_FINANCE = 14;
+     SERVICE_AGENT = 15;
+     SERVICE_HALL = 16;
+     SERVICE_ACTIVITY = 17;
+     SERVICE_RECORD = 18;
+     GAME_RUMMY = 19;
+     SERVICE_STADIUM = 20;
+     SERVICE_COMPETITION = 21;
+   }
+   
+   // 消息命令 固定为四位， 前两位固定为ServiceId，用于区别命令属于哪个服务
+   // 客户端发送的命令前缀为C_，服务端发送的命令前缀为S_
+   enum CMD {
+     CMD_UNKNOWN = 0; // 未知消息
+     C_SYS_PING  = 1001;
+     S_SYS_PONG  = 1002;
+     C_EXAMPLE = 1003;
+     S_EXAMPLE = 1004;
+   }
+   ```
+
+2. gateway.proto
+
+   ```protobuf
+   syntax = "proto3";
+   
+   import "cmd.proto";
+   package gateway;
+   option go_package ="/netMessage";
+   
+   
+   // 网关服务
+   service GatewayService {
+     rpc PushMessage(PushMessageReq) returns (PushMessageResp); // 请求网关推送消息给客户端
+   }
+   
+   // 推送消息req
+   message PushMessageReq {
+     int64 uid = 1;
+     cmd.ServiceId serviceId = 2;
+     cmd.CMD cmd = 3;
+     bytes data = 4;
+   }
+   
+   // 推送消息resp
+   message PushMessageResp {
+   }
+   ```
+
+3. rummy.proto
+
+   ```protobuf
+   syntax = "proto3";
+   import "cmd.proto";
+   import "gateway.proto";
+   package rummy;
+   option go_package="/netMessage";
+   
+   message EnterGameReq{
+   
+   }
+   
+   message EnterGameResp{
+   
+   }
+   
+   message OnMessageReq {
+     int64 uid = 1;
+     int32 sid = 2;
+     cmd.CMD cmd = 3;
+     bytes data = 4;
+   }
+   
+   message OnMessageResp {
+   }
+   ```
+
+   
