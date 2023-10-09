@@ -1,12 +1,5 @@
 # 第0章 网页引入jquery
 
-```shell
-var importJs=document.createElement('script')  //在页面新建一个script标签
-importJs.setAttribute("type","text/javascript")  //给script标签增加type属性
-importJs.setAttribute("src", "https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js") //给script标签增加src属性， url地址为cdn公共库里的
-document.getElementsByTagName("head")[0].appendChild(importJs) //把importJs标签添加在页面
-```
-
 ```javascript
 // 打开多个页面
  $(".list_box>a").each(function (idx, elem) {
@@ -18,6 +11,13 @@ document.getElementsByTagName("head")[0].appendChild(importJs) //把importJs标�
         	frame.location= url;
                 
             })
+```
+
+```html
+<head>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js">
+    </script>
+</head>
 ```
 
 

@@ -314,7 +314,10 @@ rummy
 ## 3.3 生成的命令
 
 ```shell
-# 项目根目录执行
+# 生成ProtoBuf,  /proto 目录执行
+protoc --go_out=..\  .\message.proto
+
+# /proto 目录执行
 protoc --go_out=..\  --go-grpc_out=..\ .\cmd.proto
 protoc --go_out=..\  --go-grpc_out=..\ .\gateway.proto
 protoc --go_out=..\  --go-grpc_out=..\ .\rummy.proto

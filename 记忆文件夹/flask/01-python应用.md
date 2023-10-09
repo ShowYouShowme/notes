@@ -11,10 +11,10 @@ def hello_world():
     return 'hello_world!'
 
 if __name__ == '__main__':
-    # 启动debug模式时，代码修改了会自动重新加载无需重启服务 
+    # 启动debug模式时，代码修改了会自动重新加载无需重启服务,但是没办法用pycharm Debug启动,建议设置为False
     # threaded 是否开启多线程,建议不开启
     # processes 进程数量,用pycharm调试时设置为1方便调试
-    app.run(host = '127.0.0.1', port = '1234', debug=True,threaded = False, processes=1)
+    app.run(host = '127.0.0.1', port = '1234', debug=False,threaded = False, processes=1)
 ```
 
 
@@ -604,7 +604,7 @@ if __name__ == '__main__':
     app.run("0.0.0.0", 5000)
   
     ```
-
+  
     
   
   
@@ -656,7 +656,7 @@ if __name__ == '__main__':
        def success():
          return 'logged in successfully!' 
        ```
-  
+    
        login.html
     
        ```html
@@ -679,7 +679,7 @@ if __name__ == '__main__':
        函数原型
     
        ```python
-     flask.abort(code)
+        flask.abort(code)
        ```
   
        错误码
@@ -691,7 +691,7 @@ if __name__ == '__main__':
        404:Not Found
        406:Not Acceptable
        415:不支持的媒体类型
-     429:请求过多
+        429:请求过多
        ```
   
        

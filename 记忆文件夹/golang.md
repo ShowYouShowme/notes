@@ -436,6 +436,19 @@ func TestLoopInfinite(t *testing.T){
 		n++
 	}
 }
+
+
+
+// 利用break跳出循环
+val := 100
+for {
+    fmt.Printf("val = %v \n", val)
+    if val > 105 {
+        break
+    }
+    val += 1
+}
+fmt.Printf("...")
 ```
 
 
@@ -523,8 +536,23 @@ func TestIfMultiSet(t *testing.T){
    		}
    	}
    }
+   
+   
+   	// 如果是C语言, 128、126、125 都执行一个语句
+       // Go语言, 128和126 则什么也不做
+   	var age int32
+   	age = 128
+   	switch age {
+   	case 128:
+   	case 126:
+   	case 125:
+   		fmt.Println("name = ", age)
+   	case 127:
+   		fmt.Println("age = 127")
+   	}
+   	fmt.Println("finished...")
    ```
-
+   
    
 
 # 第三章  常用集合
@@ -565,6 +593,13 @@ func TestIfMultiSet(t *testing.T){
    
    	for _, e:= range arr3{
    		t.Log(e)
+   	}
+   }
+   
+   func main() {
+   	array := []int64{11, 22, 33, 44, 55}
+   	for index, value := range array {
+   		fmt.Printf("index = %v, value = %v \n", index, value)
    	}
    }
    ```
@@ -635,6 +670,42 @@ func TestIfMultiSet(t *testing.T){
    	summer[0] = "Unknow" // Q2也受到影响
    	t.Log(Q2)
    	t.Log(year)
+   }
+   ```
+
+3. 切片截取
+
+   ```go
+   a := []int64{11, 22, 33, 44, 55}
+   b := a[1:2] // [22]     前闭后开的区间  [start, end)
+   c := a[3:]  // [44,55]
+   d := a[:2]  // [11,22]
+   ```
+
+4. 末尾插入元素
+
+   ```go
+   // 指定多个元素
+   a1 := []int64{1, 2, 3, 4}
+   a1 = append(a1, 11, 22, 33)
+   
+   // 解构slice
+   a1 := []int64{1, 2, 3, 4}
+   a2 := []int64{5, 6, 7}
+   a1 = append(a1, a2...)
+   ```
+
+5. 切片作为参数传入函数，并且改变切片内容
+
+   ```go
+   func arrayPushBack(param *[]int64, val int64) {
+   	*param = append(*param, val)
+   }
+   
+   func main() {
+       a1 := []int64{1, 2, 3}
+       arrayPushBack(&a1, 12)
+       fmt.Printf("%v \n", a1)
    }
    ```
 
@@ -4389,7 +4460,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                       
+   >                                                               
    >   # 2-- 检查进程是否存在
    >   ```
    >
