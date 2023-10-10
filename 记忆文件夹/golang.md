@@ -695,7 +695,7 @@ func TestIfMultiSet(t *testing.T){
    a1 = append(a1, a2...)
    ```
 
-5. 切片作为参数传入函数，并且改变切片内容
+5. 切片作为参数传入函数，并且插入元素
 
    ```go
    func arrayPushBack(param *[]int64, val int64) {
@@ -708,6 +708,92 @@ func TestIfMultiSet(t *testing.T){
        fmt.Printf("%v \n", a1)
    }
    ```
+
+6. copy 数组
+
+   + 方式一
+
+     ```go
+     arr := []int64{0x11, 0x21, 0x31}
+     
+     arr2 := make([]int64, 0)
+     arr2 = append(arr2, arr...)
+     ```
+
+   + 方式二
+
+     ```go
+     arr := []int64{0x11, 0x21, 0x31}
+     
+     arr2 := make([]int64, len(arr))
+     copy(arr2, arr)
+     ```
+
+7. 切片作为参数传入函数，并且删除元素
+
+   ```go
+   func erase(array *[]int64, position int) {
+   	*array = append((*array)[:position], (*array)[position+1:]...)
+   	fmt.Printf("........")
+   }
+   
+   	arr := []int64{0x11, 0x21, 0x31}
+   	erase(&arr, 1)
+   ```
+
+8. 切片作为参数传入函数，并且修改元素
+
+   ```go
+   func changeElem(arr []int64) {
+   	arr[1] = 990
+   }
+   
+   arr := []int64{1, 2, 3, 4}
+   changeElem(arr)
+   ```
+
+9. Map 对应几个操作的笔记
+
+   + 插入元素
+
+     ```go
+     func InsertElem(arr map[int64]int64) {
+     	arr[5] = 55
+     	fmt.Printf("........")
+     }
+     
+     	arr := map[int64]int64{1: 11, 2: 22, 3: 33, 4: 44}
+     	InsertElem(arr)
+     ```
+
+     
+
+   + 删除元素
+
+     ```go
+     func DeleteElem(arr map[int64]int64) {
+     	delete(arr, 2)
+     	fmt.Printf("........")
+     }
+     
+     	arr := map[int64]int64{1: 11, 2: 22, 3: 33, 4: 44}
+     	DeleteElem(arr)
+     ```
+
+     
+
+   + 修改元素
+
+     ```go
+     func changeElem(arr map[int64]int64) {
+     	arr[1] = 990
+     	fmt.Printf("........")
+     }
+     	arr := map[int64]int64{1: 11, 2: 22, 3: 33, 4: 44}
+     	changeElem(arr)
+     ```
+
+     
 
    
 
@@ -781,7 +867,7 @@ func TestIfMultiSet(t *testing.T){
    }
    ```
 
-4. 遍历
+4. 遍历：遍历的时候并不是有序的，每次遍历的次序都可能不同，因为会有一个随机位置
 
    ```go
    func TestTravelMap(t *testing.T)  {
@@ -4460,7 +4546,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                               
+   >                                                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
