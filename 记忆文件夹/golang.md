@@ -695,21 +695,7 @@ func TestIfMultiSet(t *testing.T){
    a1 = append(a1, a2...)
    ```
 
-5. 切片作为参数传入函数，并且插入元素
-
-   ```go
-   func arrayPushBack(param *[]int64, val int64) {
-   	*param = append(*param, val)
-   }
-   
-   func main() {
-       a1 := []int64{1, 2, 3}
-       arrayPushBack(&a1, 12)
-       fmt.Printf("%v \n", a1)
-   }
-   ```
-
-6. copy 数组
+5. copy 数组
 
    + 方式一
 
@@ -728,6 +714,22 @@ func TestIfMultiSet(t *testing.T){
      arr2 := make([]int64, len(arr))
      copy(arr2, arr)
      ```
+
+6. 切片作为参数传入函数，并且插入元素
+
+   ```go
+   func arrayPushBack(param *[]int64, val int64) {
+   	*param = append(*param, val)
+   }
+   
+   func main() {
+       a1 := []int64{1, 2, 3}
+       arrayPushBack(&a1, 12)
+       fmt.Printf("%v \n", a1)
+   }
+   ```
+
+   
 
 7. 切片作为参数传入函数，并且删除元素
 
