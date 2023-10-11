@@ -6575,8 +6575,10 @@ func main() {
    ; 只能对socket执行write操作 或者close 操作
    ; 单实例,非grpc
    [session]
+   ; 有一个消息队列,收到OnMessage时把消息放到队列里
+   ; select 主循环里,每次调度都会处理全部的消息[调用上游服务的OnMessage]
    OnConnect = 有新链接 
-   OnMessage = 收到消息,每次收到客户端消息,就启动一个goroutine来请求上游服务,防止阻塞
+   OnMessage = 收到消息
    OnError   = 链接出错
    OnClose   = 链接关闭
    Inform    = 给某个玩家推送消息,上游服务调用
@@ -6635,7 +6637,7 @@ func main() {
 
 4. 服务代码结构
 
-   rank.go，每个grpc服务都有一个OnMessage 接口，参数是[]byte, 返回值是空
+   rank.go，每个grpc服务都有一个OnMessage 接口，参数是[]byte, 返回值是空。主要作用是将消息push到Schedule的buffer，然后立即返回！
 
    ```go
    package main
@@ -6682,5 +6684,68 @@ func main() {
    }
    ```
 
-   
+
+
+## 32.2 调度器
+
+每一个上游服务都有一个成员变量是调度器，OnMessage收到消息时，将消息放到队列，立即返回。
+
+```go
+// 业务服传入cb,cb里面决定每个消息应该如何处理
+
+type Schedule struct {
+	tasks [][]byte
+	mc    chan []byte
+	cb    func([]byte)
+}
+
+func (receiver *Schedule) Init(cb func([]byte)) {
+	receiver.tasks = make([][]byte, 0)
+	receiver.mc = make(chan []byte, 1024) // buffer len = 1024
+	receiver.cb = cb
+}
+
+func (receiver *Schedule) AddTask(task []byte) {
+	receiver.mc <- task
+}
+
+func (receiver *Schedule) ExecCallback() {
+	for _, task := range receiver.tasks {
+		receiver.cb(task)
+	}
+}
+
+func (receiver *Schedule) Run() {
+	for {
+		select {
+		case newTask := <-receiver.mc:
+			receiver.tasks = append(receiver.tasks, newTask)
+		default:
+			receiver.ExecCallback()
+		}
+	}
+}
+```
+
+
+
+## 32.3 优化
+
+既然每个业务服都有OnMessage的接口了，其实不用grpc也可以。可以直接写成一个class，服务之间的rpc调用就变成了函数调用。传统多进程微服务架构变成了单进程多协程的架构。
+
+
+
+```go
+// rpc调用时,调用方要传入一个channle来接受结果
+// rpc调用方式：app.rpc.Rank.enterRoom()
+type Rpc struct{
+    
+}
+
+// 返回一个服务实例地址
+// 请求Register 来返回一个实例
+func (receiver *Rpc) Rank() *Rank{
+    
+}
+```
 
