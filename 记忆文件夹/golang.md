@@ -6635,7 +6635,7 @@ func main() {
 
 4. 服务代码结构
 
-   rank.go
+   rank.go，每个grpc服务都有一个OnMessage 接口，参数是[]byte, 返回值是空
 
    ```go
    package main
