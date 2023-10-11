@@ -4548,7 +4548,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                 
+   >                                                                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6543,4 +6543,144 @@ func main() {
     _, _, _ = in.ReadLine()
 }
 ```
+
+
+
+
+
+# 第三十二章 游戏服务框架
+
+1. 游戏框架模拟网易的pomelo和skynet，利用单进程多线程的方式，方便开发、部署、git仓库管理。
+
+2. 传统的web 的微服务的开发模式，每一个服务是一个项目，项目的管理上就显得非常麻烦！
+3. 还有一种更简单的设计方案是，长连接用websocket，短连接用http，token时间设置为一个月，token过期后发起http请求时提示用户重新登录。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
+
+
+
+## 32.1 服务种类介绍
+
+1. login：使用gin编写，主要是通过账号密码返回token，协议是http协议，也可以使用express框架。token的时间可以设置为永久或者一个月。
+
+2. game：集成各种服务到几个进程里面
+
+   ```ini
+   ; 服务分为框架服务和上游业务服务
+   
+   ; 框架服务
+   ; client 连结connector, 使用websocket协议
+   ; 只能对socket 执行read 操作
+   [connector]
+   
+   ; session,主要进行会话管理
+   ; 只能对socket执行write操作 或者close 操作
+   ; 单实例,非grpc
+   [session]
+   OnConnect = 有新链接 
+   OnMessage = 收到消息,每次收到客户端消息,就启动一个goroutine来请求上游服务,防止阻塞
+   OnError   = 链接出错
+   OnClose   = 链接关闭
+   Inform    = 给某个玩家推送消息,上游服务调用
+   Broadcast = 广播
+   
+   ; 服务注册和发现
+   ; 单实例,非grpc
+   [Register]
+   getAllServer = 获取全部服务地址 
+   getServer    = 获取特定服务地址
+   register     = 注册服务
+   
+   
+   ; 上游服务, 上游服务读取配置文件, 可以开启一个或者多个,参考pomelo
+   ; 排行榜, grpc
+   [Rank]
+   
+   
+   ; game, grpc
+   [game]
+   
+   
+   ; 任务, grpc
+   [Task]
+   
+   ; admin, 处理管理后台和运营的需求,可以按情况采用grpc或者http
+   [admin]
+   ```
+
+3. 项目文档结构
+
+   ```ini
+   |-----app
+   |      |
+   |      |------servers
+   |      |        |-----------connector
+   |      |        |-----------session
+   |      |        |-----------register
+   |      |        |-----------rank
+   |      |        |-----------game
+   |      |        |-----------task
+   |      |        |-----------admin
+   |      |
+   |      |
+   |      |
+   |      |------util  --- 工具函数
+   |
+   |
+   |-----config     ----->存放配置文件
+   |
+   |
+   |-----logs        ---->存放日志
+   |
+   |-----app.go     ----> 里面负责创建全部的服务
+   ```
+
+4. 服务代码结构
+
+   rank.go
+
+   ```go
+   package main
+   
+   // Rank 用微服务的方式开发游戏,可以参考pomelo,把全部的服务写到一个项目里
+   type Rank struct {
+   }
+   
+   // Init 初始化,类似C++的构造函数
+   func (receiver *Rank) Init() {
+   
+   }
+   
+   // Register 服务注册与发现
+   func (receiver *Rank) Register() {
+   
+   }
+   
+   // Run 类似微服务的main函数,这种解决方案把全部服务都写到一个进程里面
+   func (receiver *Rank) Run() {
+   
+   }
+   
+   // 启动Rank服务,main里面调用
+   func launchRank()  {
+   	r := &Rank{}
+   	r.Init()
+   	r.Run()
+   }
+   ```
+
+   app.go
+
+   ```go
+   package main
+   
+   func launchAll()  {
+       launchRank()
+       // .... 启动其它服务
+   }
+   
+   func main(){
+       launchAll()
+   }
+   ```
+
+   
 
