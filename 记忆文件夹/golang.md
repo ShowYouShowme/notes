@@ -4548,7 +4548,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                   
+   >                                                                       
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -4660,6 +4660,8 @@ func BenchmarkStringAdd(b *testing.B) {
 	time.Sleep(time.Second * 5)
 	fmt.Println("t2 : ", time.Now())
 ```
+
+
 
 
 
@@ -4913,6 +4915,8 @@ func main()  {
 
 ## 19.1 类型断言
 
+类型断言就是C++里面的强制类型转换
+
 ```go
 func assertType(param interface{}){
 	str , ok:= param.(string) // 类型断言
@@ -4927,6 +4931,36 @@ func TestTypeAssert(t *testing.T) {
 	assertType(1)
 	assertType([]int{1,2,6})
 	assertType("justin")
+}
+```
+
+
+
+## 19.2 获取变量类型
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	var a float64
+	a = 10
+	getType(a)
+}
+func getType(a any) {
+	switch a.(type) {
+	case int:
+		fmt.Println("the type of a is int")
+	case string:
+		fmt.Println("the type of a is string")
+	case float64:
+		fmt.Println("the type of a is float")
+	default:
+		fmt.Println("unknown type")
+	}
 }
 ```
 
@@ -6548,12 +6582,70 @@ func main() {
 
 
 
-# 第三十二章 游戏服务框架
+# 第三十二章 时间戳和时间操作
+
+
+
+## 32.1 时间戳
+
+```go
+time.Now().Unix()				//时间戳（秒） 
+time.Now().UnixNano()			//时间戳（纳秒）
+time.Now().UnixNano() / 1e6 	//时间戳（毫秒）
+time.Now().UnixNano() / 1e9 	//时间戳（纳秒转换为秒）
+```
+
+
+
+## 32.2 时间格式化
+
+```go
+nowtime:=time.Now().Format("2006-01-02 15:04:05")  //要显示的时间格式，2006-01-02 15:04:05，这几个值是固定写法,golang的诞生时间.
+ 
+fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
+```
+
+
+
+## 32.3 时间戳与字符串相互转化
+
++ 时间戳转时间字符串    
+
+  ```go
+  timeUnix:=time.Now().Unix() //时间戳
+  
+  formatTimeStr:=time.Unix(timeUnix,0).Format("2006-01-02 15:04:05")
+  
+  fmt.Println(formatTimeStr) //打印结果：2021-02-02 13:22:04
+  ```
+
+  
+
++  时间字符串转时间 
+
+  ```go
+  formatTimeStr := "2021-02-02 13:22:04" 
+  
+  formatTime, err := time.Parse("2006-01-02 15:04:05", formatTimeStr)
+  
+  fmt.Println(formatTime) //打印结果：2021-02-02 13:22:04 +0000 UTC
+  ```
+
+  
+
+
+
+
+
+
+
+# 第三十三章 游戏服务框架
 
 1. 游戏框架模拟网易的pomelo和skynet，利用单进程多线程的方式，方便开发、部署、git仓库管理。
 
 2. 传统的web 的微服务的开发模式，每一个服务是一个项目，项目的管理上就显得非常麻烦！
 3. 还有一种更简单的设计方案是，长连接用websocket，短连接用http，token时间设置为一个月，token过期后发起http请求时提示用户重新登录。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
+4. 如果微服务用http通信，那么可以写一个Rpc类，里面有多个成员，每个成员是一个service，然后就可以像调用函数一样rpc了，比如Rpc.login.getUserInfo()
 
 
 
@@ -6576,7 +6668,7 @@ func main() {
    ; 单实例,非grpc
    [session]
    ; 有一个消息队列,收到OnMessage时把消息放到队列里
-   ; select 主循环里,每次调度都会处理全部的消息[调用上游服务的OnMessage]
+   ; select 主循环里,每次调度都会处理全部的消息[调用上游服务的Send]
    OnConnect = 有新链接 
    OnMessage = 收到消息
    OnError   = 链接出错
@@ -6637,7 +6729,7 @@ func main() {
 
 4. 服务代码结构
 
-   rank.go，每个grpc服务都有一个OnMessage 接口，参数是[]byte, 返回值是空。主要作用是将消息push到Schedule的buffer，然后立即返回！
+   rank.go，每个grpc服务都有一个Send接口，参数是[]byte, 返回值是空。主要作用是将消息push到Schedule的buffer，然后立即返回！
 
    ```go
    package main
@@ -6646,19 +6738,30 @@ func main() {
    type Rank struct {
    }
    
-   // Init 初始化,类似C++的构造函数
-   func (receiver *Rank) Init() {
-   
+   // 模拟skynet
+   func (receiver *Rank) Send(api string, param []byte) {
+       
    }
    
-   // Register 服务注册与发现
-   func (receiver *Rank) Register() {
+   // 模拟skynet
+   func (receiver *Rank) Call(api string, param []byte, accept chan []byte) {
+       
+   }
    
+   // Init 初始化,类似C++的构造函数
+   func (receiver *Rank) init() {
+       Rpc.Register("Rank", receiver)
    }
    
    // Run 类似微服务的main函数,这种解决方案把全部服务都写到一个进程里面
-   func (receiver *Rank) Run() {
+   func (receiver *Rank) run() {
    
+   }
+   
+   func CreateRank() *Rank{
+       r := &Rank{}
+       r.init()
+       r.run()
    }
    
    // 启动Rank服务,main里面调用
@@ -6668,9 +6771,9 @@ func main() {
    	r.Run()
    }
    ```
-
+   
    app.go
-
+   
    ```go
    package main
    
@@ -6683,12 +6786,159 @@ func main() {
        launchAll()
    }
    ```
+   
+   session.go
+   
+   ```go
+   package main
+   
+   // Rank 用微服务的方式开发游戏,可以参考pomelo,把全部的服务写到一个项目里
+   type SessionCmd struct{
+       cmd  string   // 定义成枚举
+       data any
+   }
+   
+   type Session struct {
+       ch  chan SessionCmd
+   }
+   
+   func (receiver *Session) init() {
+       receiver.ch = make(SessionCmd, 1024)
+   }
+   
+   
+   // 这四个API 由connector来调用
+   func (receiver *Session) OnConnect(data any) {
+       cmd := &SessionCmd{}
+       cmd.cmd = "connect"
+       cmd.data = data
+       receiver.ch  <- cmd
+   }
+   
+   func (receiver *Session) OnMessage(data any) {
+       cmd := &SessionCmd{}
+       cmd.cmd = "message"
+       cmd.data = data
+       receiver.ch  <- cmd
+   }
+   
+   func (receiver *Session) OnClose(data any) {
+       cmd := &SessionCmd{}
+       cmd.cmd = "close"
+       cmd.data = data
+       receiver.ch  <- cmd
+   }
+   
+   func (receiver *Session) OnError(data any) {
+       cmd := &SessionCmd{}
+       cmd.cmd = "error"
+       cmd.data = data
+       receiver.ch  <- cmd
+   }
+   
+   
+   // PushToMany 和 PushToAll 类似, 上游服务推送消息时调用
+   func PushToOne(uid int64, data any){
+       cmd := &SessionCmd{}
+       cmd.cmd = 'pushToOne'
+       cmd.data = data
+       receiver.ch  <- cmd
+   }
+   
+   func (receiver *Session) run() {
+       for{
+           select{
+               case msg := <- receiver.ch:
+               switch msg.cmd{
+                   case 'message':
+                   onMessage()
+                   
+                   case 'connect':
+                   onConnect()
+                   
+                   case 'close':
+                   onClose()
+                   
+                   case 'error':
+                   onError()
+                   
+                   case 'pushToOne':
+                   onPushToOne()
+                   
+                   case 'pushToMany':
+                   onPushToMany()
+                   
+                   case 'pushToAll':
+                   onPushToAll()
+               }
+           }
+       }
+   }
+   
+   ```
+   
+   rpc.go
+   
+   ```go
+   package main
+   
+   import (
+   	"math/rand"
+   	"sync"
+   )
+   
+   // Rpc TODO 建议每个服务只启动一个,会更简单,只要服务拆分合理,完全可以充分利用CPU的资源
+   type Rpc struct {
+   	mut     sync.Mutex
+   	servers map[string][]*any
+   }
+   
+   // Init main里调用一次
+   func (receiver *Rpc) init() {
+   	receiver.servers = make(map[string][]*any)
+   }
+   
+   // 启动服务
+   func (receiver *Rpc) run() {
+   
+   }
+   
+   func (receiver *Rpc) Register(serverName string, server *any) {
+   	defer receiver.mut.Unlock()
+   	receiver.mut.Lock()
+   
+   	_, ok := receiver.servers[serverName]
+   	if ok == false {
+   		receiver.servers[serverName] = make([]*any, 0)
+   	}
+   	receiver.servers[serverName] = append(receiver.servers[serverName], server)
+   }
+   
+   // Rank 获取指定的服务
+   func (receiver *Rpc) Rank() *any {
+   	defer receiver.mut.Unlock()
+   	receiver.mut.Lock()
+   	randNum := rand.Int() // 不需要设置随机种子了
+   
+   	servers := receiver.servers["Rank"]
+   	index := randNum % len(servers)
+   	return servers[index]
+   }
+   
+   func CreateRpc() {
+   	r := &Rpc{}
+   	r.init()
+   	r.run()
+   }
+   ```
+   
+   
 
 
 
 ## 32.2 调度器
 
-每一个上游服务都有一个成员变量是调度器，OnMessage收到消息时，将消息放到队列，立即返回。
+每一个上游服务都有一个成员变量是调度器，Send收到消息时，将消息放到队列，立即返回。
 
 ```go
 // 业务服传入cb,cb里面决定每个消息应该如何处理
@@ -6731,13 +6981,13 @@ func (receiver *Schedule) Run() {
 
 ## 32.3 优化
 
-既然每个业务服都有OnMessage的接口了，其实不用grpc也可以。可以直接写成一个class，服务之间的rpc调用就变成了函数调用。传统多进程微服务架构变成了单进程多协程的架构。
+既然每个业务服都有Send的接口了，其实不用grpc也可以。可以直接写成一个class，服务之间的rpc调用就变成了函数调用。传统多进程微服务架构变成了单进程多协程的架构。因为每个业务服务都是一个class Instance，因此不需要配置ip 和 port。可以配置每个服务启动多少个实例。这时候就和skynet一样了。
 
 
 
 ```go
 // rpc调用时,调用方要传入一个channle来接受结果
-// rpc调用方式：app.rpc.Rank.enterRoom()
+// rpc调用方式：app.rpc.Rank.Call("enterRoom", param, acceptChannel)
 type Rpc struct{
     
 }
@@ -6749,3 +6999,71 @@ func (receiver *Rpc) Rank() *Rank{
 }
 ```
 
+
+
+服务配置：配置每个服务启动的数量，有状态服务只能配置一个，比如session、game，无状态服务可以配置多个；最简单的是全部服务都只配置一个，此时可以忽略配置。
+
+```json
+{
+	serverNum : {
+        connector : 1,
+        session   : 1,
+        game      : 1,
+        task      : 5,
+        login     : 10,
+        admin     : 1
+    }
+}
+```
+
+有时间自己开一个github项目仓库，然后实现自己的想法
+
+
+
+
+
+## 32.4 连接服务器的设计
+
+我们把处理外部连接和处理游戏逻辑分摊到两个服务器上处理，为了后文容易表述，暂时不太严谨的把前者称为连接服务器，后者叫做逻辑服务器。
+
+连接服务器做的事情可以非常简单，只是把多个连接上的数据汇集到一起。假设同时连接总数不超过 65536 个，我们只需要把每个连接上的数据包加上一个两字节的数据头就可以表识出来。这个连接服务器再通过单个连接和逻辑服务器通讯就够了。
+
+
+
+连接服务器和client 用 websocket协议
+
+连接服务器和逻辑服务器用websocket协议
+
+数据类型定义
+
+```protobuf
+// 连接服务器发送给 逻辑服务器的数据
+message Package
+{
+	int32   connectorID;  // 网关每个链接都有一个链接ID
+	int32   cmd;          // connect、message、close、error,定义一个枚举
+	bytes   data;         // 传输给后端的数据,也是客户端发送的数据
+}
+```
+
+这样设计，连用户认证都不需要写在连接器里面了。连接器里面什么逻辑也没有。
+
+
+
+## 32.5 游戏流程
+
+1. 客户端http请求login server 得到token
+
+2. 客户端用ws连接到连接服务器，带上token信息。之前是单独设计一个pb的协议，现在不需要
+
+   ```shell
+   url = ws://191.168.100.2/?token=HEgzCVbSRkccQGunqcLkXG1MEo12B9Uz
+   ```
+
+3. 连接服务转发数据给逻辑服务器时，带上token参数。
+
+
+
+
+
+常规设计：login server 返回token时，会将token：uid 对应关系写入redis，ws-gate 收到连接请求时，拿token到redis查出uid，然后完成认证的过程，放行请求。
