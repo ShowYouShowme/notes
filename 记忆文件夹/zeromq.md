@@ -6,6 +6,28 @@ zeromq 是一种进程间通信的方式，不需要用户处理底层的拆包�
 
 
 
+心跳设置：服务如果部署在 一台机器上或一个机房，不用考虑。如果需要通过NAT设备，服务端口可能没办法完成四次挥手，导致不知道对方已经关闭。
+
+```ini
+; 是否开启keepalive,默认为-1,设置为1时开启
+ZMQ_TCP_KEEPALIVE       = 
+
+; 如果保活包没有收到响应，连接重试的次数。在达到这个次数仍然无响应的，标记该连接不可用
+ZMQ_TCP_KEEPALIVE_CNT   = 5
+
+; 如果连接在该段时间内持续空闲，将发送第一个保活包; 可以设置为60s
+ZMQ_TCP_KEEPALIVE_IDLE  = 60
+
+; 如果发送的保活包没有应答，则间隔该时长继续发送保活包，直到连接标识连接断开
+ZMQ_TCP_KEEPALIVE_INTVL = 1
+```
+
+
+
+
+
+
+
 # 二、三种基本模型
 
 
@@ -221,4 +243,80 @@ zeromq 是一种进程间通信的方式，不需要用户处理底层的拆包�
    print("Total elapsed time: %d msec" % ((tend - tstart) * 1000))
    ```
 
-   
+
+
+
+负载均衡的模型
+
+producer
+
+```python
+import time
+import random
+
+# 不用担心重连的问题,服务挂了重启依旧可用
+# 不用纠结server还是client启动的次序
+context = zmq.Context()
+sender = context.socket(zmq.PUSH)
+sender.bind("tcp://*:5557")
+_ = input("Press Enter to Send tasks to workers...")
+random.seed()
+total_msec = 0
+for task_nbr in range(100):
+    workload = task_nbr
+    total_msec += workload
+    sender.send_string(str(workload))
+    print("workload = {}".format(workload))
+    time.sleep(1)
+print("Total expected cost: %s msec" % total_msec)
+time.sleep(1)
+```
+
+
+
+
+
+worker，当woker启动多个时，producer会均匀地将任务分发给每一个woker；游戏的话，game只有一个
+
+```python
+import zmq
+import time
+import sys
+
+context = zmq.Context()
+receiver = context.socket(zmq.PULL)
+receiver.connect("tcp://localhost:5557")
+while True:
+    s = receiver.recv()
+    sys.stdout.write("recv : {} \n".format(str(int(s))))
+    sys.stdout.flush()
+    time.sleep(int(s) * 0.001)
+```
+
+
+
+
+
+基于zmq的游戏服务框架，connector的设计参考[云风connector](https://blog.codingnow.com/2006/04/iocp_kqueue_epoll.html)；connector启动时，需要将自己的地址注册到inform-server里面
+
+connector数据包格式
+
+```protobuf
+message Package{
+	int32 serverID = 1;  // 服务启动时间戳 + 随机数; 也可以在配置文件里面配置
+	int32 cID      = 2;
+	int32 cmd      = 3;  //CONNECT、CLOSE、ERROR、MESSAGE
+	bytes data     = 4;
+}
+```
+
+
+
+```shell
+connector1              inform-server(推送服务)        
+                             
+connector2   ---->      game-server  
+     
+connectorn     
+```
+
