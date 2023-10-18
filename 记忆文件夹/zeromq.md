@@ -313,10 +313,26 @@ message Package{
 
 
 ```shell
-connector1              inform-server(推送服务)        
+connector1              inform-server(推送服务, 要存放 用户信息 uid --> (serverID, cID))        
                              
 connector2   ---->      game-server  
      
 connectorn     
+```
+
+
+
+
+
+推送消息的接口
+
+```go
+func inform(uid int32, message []byte)
+
+// 通过uid 可以查出所在的connector和cID  链接ID
+// 然后就可以推送消息给指定玩家了
+func getSession(uid int32) (serverID int32, cID int32){
+    
+}
 ```
 
