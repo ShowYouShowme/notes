@@ -312,6 +312,8 @@ message Package{
 
 
 
+更简单的做法是：connector只启动一个，game启动一个；connector里面包含一个ws server、zmq.PUSH(转发客户端流量到game)，zmq.PULL(game用来主动推送数据到客户端)；game里面包含一个zmq.PULL
+
 ```shell
 connector1              inform-server(推送服务, 要存放 用户信息 uid --> (serverID, cID))        
                              
