@@ -1411,6 +1411,82 @@ func TestPolymorphism(t *testing.T)  {
 
 
 
+多态代码示例
+
+1. 定义接口类型IPerson
+2. 实现具体类Teacher、Doctor；receiver 必须全部为指针
+3. IPerson作为形参 而不是 *IPerson
+4. 把&Teacher{} 和 &Doctor{}作为函数参数传入
+
+```go
+package main
+
+import "fmt"
+
+type IPerson interface {
+	Say()
+	Sleep()
+}
+
+type Teacher struct {
+}
+
+func (receiver *Teacher) Say() {
+	fmt.Printf("i am a high school teacher! \n")
+}
+
+func (receiver *Teacher) Sleep() {
+	fmt.Printf("I sleep at 20:00 every night! \n")
+}
+
+type Doctor struct {
+}
+
+func (receiver *Doctor) Say() {
+	fmt.Printf("i am a hospital docter! \n")
+}
+
+func (receiver *Doctor) Sleep() {
+	fmt.Printf("I sleep at 23:00 every night! \n")
+}
+
+type Room struct {
+	person []IPerson
+}
+
+func (receiver *Room) init() {
+	receiver.person = make([]IPerson, 0)
+}
+
+func (receiver *Room) enter(person IPerson) {
+	receiver.person = append(receiver.person, person)
+}
+
+func (receiver *Room) SaySomething() {
+	for _, person := range receiver.person {
+		person.Say()
+	}
+}
+
+func main() {
+	room := &Room{}
+	room.init()
+
+	p1 := &Teacher{}
+	room.enter(p1)
+	room.SaySomething()
+
+	p2 := Doctor{}
+	room.enter(&p2)
+	room.SaySomething()
+}
+
+```
+
+
+
+
+
 
 
 ### 空接口与类型断言
@@ -4548,7 +4624,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                       
+   >                                                                         
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7067,3 +7143,59 @@ message Package
 
 
 常规设计：login server 返回token时，会将token：uid 对应关系写入redis，ws-gate 收到连接请求时，拿token到redis查出uid，然后完成认证的过程，放行请求。
+
+
+
+
+
+## 32.6 服务架构
+
+我们把处理外部连接和处理游戏逻辑分摊到两个服务器上处理，为了后文容易表述，暂时不太严谨的把前者称为连接服务器，后者叫做逻辑服务器。
+
+连接服务器做的事情可以非常简单，只是把多个连接上的数据汇集到一起。假设同时连接总数不超过 65536 个，我们只需要把每个连接上的数据包加上一个两字节的数据头就可以表识出来。这个连接服务器再通过单个连接和逻辑服务器通讯就够了。
+
+
+
+游戏服务架构的设计
+
+```
+                               ----> game
+
+connector   -------> session   ----> task
+
+                               ----> shop
+                               
+                               ----> fina
+```
+
+
+
+连接服务的设计，只是转发数据，没有任何逻辑
+
+```protobuf
+message Segment
+{
+	int32   connectorID;  // 网关每个链接都有一个链接ID
+	int32   cmd;          // connect、message、close、error,定义一个枚举
+	bytes   data;         // 传输给后端的数据,也是客户端发送的数据
+}
+```
+
+
+
+session的设计，每个业务服务启动时要注册到router里面。这样的架构，connector和router服务代码就不需要改动了。
+
+session 主要实现路由、用户认证（客户端拿token连接时需要请求login认证）、推送消息的功能
+
+```go
+message Package{
+    ServerId server = 1;
+    Cmd    cmd    = 2;
+    bytes  data   = 3;
+}
+
+if server, exist := receive.servers[package.server]; exist{
+    server.send(p.encode())
+}
+```
+
