@@ -12,7 +12,19 @@ cmake --help
 
 
 
-## 1.2 生成项目
+## 1.2 cmake-gui
+
+windows上用cmake生成vs studio项目时，推荐用gui工具。
+
+1. 设置源文件目录：where is the source code
+2. 设置生成工程目录：where to build the binaries
+3. 配置vs版本：点击Configure按钮
+4. 生成工程：点击Generate按钮
+5. 打开项目：点击Open Project 按钮
+
+
+
+## 1.3 生成项目
 
 
 

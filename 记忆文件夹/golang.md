@@ -4642,7 +4642,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                           
+   >                                                                               
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7215,5 +7215,200 @@ message Package{
 if server, exist := receive.servers[package.server]; exist{
     server.send(p.encode())
 }
+```
+
+
+
+
+
+# 第三十四章  zeromq
+
+
+
+## 34.1 搭建开发环境
+
+1. 使用visual studio community 2022 编译出动态链接库
+
+   + 下载libzmq
+
+     ```ini
+     ; libzmq 4.3.5
+     
+     url =  https://github.com/zeromq/libzmq/releases/download/v4.3.5/zeromq-4.3.5.zip
+     
+     home = https://github.com/zeromq/libzmq
+     ```
+
+   + 下载cmake
+
+     ```ini
+     url = https://github.com/Kitware/CMake/releases/download/v3.28.0-rc2/cmake-3.28.0-rc2-windows-x86_64.msi
+     
+     home = https://cmake.org/
+     ```
+
+   + 下载visual studio community 2022
+
+     ```ini
+     home = https://visualstudio.microsoft.com/zh-hans/
+     ```
+
+   + 利用cmake-gui生成visual studio的项目；然后用vs 打开项目；选择 Release x64，然后构建项目
+
+     ```ini
+     ; CMake 操作
+     step-1 = Configure
+     
+     step-2 = Generate
+     
+     step-3 = Open Project
+     ```
+   
+     
+   
+   + go的项目需要用的文件
+   
+     ```ini
+     header = zmq.h
+     
+     ; 在 libzmq/lib/Release 
+     lib = libzmq-v143-mt-4_3_5.lib
+     
+     
+     ; 在 libzmq/bin/Release
+     dll = libzmq-v143-mt-4_3_5.dll
+     ```
+     
+   + 存放到指定路径
+   
+     1. 头文件放到 D:/code/dev/include
+     2. lib 文件放到 D:/code/dev/lib
+     3. dll 文件放到 golang项目的根目录
+
+
+
+2. 安装MinGW-W64
+
+   ```ini
+   [Option]
+   selection = [13.2.0, 64bit, win32, rev1, msvcrt]
+   
+   
+   
+   home = https://github.com/niXman/mingw-builds-binaries
+   
+   ; 选择 MinGW-W64 online installer, 之前试过Cygwin 和 MSYS2 都有问题
+   ```
+
+   
+
+3. 配置goland项目属性[用IDE编译, goland默认开启CGO]
+
+   ```ini
+   ; 增加两个环境变量
+   
+   ; include里面放头文件 zmq.h
+   CGO_CFLAGS = -ID:/code/dev/include
+   
+   ; lib目录里面放libzmq-v143-mt-4_3_5.lib
+   CGO_LDFLAGS = -LD:/code/dev/lib -l:libzmq-v143-mt-4_3_5.lib
+   ```
+
+4. 开启CGO
+
+   ```shell
+   go env -w CGO_ENABLED=1
+   
+   # 用命令行编译需要设置下面两项, goland 只需要配置环境变量
+   go env -w CGO_CFLAGS='-ID:/code/dev/include'
+   go env -w CGO_LDFLAGS='-LD:/code/dev/lib -l:libzmq-v143-mt-4_3_5.lib'
+   
+   # 编译
+   go build
+   ```
+
+   
+
+## 34.2 示例代码
+
+zmq4使用的版本：require github.com/pebbe/zmq4 v1.2.10
+
+
+
+
+
+### 34.2.1 客户端代码
+
+```go
+package main
+
+import (
+	"fmt"
+	zmq "github.com/pebbe/zmq4"
+	"time"
+)
+
+func main() {
+	s, _ := zmq.NewSocket(zmq.REQ)
+	// 连接远程服务
+	err := s.Connect("tcp://127.0.0.1:5001")
+	if err != nil {
+		panic(fmt.Sprintf("Connect error : %v \n", err))
+	}
+
+	for {
+		// 向服务端发送数据
+		_, err = s.Send("How are you ", 0)
+		if err != nil {
+			panic(fmt.Sprintf("Send error : %v \n", err))
+		}
+		// 从服务端接受响应
+		msg, err := s.Recv(0)
+		if err != nil {
+			panic(fmt.Sprintf("Recv error : %v \n", err))
+		}
+		fmt.Printf("recv Data = %s\n", msg)
+		time.Sleep(time.Second * 2)
+	}
+}
+
+```
+
+
+
+
+
+### 34.2.2 服务端代码
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+)
+import zmq "github.com/pebbe/zmq4"
+
+func main() {
+	s, _ := zmq.NewSocket(zmq.REP)
+	// 监听 5000 端口
+	err := s.Bind("tcp://*:5001")
+	if err != nil {
+		panic(fmt.Sprintf("Bind error : %v \n", err))
+	}
+
+	for {
+		// 接受客户端发送的数据
+		msg, _ := s.Recv(0)
+		log.Printf("recv Data =  %s\n", msg)
+
+		// 返回给客户端数据 Hello World
+		_, err := s.Send("I am file", 0)
+		if err != nil {
+			panic(fmt.Sprintf("Send error : %v \n", err))
+		}
+	}
+}
+
 ```
 
