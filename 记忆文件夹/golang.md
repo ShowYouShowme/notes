@@ -335,6 +335,22 @@ math.MaxUint32
 
 
 
+### 2.2.5 枚举
+
+```go
+type CMD int32
+
+const (
+	CMD_CMD_UNKNOWN        CMD = 0 // 未知消息
+	CMD_C_SYS_PING         CMD = 1001
+	CMD_S_SYS_PONG         CMD = 1002
+	 )
+```
+
+
+
+
+
 ## 2.3 运算符
 
 
@@ -561,7 +577,7 @@ func TestIfMultiSet(t *testing.T){
 
 ## 3.1 数组和切片
 
-
+数组作为struct的成员变量，不需要用make初始化
 
 ### 3.1.1 数组
 
@@ -631,7 +647,9 @@ func TestIfMultiSet(t *testing.T){
 
 1. 切片其实就是C++的Vector
 
-2. 示例代码
+2. 切片作为struct的成员，必须在构造函数里面构造，比如make([]int64, 0)
+
+3. 示例代码
 
    ```GO
    // 切片定义时 中括号里为空 数组定义时中括号有... 或者数字
@@ -673,7 +691,7 @@ func TestIfMultiSet(t *testing.T){
    }
    ```
 
-3. 切片截取
+4. 切片截取
 
    ```go
    a := []int64{11, 22, 33, 44, 55}
@@ -682,7 +700,7 @@ func TestIfMultiSet(t *testing.T){
    d := a[:2]  // [11,22]
    ```
 
-4. 末尾插入元素
+5. 末尾插入元素
 
    ```go
    // 指定多个元素
@@ -695,7 +713,7 @@ func TestIfMultiSet(t *testing.T){
    a1 = append(a1, a2...)
    ```
 
-5. copy 数组
+6. copy 数组
 
    + 方式一
 
@@ -715,7 +733,7 @@ func TestIfMultiSet(t *testing.T){
      copy(arr2, arr)
      ```
 
-6. 切片作为参数传入函数，并且插入元素
+7. 切片作为参数传入函数，并且插入元素
 
    ```go
    func arrayPushBack(param *[]int64, val int64) {
@@ -731,7 +749,7 @@ func TestIfMultiSet(t *testing.T){
 
    
 
-7. 切片作为参数传入函数，并且删除元素
+8. 切片作为参数传入函数，并且删除元素
 
    ```go
    func erase(array *[]int64, position int) {
@@ -743,7 +761,7 @@ func TestIfMultiSet(t *testing.T){
    	erase(&arr, 1)
    ```
 
-8. 切片作为参数传入函数，并且修改元素
+9. 切片作为参数传入函数，并且修改元素
 
    ```go
    func changeElem(arr []int64) {
@@ -754,7 +772,7 @@ func TestIfMultiSet(t *testing.T){
    changeElem(arr)
    ```
 
-9. Map 对应几个操作的笔记
+10. Map 对应几个操作的笔记
 
    + 插入元素
 
@@ -814,7 +832,7 @@ func TestIfMultiSet(t *testing.T){
 
 ## 3.2 Map声明和访问
 
-
+map作为struct的成员，必须在构造函数里面构造，比如make(map[int]int,10)
 
 ### 3.2.1 声明
 
@@ -4624,7 +4642,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                         
+   >                                                                           
    >   # 2-- 检查进程是否存在
    >   ```
    >

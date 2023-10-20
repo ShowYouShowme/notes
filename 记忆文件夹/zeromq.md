@@ -1,5 +1,9 @@
 # 一、zeromq介绍
 
+GOLANG 版本的 zmq：https://github.com/pebbe/zmq4
+
+
+
 zeromq 是一种进程间通信的方式，不需要用户处理底层的拆包，组包的问题，也不需要关系server还是client的启动次序
 
 
@@ -338,3 +342,23 @@ func getSession(uid int32) (serverID int32, cID int32){
 }
 ```
 
+
+
+
+
+## 2.4 router 模式
+
+  ZMQ_ROUTER 是一种用于请求/答应模式的更高级的扩展 Socket，它可以自由的收发消息。当 ZMQ_ROUTER 接收到消息时，会自动在消息顶部加入来源地址标识符，接收消息使用了公平队列。当发送消息时，ZMQ_ROUTER 又会自动去掉这个标识符，并且根据这个标识符路由到相应的端点。
+
+ 如果此地址标识的端点不存在，默认会毫无征兆的丢弃消息，除非 ZMQ_ROUTER_MANDATORY 选项设置为1。当队列达到阀值时，Socket 就会进入 mute 状态，此时所有后续发送到此Socket的消息都会被丢弃，直到 mute 状态结束。同样的，如果对端的接收队列达到了阀值，消息也会被丢弃。
+
+  如果 ZMQ_REQ 连接到 ZMQ_ROUTER，从 ZMQ_ROUTER 接收到 ZMQ_REQ 的消息时，除了会在消息前加上来源地址标识符之外，还会加上一个空帧与原消息分隔，因此消息可以包含多个地址标识符和多个数据包体，如：地址和数据体之间必须用空帧分隔；
+
+
+
+发送回应消息给ZMQ_REQ时，必须至少包含一个空帧；
+原文链接：https://blog.csdn.net/Aliven888/article/details/117514284
+
+
+
+多个client连接到router，可以用地址推送给某个client信息
