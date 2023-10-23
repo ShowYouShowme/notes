@@ -1894,10 +1894,13 @@ func main() {
 
 获取package
 
-1. 通过go get 获取远程依赖
+1. 通过go get 获取远程依赖，1.17版本以后，go get默认开启-d选项，只下载不build包；安装包用go install
 
    ```shell
    go get github.com/armon/go-socks5
+   
+   # 1.17 以后
+   go install github.com/zeromicro/go-zero/tools/goctl@latest
    ```
 
    
@@ -4642,7 +4645,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                               
+   >                                                                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6572,6 +6575,10 @@ protoc --go_out=.  --go-grpc_out=. proto/hello.proto
 
 
 
+ 官方示例代码 = https://github.com/grpc/grpc-go/tree/master/examples/helloworld
+
+
+
 ## 31.5 服务端代码
 
 服务端的项目名称为 grpcdemo
@@ -7415,4 +7422,112 @@ func main() {
 }
 
 ```
+
+
+
+
+
+# 第三十五章  go-zero框架
+
+微服务框架，类似于tars。可以支持http的协议和grpc协议。
+
+
+
+
+
+## 35.1  安装
+
+```shell
+# Go 1.16 及以后版本
+go install github.com/zeromicro/go-zero/tools/goctl@latest
+```
+
+
+
+## 35.2 创建项目
+
+1. 创建zero-demo目录
+
+2. 初始化zero-demo
+
+   ```shell
+   go mod init zero-demo
+   ```
+
+3. 在zero-demo项目中创建user-api/api/user.api文件
+
+   ```shell
+   mkdir -pv user-api/api
+   cd user-api/api
+   touch user.api
+   ```
+
+4. 编辑user.api
+
+   ```json
+   // api语法版本
+   syntax = "v1"
+   
+   info(
+   author: "songmeizi"
+   date:   "2022-04-01"
+   desc:   "api语法示例及语法说明"
+   )
+   
+   type (
+       UserInfoReq {
+           UserId   int64 `json:"userId"`
+       }
+       UserInfoResp {
+           UserId     int64 `json:"userId"`
+           NickName   string `json:"nickname"`
+       }
+   )
+   //定义了一个服务叫user-api
+   service user-api{
+       //获取接口的名字叫获取用户信息
+       @doc "获取用户信息"
+       //对应的hanlder即controller是userInfo
+       @handler userInfo
+       //请求方法是post，路径是/user/info，参数是UserInfoReq，返回值是UserInfoResp
+       post /user/info (UserInfoReq) returns (UserInfoResp)
+   }
+   ```
+
+5. 生成代码
+
+   ```shell
+   goctl api go --api user.api --dir ../  --style=goZero
+   ```
+
+6. 安装依赖
+
+   ```shell
+   go mod tidy
+   ```
+
+7. 编写业务代码
+
+   ```shell
+   user-api\internal\logic\userInfoLogic.go
+   ```
+
+   ```go
+   func (l *UserInfoLogic) UserInfo(req *types.UserInfoReq) (resp *types.UserInfoResp, err error) {
+   	// todo: add your logic here and delete this line
+   
+   	var reply = &types.UserInfoResp{}
+   	reply.UserId = req.UserId
+   	reply.NickName = fmt.Sprintf("%d - nash", req.UserId)
+   	return reply, nil
+   }
+   ```
+
+8. 编译运行：go build
+
+
+
+## 35.3 创建grpc服务
+
+
 
