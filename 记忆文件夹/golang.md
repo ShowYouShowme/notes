@@ -7431,7 +7431,7 @@ func main() {
 
 微服务框架，类似于tars。可以支持http的协议和grpc协议。
 
-
+参考文档 = https://go-zero.dev/docs/tasks/dsl/api
 
 
 
@@ -7528,6 +7528,93 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
 
 
 ## 35.3 创建grpc服务
+
+
+
+### 35.3.1 创建demo
+
+1. 生成项目
+
+   ```shell
+   goctl rpc new demo
+   ```
+
+2. 项目结构
+
+   ```
+   ├── demo                -----> 存放生成的pb文件
+   │   ├── demo.pb.go
+   │   └── demo_grpc.pb.go
+   ├── demo.go   ---> main函数
+   ├── demo.proto
+   ├── democlient  ---> 测试用的client
+   │   └── demo.go
+   ├── etc        ----> 配置文件
+   │   └── demo.yaml
+   ├── go.mod
+   └── internal
+       ├── config
+       │   └── config.go   ---> 读取配置的类
+       ├── logic
+       │   └── pinglogic.go  ---> 业务代码
+       ├── server
+       │   └── demoserver.go
+       └── svc
+           └── servicecontext.go
+   ```
+
+   
+
+
+
+### 35.3.2 创建自己的项目
+
+1. 创建proto文件
+
+   ```shell
+   goctl rpc -o greet.proto
+   ```
+
+2. 编写接口
+
+   ```protobuf
+   syntax = "proto3";
+   
+   package greet;
+   option go_package="./greet";
+   
+   message LoginRequest {
+     string account  = 1;
+     string password = 2;
+   }
+   
+   message LoginReply {
+     string token = 1;
+   }
+   
+   
+   message LogOffRequest{
+     string token = 1;
+   }
+   
+   message LogOffReply{
+     int32 code = 1;
+     string msg = 2;
+   }
+   
+   service Greet {
+     rpc Login(LoginRequest) returns(LoginReply);
+     rpc LogOff(LogOffRequest) returns(LogOffReply);
+   }
+   ```
+
+3. 生成项目代码
+
+   ```
+   goctl rpc protoc greet.proto --go_out=. --go-grpc_out=. --zrpc_out=.
+   ```
+
+   
 
 
 
