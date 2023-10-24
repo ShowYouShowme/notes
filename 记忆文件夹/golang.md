@@ -6544,21 +6544,22 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```protobuf
 syntax = "proto3";
 
-option go_package="/proto";
+option go_package="/netMessage";
 
-package Business;
-
-service Hello {
-  rpc Say (SayRequest) returns (SayResponse);
-}
-
-message SayResponse {
-  string Message = 1;
-}
-
-message SayRequest {
-  string Name = 1;
-}
+service Greeter {
+    // Sends a greeting
+    rpc SayHello (HelloRequest) returns (HelloReply) {}
+  }
+  
+  // The request message containing the user's name.
+  message HelloRequest {
+    string name = 1;
+  }
+  
+  // The response message containing the greetings
+  message HelloReply {
+    string message = 1;
+  }
 ```
 
 
@@ -6568,7 +6569,7 @@ message SayRequest {
 ## 31.4 生成代码
 
 ```shell
-protoc --go_out=.  --go-grpc_out=. proto/hello.proto
+protoc --go_out=.  --go-grpc_out=. .\hello.proto
 ```
 
 
@@ -6587,45 +6588,46 @@ protoc --go_out=.  --go-grpc_out=. proto/hello.proto
 package main
 
 import (
-    "context"
-    "fmt"
-    "grpcdemo/proto"
-    "net"
+	"context"
+	"flag"
+	"fmt"
+	"log"
+	"net"
 
-    "google.golang.org/grpc"
+	pb "hello_ser/netMessage"
+
+	"google.golang.org/grpc"
 )
 
+var (
+	port = flag.Int("port", 50051, "The server port")
+)
+
+// server is used to implement helloworld.GreeterServer.
 type server struct {
-    proto.UnimplementedHelloServer
+	pb.UnimplementedGreeterServer
 }
 
-func (s *server) Say(ctx context.Context, req *proto.SayRequest) (*proto.SayResponse, error) {
-    fmt.Println("request:", req.Name)
-    return &proto.SayResponse{Message: "Hello " + req.Name}, nil
+// SayHello implements helloworld.GreeterServer
+func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+	log.Printf("Received: %v", in.GetName())
+	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
 func main() {
-    listen, err := net.Listen("tcp", ":8001")
-    if err != nil {
-        fmt.Printf("failed to listen: %v", err)
-        return
-    }
-    s := grpc.NewServer()
-    proto.RegisterHelloServer(s, &server{})
-    //reflection.Register(s)
-
-    defer func() {
-        s.Stop()
-        listen.Close()
-    }()
-
-    fmt.Println("Serving 8001...")
-    err = s.Serve(listen)
-    if err != nil {
-        fmt.Printf("failed to serve: %v", err)
-        return
-    }
+	flag.Parse()
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterGreeterServer(s, &server{})
+	log.Printf("server listening at %v", lis.Addr())
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
+
 ```
 
 
@@ -6642,41 +6644,46 @@ func main() {
 package main
 
 import (
-    "bufio"
-    "context"
-    "fmt"
-    "grpchello/proto"
-    "os"
+	"context"
+	"flag"
+	"log"
+	"time"
 
-    "google.golang.org/grpc"
-    "google.golang.org/grpc/credentials/insecure"
+	pb "hello_cli/netMessage"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+const (
+	defaultName = "world"
+)
+
+var (
+	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+	name = flag.String("name", defaultName, "Name to greet")
 )
 
 func main() {
+	flag.Parse()
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pb.NewGreeterClient(conn)
 
-    var serviceHost = "127.0.0.1:8001"
-
-    conn, err := grpc.Dial(serviceHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer conn.Close()
-
-    client := proto.NewHelloClient(conn)
-    rsp, err := client.Say(context.TODO(), &proto.SayRequest{
-        Name: "BOSIMA",
-    })
-
-    if err != nil {
-        fmt.Println(err)
-    }
-
-    fmt.Println(rsp)
-
-    fmt.Println("按回车键退出程序...")
-    in := bufio.NewReader(os.Stdin)
-    _, _, _ = in.ReadLine()
+	// Contact the server and print out its response.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: *name})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("Greeting: %s", r.GetMessage())
 }
+
 ```
 
 
