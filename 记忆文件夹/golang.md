@@ -4645,7 +4645,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                 
+   >                                                                                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7454,50 +7454,46 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
    go mod init zero-demo
    ```
 
-3. 在zero-demo项目中创建user-api/api/user.api文件
+3. 创建api描述文件
 
    ```shell
-   mkdir -pv user-api/api
-   cd user-api/api
-   touch user.api
+   goctl api -o user.api
    ```
-
+   
 4. 编辑user.api
 
    ```json
-   // api语法版本
    syntax = "v1"
    
-   info(
-   author: "songmeizi"
-   date:   "2022-04-01"
-   desc:   "api语法示例及语法说明"
+   info (
+   	title: user serive
+   	desc: 用户注册、登录相关的接口
+   	author: "roglic"
+   	email: "wzc199088@gmaill.com"
    )
    
-   type (
-       UserInfoReq {
-           UserId   int64 `json:"userId"`
-       }
-       UserInfoResp {
-           UserId     int64 `json:"userId"`
-           NickName   string `json:"nickname"`
-       }
-   )
-   //定义了一个服务叫user-api
-   service user-api{
-       //获取接口的名字叫获取用户信息
-       @doc "获取用户信息"
-       //对应的hanlder即controller是userInfo
-       @handler userInfo
-       //请求方法是post，路径是/user/info，参数是UserInfoReq，返回值是UserInfoResp
-       post /user/info (UserInfoReq) returns (UserInfoResp)
+   type request {
+   	UserId int64 `json:"userId"`
+   }
+   
+   type response {
+   	UserId   int64  `json:"userId"`
+   	NickName string `json:"nickname"`
+   }
+   
+   service user-api {
+   	@handler GetUser
+   	get /users/id/:userId(request) returns(response)
+   
+   	@handler CreateUser
+   	post /users/create(request)
    }
    ```
-
+   
 5. 生成代码
 
    ```shell
-   goctl api go --api user.api --dir ../  --style=goZero
+   goctl api go --api user.api --dir .  
    ```
 
 6. 安装依赖
@@ -7509,16 +7505,17 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
 7. 编写业务代码
 
    ```shell
-   user-api\internal\logic\userInfoLogic.go
+   internal\logic\createuserlogic.go
+   
+   internal\logic\getuserlogic.go
    ```
 
    ```go
-   func (l *UserInfoLogic) UserInfo(req *types.UserInfoReq) (resp *types.UserInfoResp, err error) {
+   func (l *GetUserLogic) GetUser(req *types.Request) (resp *types.Response, err error) {
    	// todo: add your logic here and delete this line
-   
-   	var reply = &types.UserInfoResp{}
-   	reply.UserId = req.UserId
-   	reply.NickName = fmt.Sprintf("%d - nash", req.UserId)
+   	reply := &types.Response{}
+   	reply.UserId = 1001
+   	reply.NickName = "nash"
    	return reply, nil
    }
    ```
@@ -7558,7 +7555,7 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
        ├── logic
        │   └── pinglogic.go  ---> 业务代码
        ├── server
-       │   └── demoserver.go
+       │   └── demoserver.go     ******************** 服务定义的全部接口都在这里
        └── svc
            └── servicecontext.go
    ```
@@ -7569,13 +7566,19 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
 
 ### 35.3.2 创建自己的项目
 
-1. 创建proto文件
+1. 初始化项目
+
+   ```
+   go mod init demo
+   ```
+
+2. 创建proto文件
 
    ```shell
    goctl rpc -o greet.proto
    ```
 
-2. 编写接口
+3. 编写接口
 
    ```protobuf
    syntax = "proto3";
@@ -7608,7 +7611,7 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
    }
    ```
 
-3. 生成项目代码
+4. 生成项目代码
 
    ```
    goctl rpc protoc greet.proto --go_out=. --go-grpc_out=. --zrpc_out=.
@@ -7617,4 +7620,102 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
    
 
 
+
+### 35.3.3 接口操作
+
+1. 增加一个接口
+
+   + 编译proto文件
+
+   + 重新生成pb文件，比如greep.pb.go 和 greet_grpc.pb.go
+
+   + 重新生成client代码[可选]
+
+   + 把新生成的逻辑代码加进去[单个文件]
+
+     ```go
+     // internal\logic\queryuserinfologic.go
+     
+     package logic
+     
+     import (
+     	"context"
+     
+     	"demo/greet"
+     	"demo/internal/svc"
+     
+     	"github.com/zeromicro/go-zero/core/logx"
+     )
+     
+     type QueryUserInfoLogic struct {
+     	ctx    context.Context
+     	svcCtx *svc.ServiceContext
+     	logx.Logger
+     }
+     
+     func NewQueryUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *QueryUserInfoLogic {
+     	return &QueryUserInfoLogic{
+     		ctx:    ctx,
+     		svcCtx: svcCtx,
+     		Logger: logx.WithContext(ctx),
+     	}
+     }
+     
+     func (l *QueryUserInfoLogic) QueryUserInfo(in *greet.QueryUserInfoRequest) (*greet.QueryUserInfoReply, error) {
+     	// todo: add your logic here and delete this line
+     
+     	return &greet.QueryUserInfoReply{}, nil
+     }
+     ```
+
+   + 在 internal\server里面增加一个接口
+
+     ```go
+     func (s *GreetServer) QueryUserInfo(ctx context.Context, in *greet.QueryUserInfoRequest) (*greet.QueryUserInfoReply, error) {
+     	l := logic.NewQueryUserInfoLogic(ctx, s.svcCtx)
+     	return l.QueryUserInfo(in)
+     }
+     ```
+
+2. 修改接口
+
+   + 修改请求/响应数据结构
+
+     ```
+     1、编辑proto文件
+     2、重新生成pb替换之前的即可
+     ```
+
+   + 修改接口名
+
+     ```
+     1、编辑proto文件
+     2、重新生成pb替换之前的即可
+     3、修改internal\server\greetserver.go 的函数名和函数实现
+     4、internal\logic\ 增加一个文件
+     ```
+
+     
+
+   + 修改请求/响应名
+
+     ```
+     1、编辑proto文件
+     2、重新生成pb替换之前的即可
+     3、修改 internal\server\greetserver.go 的函数参数类型、返回类型
+     4、修改internal\logic\ 的函数参数和返回值类型
+     ```
+
+     
+
+3. 删除接口
+
+   ```
+   1、编辑proto文件
+   2、重新生成pb替换之前的即可
+   3、删除internal\server\greetserver.go 接口的函数
+   4、[可选]internal\logic\  删除对应的struct  xxxLogic  NewxxxLogic 和一个成员函数
+   ```
+
+   
 
