@@ -296,7 +296,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                              
+   >                                                    
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -767,6 +767,58 @@ CMD ["/usr/sbin/httpd", "-DFOREGROUND"] # 从httpd.service里面拿出来的
 ```shell
 docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 ```
+
+
+
+## 4.5 rummy服务
+
+1. 创建目录build，在里面创建文件Dockerfile，把项目代码copy到build，命名为rummy
+
+2. Dockerfile
+
+   ```dockerfile
+   FROM golang:1.21.1
+   
+   # COPY 目录到docker容器里
+   # COPY 只复制目录中的内容而不包含目录自身
+   COPY rummy/ /home/rummy
+   WORKDIR /home/rummy
+   RUN go mod tidy
+   RUN go build
+   RUN echo "****build end!****"
+   ```
+
+4. 构建命令
+
+   ```
+    docker build -t rummy:v1 . --no-cache --progress=plain
+   ```
+
+
+
+
+## 第五章 Dockerfile命令
+
+1. COPY：复制目录/文件到容器；如果复制的是目录，只复制目录中的内容而不包含目录自身
+
+2. ADD
+
+   + 复制目录/文件到容器；如果复制的是目录，只复制目录中的内容而不包含目录自身
+
+   + 解压压缩文件并把它们添加到镜像中
+
+     ```dockerfile
+     WORKDIR /app
+     
+     # 可以是gitee打出的包
+     ADD nickdir.tar.gz .
+     ```
+
+3. FROM：设置基础镜像
+
+4. RUN：执行shell命令
+
+5. WORKDIR：设定工作目录
 
 
 
