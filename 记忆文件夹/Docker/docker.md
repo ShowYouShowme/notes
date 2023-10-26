@@ -296,7 +296,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                    
+   >                                                             
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -785,7 +785,9 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
    RUN /bin/bash -c 'ls -l /home/rummy'
    WORKDIR /home/rummy
    RUN go mod tidy
-   RUN go build
+   
+   # 编译golang最好禁用CGO
+   RUN CGO_ENABLED=0 go build
    RUN echo "build end!"
    RUN /bin/bash -c 'ls -l /home/rummy'
    ```
@@ -800,12 +802,27 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 
 
 
-## 第五章 Dockerfile命令
+
+
+## 4.6 使用代理构建golang项目
+
+golang下载依赖时经常失败，配置代理即可解决问题
+
+```shell
+docker build --build-arg HTTPS_PROXY=http://192.168.180.43:3128 -t rummy:v2 .
+```
+
+
+
+# 第五章 Dockerfile命令
 
 1. **COPY**：复制目录/文件到容器；如果复制的是目录，只复制目录中的内容而不包含目录自身
 
    ```
    COPY . /home/rummy
+   
+   
+   COPY rummy/ /home/rummy
    ```
 
    
@@ -887,10 +904,24 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 
 12. ARG：构建时使用的命令，docker build 可以传入参数，这个参数只会在构建时存在，不会保留在镜像中
 
-    ```
+    ```shell
     ARG <name>[=<default value>]
     
     docker build --build-arg <varname>=<value>
+    
+    
+    # 预定义的环境变量
+    HTTP_PROXY  http代理
+    http_proxy
+    HTTPS_PROXY https代理
+    https_proxy
+    FTP_PROXY
+    ftp_proxy
+    NO_PROXY
+    no_proxy
+    
+    # 配置https代理
+     docker build --build-arg HTTPS_PROXY=https://my-proxy.example.com .
     ```
 
 13. ENV：设置环境变量，在后续任何RUN命令中使用，并在容器运行时保持。一般用于软件更便捷的运行
@@ -923,9 +954,11 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
     ```
      RUN /bin/bash -c 'echo $HOME'
      
+     RUN echo $HOME
+     
      默认在Linux上使用/bin/sh -c，在Windows上使用cmd /S /C
     ```
-
+    
     
 
 
