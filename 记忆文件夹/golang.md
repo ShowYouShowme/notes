@@ -3071,6 +3071,8 @@ func TestObjPool(t *testing.T) {
 
 # 第十一章 测试
 
+文件必须以_test.go结尾；执行go test -v 时，会遍历该go包中全部`_test.go结尾的测试`文件， 然后调用并执行测试文件中符合go test 规则的函数帮助我们实现自动化测试
+
 
 
 ## 11.1 单元测试
@@ -4645,7 +4647,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                   
+   >                                                                                     
    >   # 2-- 检查进程是否存在
    >   ```
    >
