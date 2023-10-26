@@ -772,7 +772,7 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 
 ## 4.5 rummy服务
 
-1. 创建目录build，在里面创建文件Dockerfile，把项目代码copy到build，命名为rummy
+1. Dockerfile放在rummy项目的根目录
 
 2. Dockerfile
 
@@ -781,25 +781,34 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
    
    # COPY 目录到docker容器里
    # COPY 只复制目录中的内容而不包含目录自身
-   COPY rummy/ /home/rummy
+   COPY . /home/rummy
+   RUN /bin/bash -c 'ls -l /home/rummy'
    WORKDIR /home/rummy
    RUN go mod tidy
    RUN go build
-   RUN echo "****build end!****"
+   RUN echo "build end!"
+   RUN /bin/bash -c 'ls -l /home/rummy'
    ```
 
 4. 构建命令
 
-   ```
+   ```shell
+    # 加上 --progress=plain 可以看到执行shell命令后的输出
     docker build -t rummy:v1 . --no-cache --progress=plain
    ```
-
+   
 
 
 
 ## 第五章 Dockerfile命令
 
-1. COPY：复制目录/文件到容器；如果复制的是目录，只复制目录中的内容而不包含目录自身
+1. **COPY**：复制目录/文件到容器；如果复制的是目录，只复制目录中的内容而不包含目录自身
+
+   ```
+   COPY . /home/rummy
+   ```
+
+   
 
 2. ADD
 
@@ -819,6 +828,105 @@ docker run -d -p 80:80 -v /home/xman/apache/html:/var/www/html apacher:v123
 4. RUN：执行shell命令
 
 5. WORKDIR：设定工作目录
+
+6. MAINTAINER：设置Dockerfile的作者
+
+   ```shell
+   CMD=MAINTAINER ${NAME}
+   
+   # 比如
+   MAINTAINER nash
+   ```
+
+7. **[一般用不到]**USER：指令设置用户名或（UID）和可选用户组（或GID），用于运行`Dockerfile`中接下来的`RUN`、`CMD`、`ENTRYPOINT`指令
+
+   ```
+    USER <user>[:<group>]
+    USER <UID>[:<GID>]
+   ```
+
+8. **[一般用不到]**SHELL：设置默认shell，Linux上默认shell是`["/bin/sh","-c"]`
+
+9. **[一般用不到]**HEALTHCHECK：健康检查
+
+   ```ini
+   [命令形式]
+   
+   ; 禁用从基础镜像继承的任何健康检查
+   cmd = HEALTHCHECK NONE
+   
+   ; 通过容器内运行命令来检查容器健康状况
+   cmd = HEALTHCHECK [OPTIONS] CMD command
+   返回值 = 0  success  容器是健康的
+   返回值 = 1  unhealthy 容器没有正常工作
+   返回值 = 2  reserved  没有使用退出状态
+   
+   [OPTIONS]
+   --interval=DURATION：检查间隔，default: 30s
+   --timeout=DURATION：检查超时时间，超出此范围认为检查失败，default: 30s
+   --start-period=DURATION：容器初始化阶段的时间，此阶段健康检查失败不计入最大重试次数，如果检查成功则认为容器已启动，default: 0s
+   --retries=N：健康检查连续失败次数，default: 3
+   
+   [EXAMPLE]
+    HEALTHCHECK --interval=5m --timeout=3s \
+      CMD curl -f http://localhost/ || exit 1
+   ```
+
+10. 设置容器退出时唤起的系统调用信号,用于让容器内的程序在接收到signal之后可以先处理些未完成的事务，实现优雅结束进程后退出容器
+
+    ```
+     STOPSIGNAL signal
+    ```
+
+11. ENTRYPOINT：`ENTRYPOINT`和`CMD`一样，都是在指定容器启动程序以及参数，不会它不会被`docker run`的命令行指令所覆盖。如果要覆盖的话需要通过`docker run --entrypoint`来指定
+
+    ```
+     ENTRYPOINT ["exec","param1","param1"]
+     ENTRYPOINT command param1 param2
+    ```
+
+12. ARG：构建时使用的命令，docker build 可以传入参数，这个参数只会在构建时存在，不会保留在镜像中
+
+    ```
+    ARG <name>[=<default value>]
+    
+    docker build --build-arg <varname>=<value>
+    ```
+
+13. ENV：设置环境变量，在后续任何RUN命令中使用，并在容器运行时保持。一般用于软件更便捷的运行
+
+    ```
+     ENV PATH=/usr/local/nginx/bin:$PATH
+     CMD ["nginx"]
+    ```
+
+14. EXPOSE：通知容器在运行时监听某个端口，可以指定TCP或UDP，如果不指定协议，默认为TCP端口；正常除了网关和登录服，其它服务都映射到127.0.0.1即可
+
+    ```shell
+     EXPOSE 80/tcp
+     EXPOSE 80/udp
+     
+     
+     docker run -P：将所有端口发布到主机接口，每个公开端口绑定到主机上的随机端口
+     docker run -p ：显式映射单个端口或端口范围
+    ```
+
+15. CMD：指令来指示`docker run`命令运行镜像时要执行的命令。Dockerfile只允许使用一次`CMD`命令。使用多个`CMD`会抵消之前所有的命令，只有最后一个命令生效
+
+    ```
+     FROM ubuntu
+     CMD ["/usr/bin/wc","--help"]
+    ```
+
+16. RUN：执行shell命令
+
+    ```
+     RUN /bin/bash -c 'echo $HOME'
+     
+     默认在Linux上使用/bin/sh -c，在Windows上使用cmd /S /C
+    ```
+
+    
 
 
 
