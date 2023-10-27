@@ -1505,6 +1505,55 @@ func main() {
 
 
 
+多态与类型转换，grpc框架可以用这种方式把proto.message 转换为具体的类型执行代码
+
+```go
+package main
+
+import "fmt"
+
+type Person interface {
+	greet()
+}
+
+type Teacher struct {
+}
+
+func (receiver *Teacher) greet() {
+	fmt.Println("i am a teacher!")
+}
+
+type Doctor struct {
+}
+
+func (receiver *Doctor) greet() {
+	fmt.Println("i am a doctor!")
+}
+
+func test(input Person) {
+	if obj, ok := input.(*Teacher); ok {
+		obj.greet()
+	}
+
+	if obj, ok := input.(*Doctor); ok {
+		obj.greet()
+	}
+
+	fmt.Println(".......")
+}
+
+func main() {
+	t := &Teacher{}
+	d := &Doctor{}
+	test(t)
+	test(d)
+	fmt.Println("..........")
+}
+
+```
+
+
+
 
 
 ### 空接口与类型断言
