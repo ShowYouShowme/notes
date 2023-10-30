@@ -2690,6 +2690,24 @@ func TestSelect(t *testing.T) {
 		t.Error("time out")
 	}
 }
+
+// default 会导致CPU占用率100%
+func TestSelect(t *testing.T) {
+    for{
+     	select {
+            case ret := <-AsyncService():
+                t.Log(ret)
+            case <-time.After(time.Millisecond * 10):
+                t.Error("time out")
+            //加上default会导致CPU占用率100%
+            //default:
+		}   
+    }
+}
+
+
+// 防止主线程退出的方式, 在最后面加上
+select{}
 ```
 
 
@@ -4705,7 +4723,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                     
+   >                                                                                       
    >   # 2-- 检查进程是否存在
    >   ```
    >
