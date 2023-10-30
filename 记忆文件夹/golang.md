@@ -802,6 +802,15 @@ func TestIfMultiSet(t *testing.T){
 
      
 
+   + 刪除元素2
+
+     ```go
+     index = 50
+     arr = append(arr[:index], arr[index+1:]...)
+     ```
+     
+     
+     
    + 修改元素
 
      ```go
