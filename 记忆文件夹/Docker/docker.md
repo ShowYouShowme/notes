@@ -296,7 +296,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                
+   >                                                                   
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -1040,7 +1040,11 @@ docker build --build-arg HTTPS_PROXY=http://192.168.180.43:3128 -t rummy:v2 .
 
 
 
+参考文档 = https://docs.docker.com/compose/gettingstarted/
+
 ## 6.1 安装
+
+参考url = https://github.com/docker/compose
 
 ```shell
 curl -L https://github.com/docker/compose/releases/download/1.25.4/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
@@ -1052,6 +1056,226 @@ chmod +x /usr/local/bin/docker-compose
 
 
 ## 6.2 示例应用
+
+1. 创建目录
+
+   ```shell
+   mkdir composetest
+   cd composetest
+   ```
+
+2. 编写代码app.py
+
+   ```python
+   import time
+   
+   import redis
+   from flask import Flask
+   
+   app = Flask(__name__)
+   cache = redis.Redis(host='redis', port=6379)
+   
+   def get_hit_count():
+       retries = 5
+       while True:
+           try:
+               return cache.incr('hits')
+           except redis.exceptions.ConnectionError as exc:
+               if retries == 0:
+                   raise exc
+               retries -= 1
+               time.sleep(0.5)
+   
+   @app.route('/')
+   def hello():
+       count = get_hit_count()
+       return 'Hello World! I have been seen {} times.\n'.format(count)
+   ```
+
+3. 编写依赖文件requirements.txt
+
+   ```
+   flask
+   redis
+   ```
+
+4. 创建Dockerfile
+
+   ```dockerfile
+   # syntax=docker/dockerfile:1
+   FROM python:3.7-alpine
+   WORKDIR /code
+   ENV FLASK_APP=app.py
+   ENV FLASK_RUN_HOST=0.0.0.0
+   RUN apk add --no-cache gcc musl-dev linux-headers
+   COPY requirements.txt requirements.txt
+   RUN pip install -r requirements.txt
+   EXPOSE 5000
+   COPY . .
+   CMD ["flask", "run"]
+   ```
+
+5. 在Compose 里面定义服务 compose.yaml
+
+   ```yaml
+   services:
+     web:
+       build: .
+       ports:
+         - "8000:5000"
+     redis:
+       image: "redis:alpine"
+   ```
+
+6. 构建和运行app
+
+   ```shell
+   docker compose up
+   ```
+
+7. 查看服务
+
+   ```shell
+   docker image ls
+   ```
+
+8. 停止服务
+
+   + 另外启动一个terminal窗口，然后进入项目目录，执行docker compose down
+   + 在原来的terminal执行CTRL+C
+
+9. 挂载目录
+
+   ```yaml
+   services:
+     web:
+       build: .
+       ports:
+         - "8000:5000"
+       volumes:
+         - .:/code
+       environment:
+         FLASK_DEBUG: "true"
+     redis:
+       image: "redis:alpine"
+   ```
+
+10. 重新构建和启动应用
+
+    ```shell
+    docker compose up
+    ```
+
+11. 其它命令
+
+    + 后台运行docker compose
+
+      ```shell
+      docker compose up -d
+      ```
+
+    + 查看运行的服务
+
+      ```shell
+      docker compose ps
+      ```
+
+    + 停止服务
+
+      ```shell
+       docker compose stop
+      ```
+
+    + 重启服务
+
+      ```
+      docker compose restart
+      ```
+
+    + 停止并删除
+
+      ```shell
+      docker compose down
+      ```
+
+    + 部署某个服务的新版本
+
+      ```shell
+      docker compose build web
+      
+      # --no-deps 标志阻止 Compose 重新创建 Web 依赖的任何服务
+      docker compose up --no-deps -d web
+      ```
+
+
+
+## 6.3 示例yaml文件
+
+可以先把所有service 构建好镜像，然后在yaml里面指定image来启动服务。
+
+```yaml
+version: "3"
+ 
+# 多个服务
+services:
+  # my-docker服务
+  myDockerService:
+    # 镜像名称和版本
+    image: my-docker:1.0
+    # 启动的容器名称
+    container_name: my-docker
+    # 端口
+    ports:
+      - 8888:8888
+    # 容器数据卷
+    volumes:
+      - /app/myDocker:/data
+    # 网络模式 （最下方自定义的一个网络模式）
+    networks:
+      - my_net
+    # 依赖的服务（表示需要依赖的服务先启动）
+    depends_on:
+      - redis
+      - mysql
+ 
+  # redis 服务
+  redis:
+    image: redis
+    ports:
+      - 6666:6379
+    volumes:
+      - /app/redis/redis.conf:/etc/redis/redis.conf
+      - /app/redis/data:/data
+    networks:
+      - my_net
+    # 启动命令
+    command: redis-server /etc/redis/redis.conf
+ 
+  # mysql服务
+  mysql:
+    image: mysql:5.7
+    # mysql 相关配置
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+      MYSQL_DATABASE: 'testdb'
+      MYSQL_USER: 'vhukze'
+      MYSQL_PASSWORD: 'vhukze'
+    ports:
+      - 3306:3306
+    volumes:
+      - /app/mysql/db:/var/lib/mysql
+      - /app/mysql/conf/my.cnf:/etc/my.cnf
+      - /app/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - my_net
+    # 解决外部无法访问问题
+    command: --default-authentication-plugin=mysql_native_password
+ 
+# 创建自定义网络模式
+networks:
+  my_net: 
+```
 
 
 
