@@ -1,3 +1,26 @@
+# 第一章 安装
+
+```ini
+; centos7
+; 安装第三方源
+sudo yum install epel-release -y
+sudo yum update -y
+
+;导入密钥并设置源
+sudo rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+
+;安装ffmpeg
+yum -y install ffmpeg ffmpeg-devel
+
+;检查版本
+ffmpeg -version
+```
+
+
+
+
+
 # 一、概念
 
 介绍 FFmpeg 用法之前，需要了解一些视频处理的基本概念。
@@ -355,6 +378,19 @@ FFmpeg 常用的命令行参数如下。
 
 ```shell
 ffmpeg.exe -i output.mp4 -vcodec copy -bsf h264_mp4toannexb -f h264 douyin.h264
+```
+
+
+
+
+
+## 4.12 将视频转换为gif
+
+```shell
+# -i: 指定视频文件
+# -r: 指定fps
+# -s: 指定分辨率 576x360 x是小写的字母X  
+ffmpeg -i suprise.mov -r 30 -s 576x360 suprise-2.gif
 ```
 
 

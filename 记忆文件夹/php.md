@@ -326,6 +326,9 @@
 
 
 
+
+
+
 ## 3.2 操作命令
 
 ```ini
@@ -790,6 +793,19 @@ php ./thinkphp_5.0.10_full/public/index.php
    ```
 
    
+
+   
+   
+## 5.5 session
+
+ 配置文件夹权限，否则会报错
+
+```shell
+# session_start() open failed Permission denied
+chmod 777 /var/lib/php/session/
+```
+
+
 
    
 
