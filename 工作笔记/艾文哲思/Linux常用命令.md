@@ -354,6 +354,8 @@ $username  ALL=(ALL) NOPASSWD:ALL
 
 ## centos7
 
+步骤1、2执行完即可
+
 1. 修改配置文件
 
    ```shell
@@ -1211,7 +1213,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                
+  >                                                                                                                   
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1235,7 +1237,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                
+  >                                                                                                                   
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

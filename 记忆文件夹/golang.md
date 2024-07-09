@@ -7,6 +7,8 @@
 1. 下载安装包安装
 
    ```shell
+   mkdir doc local app tmp
+   
    wget https://go.dev/dl/go1.19.linux-amd64.tar.gz
    tar -zxvf go1.19.linux-amd64.tar.gz
    mv go $HOME/local
@@ -17,10 +19,8 @@
 2. 设置环境变量
 
    ```shell
-   mkdir doc local app tmp
-   ```
-
-   ```shell
+   vim ~/.bashrc
+   
    export GOROOT=$HOME/local/go              		#go安装目录。
    export GOPATH=$HOME/doc/go     				    #保持第三方依赖包,goland里面需要配置
    export GOBIN=$GOPATH/bin           				#可执行文件存放
@@ -29,7 +29,7 @@
    
    # windows 安装,使用goland或者vscode开发,需要配置环境变量GOROOT和GOPATH
    ```
-
+   
 3. 开启go mod并配置代理
 
    ```shell
@@ -569,7 +569,23 @@ func TestIfMultiSet(t *testing.T){
    	fmt.Println("finished...")
    ```
    
-   
+
+
+
+### 2.5 输入输出
+
+
+
+获取输入
+
+```go
+// 读取一行字符串
+reader := bufio.NewReader(os.Stdin)
+body, _ := reader.ReadString('\n')
+fmt.Printf("body : %s \n", body)
+```
+
+
 
 # 第三章  常用集合
 
@@ -4723,7 +4739,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                       
+   >                                                                                           
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7802,5 +7818,145 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
    4、[可选]internal\logic\  删除对应的struct  xxxLogic  NewxxxLogic 和一个成员函数
    ```
 
-   
+
+
+
+
+
+# 第三十六章  rabbitmq
+
+
+
+## 36.1 安装
+
+
+
+
+
+## 36.2 模式介绍
+
+
+
+### 36.2.1 简单模式
+
+
+
+生产者
+
+```go
+package main
+
+import (
+	"context"
+	"github.com/rabbitmq/amqp091-go"
+	"log"
+	"time"
+)
+
+func main() {
+	conn, err := amqp091.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to Rabbitmq")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"hello",
+		false,
+		false,
+		false,
+		false,
+		nil)
+	failOnError(err, "Failed to declare a queue")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	body := []byte{0xA1, 0xA2, 0xF1, 0xF2, 0xFF}
+	err = ch.PublishWithContext(ctx,
+		"",
+		q.Name,
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/octet-stream",
+			Body:        body,
+		})
+	failOnError(err, "Failed to publish a message")
+	log.Printf(" [x] Sent %s\n", body)
+}
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+```
+
+
+
+消费者
+
+```go
+package main
+
+import (
+	"github.com/rabbitmq/amqp091-go"
+	"log"
+)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+
+func main() {
+	conn, err := amqp091.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"hello",
+		false,
+		false,
+		false,
+		false,
+		nil)
+
+	failOnError(err, "Failed to declare a queue")
+
+	msgs, err := ch.Consume(q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil)
+	failOnError(err, "Failed to register a consumer")
+
+	var forever chan struct{}
+
+	go func() {
+		for d := range msgs {
+			log.Printf("contentType:%s Receved a message : %s", d.ContentType, d.Body)
+		}
+	}()
+
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
+}
+```
+
+
+
+
+
+
 
