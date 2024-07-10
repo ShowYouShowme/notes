@@ -7829,7 +7829,21 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
 
 ## 36.1 安装
 
+常见命令
 
+1. 列出交换机
+
+   ```shell
+   rabbitmqctl list_exchanges
+   ```
+
+2. 列出bindings
+
+   ```shell
+   rabbitmqctl list_bindings
+   ```
+
+   
 
 
 
@@ -7838,6 +7852,10 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
 
 
 ### 36.2.1 简单模式
+
+注意：该模式下，生产者 和 消费者都可以设置为多个
+
+
 
 
 
@@ -7955,6 +7973,172 @@ func main() {
 ```
 
 
+
+
+
+### 36.2.2 发布订阅
+
+发布者
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+	"os"
+	"strings"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+
+const EXCHANGE_NAME = "routing_exchange"
+
+func main() {
+	conn, err := amqp.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		EXCHANGE_NAME, // name
+		"direct",      // type
+		true,          // durable
+		false,         // auto-deleted
+		false,         // internal
+		false,         // no-wait
+		nil,           // arguments
+	)
+	failOnError(err, "Failed to declare an exchange")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	for {
+		body := bodyFrom(os.Args)
+		var routingKey = "game"
+		err = ch.PublishWithContext(ctx,
+			EXCHANGE_NAME, // exchange
+			routingKey,    // routing key
+			false,         // mandatory
+			false,         // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(body),
+			})
+		failOnError(err, "Failed to publish a message")
+
+		log.Printf(" [x] Sent %s", body)
+		time.Sleep(time.Second * 5)
+	}
+}
+
+func bodyFrom(args []string) string {
+	var s string
+	if (len(args) < 2) || os.Args[1] == "" {
+		s = "hello"
+	} else {
+		s = strings.Join(args[1:], " ")
+	}
+	return s
+}
+
+```
+
+
+
+订阅者
+
+```go
+package main
+
+import (
+	"log"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+
+func main() {
+	conn, err := amqp.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	const EXCHANGE_NAME = "routing_exchange"
+	err = ch.ExchangeDeclare(
+		EXCHANGE_NAME, // name
+		"direct",      // type
+		true,          // durable
+		false,         // auto-deleted
+		false,         // internal
+		false,         // no-wait
+		nil,           // arguments
+	)
+	failOnError(err, "Failed to declare an exchange")
+
+	q, err := ch.QueueDeclare(
+		"",    // name
+		false, // durable
+		false, // delete when unused
+		true,  // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+
+	var routingKey = "game"
+	err = ch.QueueBind(
+		q.Name,        // queue name
+		routingKey,    // routing key
+		EXCHANGE_NAME, // exchange
+		false,
+		nil,
+	)
+	failOnError(err, "Failed to bind a queue")
+
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	failOnError(err, "Failed to register a consumer")
+
+	var forever chan struct{}
+
+	go func() {
+		for d := range msgs {
+			log.Printf(" [x] %s", d.Body)
+		}
+	}()
+
+	log.Printf(" [*] Waiting for logs. To exit press CTRL+C")
+	<-forever
+}
+
+```
 
 
 

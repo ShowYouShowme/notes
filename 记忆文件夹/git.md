@@ -682,6 +682,12 @@ git config --global user.name "wzc"
 
 
 
+## 3.4 github配置
+
+1. 配置access token
+2. 使用用户名+ token(替代密码)登录
+3. token 把 repo 权限勾上即可
+
 
 
 # 第四章 多分支开发模式
@@ -760,21 +766,13 @@ git push -u origin dev
 
    + 在win上开启letsvpn
 
-   + 在win上开启squid，默认配置即可
-
-   + 关闭win的防火墙
-
-   + 配置linux上的git的代理
-
-     ```shell
-     # ~/.gitconfig
-     [http]
-     proxy = http://192.168.110.231:3128
-     [https]
-     proxy = https://192.168.110.231:3128
-     ```
+   + 虚拟机采用nat网络，共用宿主机的网络
 
      
 
+     
+
+     
+   
    
 
