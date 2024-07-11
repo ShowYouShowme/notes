@@ -2886,7 +2886,12 @@ func TestCancel(t *testing.T)  {
 2. 子Context：context.WithCancel(parentContext)创建
 
    ```go
+   // 主协程调用cancel() 时, 子协程 <- ctx.Done() 立即返回
+   
    ctx, cancel := context.WithCancel(context.Background())
+   
+   // 主协程序10s后自动调用cancel,用于rpc请求设置超时
+   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
    ```
 
    
@@ -3621,7 +3626,7 @@ type BasicInfo struct {
 }
 
 type JobInfo struct {
-	Skills []string `json:skills`
+	Skills []string `json:"skills"`
 }
 
 type Employee struct {
@@ -4739,7 +4744,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                           
+   >                                                                                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7977,6 +7982,12 @@ func main() {
 
 
 ### 36.2.2 发布订阅
+
++ 发布者可以有一个或者多个
+
++ 订阅者可以有一个或者多个
+
+
 
 发布者
 

@@ -144,6 +144,12 @@ git commit -m "${comment}"
   
   # 连tags 一起推送
   git push --tags
+  
+  
+  # 推送到指定提交,默认推送到HEAD
+  git push <remotename> <commit SHA>:<remotebranchname>
+  
+  git push origin 2708954182ee43e6aa5151f0441a3d35c04bd746:main
   ```
 
 + 上载失败
