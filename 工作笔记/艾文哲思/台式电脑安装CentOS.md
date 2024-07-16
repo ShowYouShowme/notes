@@ -83,7 +83,7 @@ CentOS-7-x86_64-Minimal-1810.iso
    用xshell远程连接
    ```
 
-5. 配置网易源
+4. 配置网易源
 
    ```shell
    yum install wget net-tools -y
@@ -92,6 +92,16 @@ CentOS-7-x86_64-Minimal-1810.iso
    wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.163.com/.help/CentOS7-Base-163.repo
    yum makecache
    ```
+
+5. 配置阿里源：默认的Centos源不可用
+
+   ```shell
+   mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo-bak
+   curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+   yum makecache
+   ```
+
+   
 
 
 

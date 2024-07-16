@@ -1213,7 +1213,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                   
+  >                                                                                                                      
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1237,7 +1237,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                   
+  >                                                                                                                      
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1681,6 +1681,19 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    
    [秘钥文件]
    ;公钥和私钥的权限都必须是600,否则会出错
+   
+   
+   ; 配置示范
+   su - peter
+   mkdir .ssh
+   chmod 700 .ssh
+   cd .ssh
+   ; 产生公私钥
+   ssh-keygen -t rsa -b 2048 -f peter
+   cp peter.pub authorized_keys
+   chmod 600 authorized_keys
+   
+   ;私钥peter转发给对应的开发人员
    ```
 
    

@@ -1,16 +1,47 @@
-# 第一章 基础
+# 第一章 安装
+
+```python
+# 安装erlang
+yum install -y socat
+wget https://github.com/rabbitmq/erlang-rpm/releases/download/v23.3.2/erlang-23.3.2-1.el7.x86_64.rpm
+rpm -ivh erlang-23.3.2-1.el7.x86_64.rpm
+
+# 安装RabbitMQ
+wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.14/rabbitmq-server-3.8.14-1.el7.noarch.rpm
+rpm -ivh rabbitmq-server-3.8.14-1.el7.noarch.rpm
+```
+
+
+
+
+
+# 第二章 基础知识
 
 1. 管理后台
 
    ```shell
+   # 开启管理后台
+   rabbitmq-plugins enable rabbitmq_management
+   
+   # 管理后台地址
    http://${ip}:15672/
    
-   http://192.168.135.128:15672/
+   # 创建管理后台账户
+   # Rabbitmq从3.3.0开始默认用户(guest/guest)只能通过除localhost的访问，我们自己创建登录用户并授权管理员登录。执行下面三条命令即可创建一个可以远程登录管理后台的账户
+   rabbitmqctl add_user test 123456
+   rabbitmqctl  set_user_tags  test  administrator
+   rabbitmqctl set_permissions -p "/" test ".*" ".*" ".*"
    ```
 
 2. 服务管理
 
    ```python
+   # 使用systemctl管理服务
+   systemctl start rabbitmq-server #启动服务
+   systemctl status rabbitmq-server #查看服务状态
+   systemctl stop rabbitmq-server #停止服务
+   systemctl enable rabbitmq-server #开启启动服务
+   
    # 关闭服务
    rabbitmqctl stop_app
    
@@ -34,7 +65,7 @@
    rabbitmqctl delete_vhost /testhost
    ```
 
-4. 给用户授权
+4. 权限管理
 
    ```python
    #rabbitmqctl set_permissions [-p vhost] {user} {conf} {write} {read}
@@ -71,34 +102,33 @@
    
    # 列出用户
    rabbitmqctl list_users
-   
-   # Rabbitmq从3.3.0开始默认用户(guest/guest)只能通过除localhost的访问，我们自己创建登录用户并授权管理员登录。执行下面三条命令即可创建一个可以远程登录管理后台的账户
-   rabbitmqctl add_user test 123456
-   rabbitmqctl  set_user_tags  test  administrator
-   rabbitmqctl set_permissions -p "/" test ".*" ".*" ".*"
    ```
 
 6. 用户角色
 
-   ```python
-   # Administrator
-   超级管理员，可登陆管理控制台(启用management plugin的情况下)，可查看所有的信息，并且可以对用户，策略(policy)进行操作，因为是超级管理员，可以这样理解，它可以为所欲为，什么操作都能干，删除用户、修改用户密码、重置用户角色、策略制定等等。
-   
-   # Monitoring
-   监控者，可登陆管理控制台(启用management plugin的情况下)，同时可以查看rabbitmq节点的相关信息(进程数，内存使用情况，磁盘使用情况等)。
-   
-   # Policymaker
-   策略制定者，可登陆管理控制台(启用management plugin的情况下)，同时可以对policy进行管理。但无法查看节点的相关信息。
-   
-   # Management
-   普通管理者，仅可登陆管理控制台(启用management plugin的情况下)，无法看到节点信息，也无法对策略进行管理。
-   
-   # Impersonator
-   模拟者，无法登录管理控制台，因为没有管理者权限
-   
-   # None
-   其他用户，无法登陆管理控制台，通常就是普通的生产者和消费者。代码里就用这种角色的账号登录
-   ```
+   + Administrator：超级管理员，可登陆管理控制台(启用management plugin的情况下)，可查看所有的信息，并且可以对用户，策略(policy)进行操作，因为是超级管理员，可以这样理解，它可以为所欲为，什么操作都能干，删除用户、修改用户密码、重置用户角色、策略制定等等
+   + Monitoring：监控者，可登陆管理控制台(启用management plugin的情况下)，同时可以查看rabbitmq节点的相关信息(进程数，内存使用情况，磁盘使用情况等)
+   + Policymake：策略制定者，可登陆管理控制台(启用management plugin的情况下)，同时可以对policy进行管理。但无法查看节点的相关信息
+   + Management：普通管理者，仅可登陆管理控制台(启用management plugin的情况下)，无法看到节点信息，也无法对策略进行管理
+   + Impersonator：模拟者，无法登录管理控制台，因为没有管理者权限
+   + None：其他用户，无法登陆管理控制台，通常就是普通的生产者和消费者。代码里就用这种角色的账号登录
 
-   
+7. 其它命令
+
+   + 列出全部交换机
+
+     ```shell
+     sudo rabbitmqctl list_exchanges
+     ```
+
+   + 列出全部绑定
+
+     ```shell
+     rabbitmqctl list_bindings
+     ```
+
+
+
+
+
 
