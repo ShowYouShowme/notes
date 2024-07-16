@@ -127,6 +127,26 @@ func main()  {
 
 
 
+## 1.6 命名规范
+
++ 项目名：user-service
+
++ 文件名：stringutil_test.go
+
++ 变量名：apiClient、URLString
+
++ 常量
+
+  ```go
+  const (
+      Monday = 1
+      Tuesday = 2
+      Wednesday = 3
+  )
+  ```
+
+  
+
 # 第二章 程序基本结构
 
 
@@ -2666,6 +2686,34 @@ func TestGroutine(t *testing.T)  {
 
    > + 容量未满，可以直接写入，不阻塞；如果容量满了，必须等到接受消息的一方读取一个数据
    > + 读取数据时，如果channel有数据直接返回；否则阻塞到对方写入数据
+   
+   3. 只读和只写channel
+   
+      ```go
+      // 只读 channel
+      var readOnlyChan <-chan int  // channel 的类型为 int
+      
+      // 只写 channel
+      var writeOnlyChan chan<- int
+      
+      // 可读可写
+      var ch chan int
+      
+      // 或者使用 make 直接初始化
+      readOnlyChan1 := make(<-chan int, 2)  // 只读且带缓存区的 channel
+      readOnlyChan2 := make(<-chan int)   // 只读且不带缓存区 channel
+      
+      writeOnlyChan3 := make(chan<- int, 4) // 只写且带缓存区 channel
+      writeOnlyChan4 := make(chan<- int) // 只写且不带缓存区 channel
+      
+      ch := make(chan int, 10)  // 可读可写且带缓存区
+      
+      ch <- 20  // 写数据
+      i := <-ch  // 读数据
+      i, ok := <-ch  // 还可以判断读取的数据
+      ```
+   
+      
 
 
 
@@ -4744,7 +4792,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                             
+   >                                                                                                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -8153,5 +8201,144 @@ func main() {
 
 
 
+## 36.3 消息持久化
 
+需要将queue和message都设置为持久化，严重影响性能，不推荐使用！
+
+设置步骤
+
+1. 设置queue为持久化
+
+   ```go
+   q, err := ch.QueueDeclare(
+     "hello",      // name
+     true,         // durable
+     false,        // delete when unused
+     false,        // exclusive
+     false,        // no-wait
+     nil,          // arguments
+   )
+   failOnError(err, "Failed to declare a queue")
+   ```
+
+2. 设置message为持久化
+
+   ```go
+   err = ch.PublishWithContext(ctx,
+     "",           // exchange
+     q.Name,       // routing key
+     false,        // mandatory
+     false,
+     amqp.Publishing {
+       DeliveryMode: amqp.Persistent,
+       ContentType:  "text/plain",
+       Body:         []byte(body),
+   })
+   ```
+
+   
+
+
+
+## 36.4 临时队列
+
+临时队列只获取最新消息，并且断开连接后自动删除。非常适合游戏设计。
+
+```go
+// 创建的时候不需要指定队列名
+q, err := ch.QueueDeclare(
+  "",    // name
+  false, // durable
+  false, // delete when unused
+  true,  // exclusive
+  false, // no-wait
+  nil,   // arguments
+)
+```
+
+
+
+
+
+## 36.5 注意事项
+
+1. 对于生产者，生产消息出错需要重连，比如超时、RabbitMQ服务挂掉了
+
+   ```go
+   func (receiver *ProducerImpl) Publish(routingKey string, message []byte) {
+   	// 当超时的时候,channel会关闭,此时需要重连
+   	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+   	defer cancel()
+   
+   	err := receiver.ch.PublishWithContext(ctx,
+   		receiver.eName, // exchange
+   		routingKey,     // routing key
+   		false,          // mandatory
+   		false,          // immediate
+   		amqp.Publishing{
+   			ContentType: "application/octet-stream",
+   			Body:        []byte(message),
+   		})
+       // RabbitMQ 服务挂掉或者超时 需要重连
+   	if err != nil {
+   		log.Printf("Failed to publish a message : %v \n", err)
+   		log.Printf("开始重连RabbitMQ!\n")
+   		receiver.ReConnect()
+   	} else {
+   		log.Printf("publish message : %v \n", message)
+   	}
+   }
+   ```
+
+2. 对于消费者，可以选择多种方式处理
+
+   + 方式一：NotifyClose
+
+     ```go
+     for {  //reconnection loop
+         conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/") //setup
+         notify := conn.NotifyClose(make(chan *amqp.Error)) //error channel
+     ...
+         ch, err := conn.Channel()
+         msgs, err := ch.Consume(
+     ...
+         for{  //receive loop
+             select {  //check connection
+                 case err = <-notify:
+                 //work with error
+                 break //reconnect
+             case d = <- msgs:
+                 //work with message
+             ...
+             }
+         }
+             }
+     ```
+
+   + 方式二：检查delivery channel是否已经关闭
+
+     ```go
+     conn, _ := amqp.Dial(url)
+     ch, _ := conn.Channel()
+     
+     delivery, _ := ch.Consume(
+             queueName,
+             consumerName,
+             true,  // auto ack
+             false, // exclusive
+             false, // no local
+             true,  // no wait,
+             nil,   // table
+         )
+     
+     for {
+         payload, ok := <- delivery
+         if !ok {
+             // ... channel closed
+             return
+         }
+     }
+     ```
+
+     
 
