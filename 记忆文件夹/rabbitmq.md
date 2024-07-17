@@ -17,20 +17,21 @@ rpm -ivh rabbitmq-server-3.8.14-1.el7.noarch.rpm
 
 # 第二章 基础知识
 
-1. 管理后台
+1. 安装后配置
 
    ```shell
    # 开启管理后台
    rabbitmq-plugins enable rabbitmq_management
-   
-   # 管理后台地址
-   http://${ip}:15672/
    
    # 创建管理后台账户
    # Rabbitmq从3.3.0开始默认用户(guest/guest)只能通过除localhost的访问，我们自己创建登录用户并授权管理员登录。执行下面三条命令即可创建一个可以远程登录管理后台的账户
    rabbitmqctl add_user test 123456
    rabbitmqctl  set_user_tags  test  administrator
    rabbitmqctl set_permissions -p "/" test ".*" ".*" ".*"
+   
+   
+   # 登录管理后台
+   http://${ip}:15672/
    ```
 
 2. 服务管理
@@ -56,13 +57,13 @@ rpm -ivh rabbitmq-server-3.8.14-1.el7.noarch.rpm
 
    ```python
    #添加vhost,必须对用户授权才能访问
-   rabbitmqctl add_vhost /testhost
+   rabbitmqctl add_vhost testHost
     
    #列出vhost
    rabbitmqctl list_vhosts
     
    #删除vhost
-   rabbitmqctl delete_vhost /testhost
+   rabbitmqctl delete_vhost testHost
    ```
 
 4. 权限管理
@@ -76,16 +77,16 @@ rpm -ivh rabbitmq-server-3.8.14-1.el7.noarch.rpm
    #read 一个用于匹配用户在那些资源上拥有可读的正则表达式
     
    #授予admin用户可访问虚拟主机testhost，并在所有的资源上具备可配置、可写及可读的权限
-   rabbitmqctl set_permissions -p /testhost admin ".*" ".*" ".*"
+   rabbitmqctl set_permissions -p testHost admin ".*" ".*" ".*"
     
    #授予admin用户可访问虚拟主机testhost1，在以queue开头的资源上具备可配置权限、并在所有的资源上可写及可读的权限
-   rabbitmqctl set_permissions -p /testhost1 admin "^queue.*" ".*" ".*"
+   rabbitmqctl set_permissions -p testHost admin "^queue.*" ".*" ".*"
     
    #清除权限
-   rabbitmqctl clear_permissions -p /testhost admin
+   rabbitmqctl clear_permissions -p testHost admin
     
    #虚拟主机的权限
-   rabbitmqctl list_permissions -p /testhost
+   rabbitmqctl list_permissions -p testHost
     
    #用户权限
    rabbitmqctl list_user_permissions admin
@@ -129,6 +130,21 @@ rpm -ivh rabbitmq-server-3.8.14-1.el7.noarch.rpm
 
 
 
+
+# 第三章 注意事项
+
+1. 创建自定义vHost时，名字为gateway 而不是 /gateway
+
+2. 访问名称为gateway的vHost时url如下
+
+   ```python
+   amqp://test:123456@192.168.1.49:5672/gateway
+   
+   # 访问vHost为/的url
+   amqp://test:123456@192.168.1.49:5672/
+   ```
+
+   
 
 
 
