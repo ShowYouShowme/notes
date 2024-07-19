@@ -25,7 +25,7 @@
    cd art/conf
    
    #配置账号密码
-   cat passwd
+   vim passwd
    
    [users]
    harry = harryssecret
@@ -35,6 +35,7 @@
    dujingna = dujingna258
    liaojiahui = liaojiahui369
    
+   vim authz
    #配置分组和权限
    [groups]
    harry_and_sally = harry,sally,panda,dujingna,liaojiahui

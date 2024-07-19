@@ -4792,7 +4792,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                   
+   >                                                                                                       
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6315,6 +6315,47 @@ func main() {
 	log.Error("this is error msg")
 	log.Fatal("this is fatal msg")
 }
+```
+
+设置日志格式
+
+```go
+    log.SetFormatter(&log.TextFormatter{
+		ForceQuote:      true,                  //键值对加引号
+		TimestampFormat: "2006-01-02 15:04:05", //时间格式
+		FullTimestamp:   true,
+	})
+```
+
+日志显示函数名和文件名
+
+```go
+log.SetReportCaller(true)
+```
+
+自定义日志格式
+
+```go
+type CustomizeFormatter struct {
+}
+
+func (m *CustomizeFormatter) Format(entry *log.Entry) ([]byte, error) {
+	var b *bytes.Buffer
+	if entry.Buffer != nil {
+		b = entry.Buffer
+	} else {
+		b = &bytes.Buffer{}
+	}
+
+	timestamp := entry.Time.Format("2006-01-02 15:04:05")
+	var newLog string
+	newLog = fmt.Sprintf("[%s] [%s] %s\n", timestamp, entry.Level, entry.Message)
+
+	b.WriteString(newLog)
+	return b.Bytes(), nil
+}
+
+log.SetFormatter(&utils.CustomizeFormatter{})
 ```
 
 
