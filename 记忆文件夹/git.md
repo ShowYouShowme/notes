@@ -573,7 +573,7 @@ git submodule init
 # 检出父仓库列出的commit
 git submodule update
 
-# 添加子模块, 提交的时候需要提交.gitmodules 和 子模块文件夹
+# 添加子模块, 提交的时候需要提交.gitmodules 和 子模块文件夹(common)
 git submodule add <repository> [<submodule-path>]
 git submodule add https://gitdepot.gplay.in/rm_game/common.git common
 
