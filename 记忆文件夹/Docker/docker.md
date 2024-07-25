@@ -61,6 +61,25 @@ vim /etc/docker/daemon.json
 
 
 
+### 1.2.3 代理配置
+
+docker于20204年封杀国内，因此配置网易源的方式失效，需要配置代理
+
+```shell
+vim /usr/lib/systemd/system/docker.service
+
+[Service]
+Type=notify
+Environment="HTTP_PROXY=http://192.168.1.115:3128"
+Environment="HTTPS_PROXY=http://192.168.1.115:3128"
+
+
+systemctl daemon-reload
+systemctl restart docker
+```
+
+
+
 ### 1.2.3 重启服务
 
 ```shell
@@ -296,7 +315,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                   
+   >                                                                      
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```

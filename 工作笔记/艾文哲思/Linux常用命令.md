@@ -1213,7 +1213,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                      
+  >                                                                                                                         
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1237,7 +1237,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                      
+  >                                                                                                                         
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -2957,6 +2957,7 @@ cat /proc/{pid}/status
 
 1. 建议安装在/usr目录，这样可以直接搜索到include和so和bin文件（比如protobuf，openssl，libevent之类）
 2. 安装在自定义路径,可以直接删除整个软件，方便删除
+3. 如果安装的软件包仅仅使用bin文件,不需要头文件和so,可以统一放在/usr/local目录,将路径/usr/local/bin加入PATH；每个软件包的bin文件创建软连接到/urs/local/bin里面即可
 
 
 

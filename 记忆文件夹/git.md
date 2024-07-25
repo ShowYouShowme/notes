@@ -565,11 +565,36 @@ git checkout -- main.cpp
 ## 2.16 子模块
 
 ```shell
+url = https://geek-docs.com/git/git-questions/248_git_git_submodule_commitpushpull.html
+
 # 初始化本地配置文件
 git submodule init
 
 # 检出父仓库列出的commit
 git submodule update
+
+# 添加子模块, 提交的时候需要提交.gitmodules 和 子模块文件夹
+git submodule add <repository> [<submodule-path>]
+git submodule add https://gitdepot.gplay.in/rm_game/common.git common
+
+# 更新子模块, 在根目录执行
+git submodule update --recursive --remote
+## 旧版本执行如下命令
+git submodule update --init --recursive
+
+# 删除子模块
+rm -rf 子模块目录 删除子模块目录及源码
+vi .gitmodules 删除项目目录下.gitmodules文件中子模块相关条目
+vi .git/config 删除配置项中子模块相关条目
+rm .git/module/* 删除模块下的子模块目录，每个子模块对应一个目录，注意只删除对应的子模块目录即可
+git rm --cached 子模块名称
+
+
+# clone 带有子模块的项目
+1、初始化子模块(此操作会将文件夹于子模块url绑定到一起)
+git submodule init
+2、更新子模块
+git submodule update --recursive --remote
 ```
 
 
@@ -742,14 +767,42 @@ git push -u origin dev
 
 
 
+## 5.3 更改origin
+
+开发到一半，项目迁移到另外的节点，此时需要更改origin
+
+1. 查看当前origin地址
+
+   ```shell
+   git remote -v
+   ```
+
+2. 使用命令修改
+
+   ```shell
+   git remote set-url origin ${新的URL地址}
+   ```
+
+3. 验证修改是否成功
+
+   ```shell
+   git remote -v
+   ```
+
+   
+
+
+
+
+
 # 第六章 安装
 
 
 
 ```shell
- sudo yum -y install expat-devel
+ sudo yum -y install expat-devel openssl-devel libcurl-devel
  #下载源码
- wget https://github.com/git/git/archive/refs/tags/v2.39.1.tar.gz
+ wget https://github.com/git/git/archive/refs/tags/v2.40.0.tar.gz
  #解压
  tar -zxvf v2.39.1.tar.gz
  #进入目录
@@ -760,6 +813,9 @@ git push -u origin dev
  make prefix=$HOME/local/git install -j8
  #配置环境变量
  export PATH=$PATH:$HOME/local/git/bin
+ 
+ # 创建软连接
+ ln -s /usr/local/git/bin/git /usr/local/bin/git
 ```
 
 

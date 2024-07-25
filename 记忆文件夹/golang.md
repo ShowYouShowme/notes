@@ -2522,7 +2522,26 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
    }
    ```
 
-   
+
+
+
+## 8.7 使用本地包
+
+后端使用微服务架构时，可以将公共代码封装到一个单独的项目(自定义包)里面，然后引入本地包即可
+
+```python
+# go.mod 配置示范
+
+module moduledemo
+
+go 1.14
+
+
+require "mypackage" v0.0.0
+replace "mypackage" => "../mypackage"
+```
+
+
 
 
 
@@ -4792,7 +4811,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                       
+   >                                                                                                         
    >   # 2-- 检查进程是否存在
    >   ```
    >
