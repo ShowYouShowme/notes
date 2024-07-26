@@ -454,4 +454,128 @@ console.log("successful")
      }
    ```
 
-   
+
+
+
+# 第八章 es6特性
+
+
+
+## 8.1 多返回值
+
+```typescript
+function calculateAllScore(cardArr: CardInfo[]): [number, boolean] {
+    return [score, canDeclare]
+}
+
+let [tScore, tCanDeclare] = calculateAllScore(tRetArr);
+```
+
+
+
+## 8.2 切片
+
+```typescript
+let arr : number[] = {11,22,33,44,55}
+
+// arr[1:3)
+let arr2 = arr.slice(1,3)
+```
+
+
+
+## 8.3 解构
+
+```typescript
+let [a, b, c] = [1, 2, 3]; // 基本
+let { a, b } = { a: 'aaa', b: 'bbb' }; // 对象模型的解构 前后两个kay需对应
+```
+
+
+
+## 8.4 构造对象
+
+```typescript
+let name : string = "tylor"
+let age : number = 19
+
+let info  = {
+    name,
+    age
+}
+```
+
+
+
+## 8.5 Spread / Rest 操作符
+
+```typescript
+// Spread
+var s = ['1', '2', '3'];
+function f(s1,s2,s3){
+    console.log(`Hello ${s1},${s2},${s3}`); //ES6新增字符串中加入变量和表达式
+}
+f(...s); //Hello 1,2,3
+
+// 利用Spread 复制数组
+let aa = [11,22,33]
+let bb = [...aa]
+
+
+
+// Rest
+function myBio(firstName, lastName, ...otherInfo) { 
+  return otherInfo;
+}
+
+// Invoke myBio function while passing five arguments to its parameters:
+myBio("Oluwatobi", "Sofela", "CodeSweetly", "Web Developer", "Male");
+
+// The invocation above will return:
+["CodeSweetly", "Web Developer", "Male"]
+```
+
+
+
+## 8.6 模板字面值
+
+```typescript
+const name = "ExplainThis";
+// 不用樣板字面值（Template Literals）
+console.log("Hello " + name + "!");
+// 使用樣板字面值（Template Literals）
+console.log(`Hello ${name}!`);
+```
+
+
+
+## 8.7 箭头函数
+
+```typescript
+() => expression
+
+param => expression
+
+(param) => expression
+
+(param1, paramN) => expression
+
+() => {
+  statements
+}
+
+param => {
+  statements
+}
+
+(param1, paramN) => {
+  statements
+}
+
+```
+
+
+
+## 8.8 let 与 const
+
+定义变量的方式。

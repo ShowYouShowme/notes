@@ -565,6 +565,7 @@ git checkout -- main.cpp
 ## 2.16 子模块
 
 ```shell
+# 文档网页
 url = https://geek-docs.com/git/git-questions/248_git_git_submodule_commitpushpull.html
 
 # 初始化本地配置文件
@@ -595,6 +596,11 @@ git rm --cached 子模块名称
 git submodule init
 2、更新子模块
 git submodule update --recursive --remote
+3、切换分支, 初始化和更新子模块后,此时子模块处于Detached状态，需要切换到某个分支才能提交更改
+git checkout main
+
+
+# 使用小乌龟操作git时，可以进入子模块目录，然后右键就可以像操作主项目一样git pull 、git commit、push的操作了!
 ```
 
 
