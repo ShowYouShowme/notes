@@ -50,24 +50,28 @@ zookeeper 是用java开发的中间件，因此必须要安装openjdk。
    # 常用命令
    0、列出节点信息
    ls ${path}
+   ls /
    
    1、创建节点
    create /rummy/provider
    
-   # 创建临时节点,结束后删除
+   # 创建临时节点,会话结束后删除
    create -e /rummy/tmp
    
    2、创建节点并且设置值
    create /rummy/provider 192.168.1.49:8890
    
    3、获取节点值
-   get /rummy/provider 192.168.1.49:8890
+   get /rummy/provider
+   
+   # 获取详细信息
+   get -s /rummy/provider
    
    4、设置值
    set /rummy/provider 127.0.0.1:8880
    
    4、删除节点
-   delete /rummy/provider 192.168.1.49:8890
+   delete /rummy/provider
    
    5、删除节点和子节点
    deleteall /rummy
