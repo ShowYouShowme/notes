@@ -2168,6 +2168,7 @@ cmd-2 = ./node_modules/protobufjs-cli/bin/pbts -o compiled.d.ts compiled.js
 ```shell
 #website:https://github.com/request/request
 npm install request
+npm install --save @types/request
 ```
 
 
@@ -3024,9 +3025,23 @@ module.exports = {
     "script"     : "/home/li/local/nginx/sbin/nginx",
     "exec_interpreter": "none",
     "exec_mode"  : "fork_mode",
-    "cwd"        : "/home/li/local/nginx/sbin"
+    "cwd"        : "/home/li/local/nginx/sbin",
+    "args"       : "-a 13 -b 12"
   }]  
 };
+
+# WINDOWS 配置
+module.exports = {
+  apps : [{
+	name  : "gateway",  
+    script: 'C:\\Users\\Frank\\Documents\\project\\gateway\\gateway.exe',
+    exec_interpreter: "none",
+    exec_mode  : "fork_mode",
+    cwd        : "C:\\Users\\Frank\\Documents\\project\\gateway\\",
+     args       : "-a 13 -b 12"
+  }]
+};
+
 
 #运行
 pm2 start ecosystem.config.js

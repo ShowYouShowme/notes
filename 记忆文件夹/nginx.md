@@ -1456,7 +1456,7 @@ CUSTOM_CONFIG_PATH = /etc/nginx/conf.d/
 ```ini
 location / {
       root   html;
-      autoindex on;   ## 加上这条即可显示文件夹
+      autoindex on;   ## 加上这条即可显示文件夹,把index.html 改名为 index.html_bak
       index  index.html index.htm;
 }
 ```

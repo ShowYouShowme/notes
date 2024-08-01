@@ -315,7 +315,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                      
+   >                                                                         
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -1597,5 +1597,20 @@ docker network create --subnet=172.11.0.0/20 mynetwork
 
 [创建容器]
 docker run -itd --name network_test --net mynetwork --ip 172.11.0.3 centos:latest /bin/bash
+```
+
+
+
+## 10.2 端口映射不生效
+
+docker容器非正常关闭后（比如操作系统关闭）；使用docker start ${containerID}启动容器后，在别的主机上无法访问docker里面的mysql（3306端口已经映射到了宿主机）
+
+
+
+解决方法：重启docker服务，再启动mysql镜像
+
+```shell
+systemctl restart docker
+docker start ${mysql-containerID}
 ```
 

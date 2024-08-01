@@ -52,7 +52,7 @@
    >
    > 2. vscode
    >
-   >    添加debug配置，然后设置启动的js文件，最后断点启动项目即可
+   >    添加debug配置，然后设置启动的js文件，最后断点启动项目即可；默认情况下DEBUG CONSOLE 无法输入，需要加入配置项"console": "integratedTerminal"
    >
    >    ```shell
    >    #TODO 也可以点击运行和调试,然后创建调试文件
@@ -479,7 +479,7 @@ let [tScore, tCanDeclare] = calculateAllScore(tRetArr);
 let arr : number[] = {11,22,33,44,55}
 
 // arr[1:3)
-let arr2 = arr.slice(1,3)
+let arr2 = arr.slice(1,3) 
 ```
 
 
@@ -579,3 +579,149 @@ param => {
 ## 8.8 let 与 const
 
 定义变量的方式。
+
+
+
+## 8.9 map类型
+
+1. 使用es6的map
+
+   ```typescript
+   const map1 = new Map();
+   
+   map1.set('a', 1);
+   map1.set('b', 2);
+   map1.set('c', 3);
+   
+   console.log(map1.get('a'));
+   // Expected output: 1
+   
+   map1.set('a', 97);
+   
+   console.log(map1.get('a'));
+   // Expected output: 97
+   
+   console.log(map1.size);
+   // Expected output: 3
+   
+   map1.delete('b');
+   
+   console.log(map1.size);
+   // Expected output: 2
+   
+   
+   // 遍历
+   for (const [key, value] of myMap) {
+     console.log(`${key} = ${value}`);
+   }
+   // 0 = zero
+   // 1 = one
+   
+   for (const key of myMap.keys()) {
+     console.log(key);
+   }
+   // 0
+   // 1
+   
+   for (const value of myMap.values()) {
+     console.log(value);
+   }
+   ```
+
+2. 使用对象自己定义， 自定义类型无法使用for(let elem of arr)遍历
+
+   ```typescript
+   // 索引签名
+   let cardMap: { [key: number]: number } = {}
+   ```
+   
+3. Record：Record 是把索引签名进行了封装
+
+   ```typescript
+   let m1 : Record<number, number> = {}
+   ```
+
+   方法2和3表示的map只能使用for(let key in obj)遍历，而且key是string类型。因此可能需要将key转换为特定类型，比如number。
+
+   
+
+
+
+## 8.10 循环
+
+```typescript
+for(let i = 0; i < arr.length; i++)
+    
+    
+arr.forEach()    
+
+// 遍历Array、Map、Set
+for (let item of arr)
+    
+// 用于遍历对象属性    
+for (let i in arr)    
+```
+
+
+
+
+
+# 第九章 常见问题
+
+vscode的powershell无法执行tsc
+
+1. 管理员身份运行 window.powershell
+2. 执行：get-ExecutionPolicy，显示Restricted，表示状态是禁止的;
+3. 执行：set-ExecutionPolicy
+4. 会提示输入参数：RemoteSigned
+5. 会提示进行 选择： Y
+
+
+
+
+
+配置vscode 启动前编译
+
+1. 配置编译的task.json文件
+
+   ```json
+   {
+       "version": "2.0.0",
+       "tasks": [
+           {
+               "label": "compile",
+               "type": "shell",
+               "command": "tsc"
+           }
+       ]
+   }
+   ```
+
+   
+
+2. 在launch.json里面配置preLaunchTask
+
+   ```json
+   {
+       "version": "0.2.0",
+       "configurations": [
+           {
+               "type": "node",
+               "request": "launch",
+               "name": "Launch Program",
+               "skipFiles": [
+                   "<node_internals>/**"
+               ],
+               // 该字段值为对应task的lable
+               "preLaunchTask": "compile",
+               "program": "${workspaceFolder}\\bin\\main.js",
+               "outFiles": [
+                   "${workspaceFolder}/**/*.js"
+               ]
+           }
+       ]
+   }
+   ```
+
+   
+

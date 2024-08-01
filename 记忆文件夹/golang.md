@@ -4811,7 +4811,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                         
+   >                                                                                                           
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6383,13 +6383,17 @@ log.SetFormatter(&utils.CustomizeFormatter{})
 
 # 第三十章  Mongodb
 
-
+游戏开发推荐用mongo替代mysql，操作更加简单。表结构定义放在公共文件给多个服务使用。统计相关接入sdk，比如数数科技，这样就不需要mysql了。
 
 使用MongoDB的版本 4.2.24
 
 
 
 驱动版本：go.mongodb.org/mongo-driver v1.11.7
+
+
+
+开发过程中，新增了字段，下次读取行的时候，会赋予默认值（golang版本可以，ts版本不行）
 
 
 
