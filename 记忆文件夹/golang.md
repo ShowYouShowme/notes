@@ -4811,7 +4811,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                           
+   >                                                                                                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -8404,5 +8404,48 @@ q, err := ch.QueueDeclare(
      }
      ```
 
-     
+
+
+
+# 第三十七章 命令行参数
+
+golang自带包flag可以解决该问题
+
+```go
+package main
+
+import (
+    "flag"
+    "fmt"
+)
+
+func main() {
+
+    wordPtr := flag.String("word", "foo", "a string")
+
+    numbPtr := flag.Int("numb", 42, "an int")
+    forkPtr := flag.Bool("fork", false, "a bool")
+
+    var svar string
+    flag.StringVar(&svar, "svar", "bar", "a string var")
+
+    flag.Parse()
+
+    fmt.Println("word:", *wordPtr)
+    fmt.Println("numb:", *numbPtr)
+    fmt.Println("fork:", *forkPtr)
+    fmt.Println("svar:", svar)
+    fmt.Println("tail:", flag.Args())
+}
+
+
+$ ./command-line-flags -word=opt -numb=7 -fork -svar=flag
+word: opt
+numb: 7
+fork: true
+svar: flag
+tail: []
+```
+
+
 

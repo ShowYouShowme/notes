@@ -162,7 +162,7 @@ npm install @types/node --save
 2. 切换阿里源
 
    ```shell
-   npm config set registry https://registry.npm.taobao.org/
+   npm config set registry https://registry.npmmirror.com
    
    # 查看切换是否成功
    npm config get registry

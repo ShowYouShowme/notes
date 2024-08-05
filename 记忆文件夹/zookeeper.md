@@ -16,7 +16,7 @@ zookeeper 是用java开发的中间件，因此必须要安装openjdk。
    wget https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.8.4-bin.tar.gz
    tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
    mv apache-zookeeper-3.8.4-bin /usr/local/
-   cd apache-zookeeper-3.8.4-bin/
+   cd /usr/local/apache-zookeeper-3.8.4-bin/
    
    mkdir dataDir dataLogDir
    
@@ -34,15 +34,18 @@ zookeeper 是用java开发的中间件，因此必须要安装openjdk。
    # 启动服务
    zkServer.sh start
    
+   # 前台启动服务,一般配合pm2使用
+   zkServer.sh start-foreground
+   
    # 停止服务
    zkServer.sh stop
    
    # 查看服务运行状态
    zkServer.sh status
    ```
-
+   
    zk客户端
-
+   
    ```shell
    # 启动客户端,并连接服务
    zkCli.sh
@@ -51,6 +54,8 @@ zookeeper 是用java开发的中间件，因此必须要安装openjdk。
    0、列出节点信息
    ls ${path}
    ls /
+   
+   ls -R / 递归查看全部节点
    
    1、创建节点
    create /rummy/provider
@@ -85,6 +90,22 @@ zookeeper 是用java开发的中间件，因此必须要安装openjdk。
    8、退出客户端
    quit
    ```
+   
+   pm2 服务管理文件
+   
+   ```javascript
+   module.exports = { 
+     apps : [{
+       "name"       : "zookeeper",
+       "script"     : "/usr/local/apache-zookeeper-3.8.4-bin/bin/zkServer.sh",
+       "exec_interpreter": "bash",
+       "exec_mode"  : "fork_mode",
+       "args"       : "start-foreground"
+     }]  
+   };
+   ```
+   
+   
 
 
 

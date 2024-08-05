@@ -93,7 +93,7 @@ CentOS-7-x86_64-Minimal-1810.iso
    ; static : 系统启动时用静态地址
    ; dhcp : 系统启动时查询路由器获取ip地址
    
-   ; 当配置centos7静态ip地址失败时,设置ONBOOT=no; 重启机器，系统启动后不会自动启动网卡，然后手动配置 ONBOOT=yes; 并且配置ip信息,最后重启网卡  service network restart 即可
+   ; 当配置centos7静态ip地址失败时,设置ONBOOT=no; 重启机器，系统启动后不会自动启动网卡，然后手动配置 ONBOOT=yes; 并且配置ip信息,最后启动网卡  service network start 即可
    value = none | static | dhcp
    ```
 

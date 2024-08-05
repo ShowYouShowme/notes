@@ -26,6 +26,23 @@ systemctl enable redis
 
 
 
+## 1.3 源码安装
+
+```shell
+wget https://github.com/redis/redis/archive/refs/tags/3.2.12.tar.gz
+tar -zxvf 3.2.12.tar.gz
+cd redis-3.2.12/
+make -j20
+cd src/
+# 安装,默认将可执行文件安装到/usr/local/bin; 需要自己copy配置文件到指定路径
+make install
+
+# 启动服务,前台启动;可以使用pm2来管理
+./redis-server /path/to/redis.conf
+```
+
+
+
 # 第二章 安装C++开发库
 
 ## 2.1 下载文件
@@ -193,25 +210,31 @@ bgwriteaof
    PSUBSCRIBE *
    ```
 
-4. 退订全部频道
+4. 发布消息：利用发布订阅，可以将redis作为配置中心，实时通知服务去更新配置！
+
+   ```shell
+   PUBLISH runoobChat "Redis PUBLISH test"
+   ```
+
+5. 退订全部频道
 
    ```shell
    PUNSUBSCRIBE *
    ```
 
-5. 订阅给定的一个或多个频道
+6. 订阅给定的一个或多个频道
 
    ```shell
    SUBSCRIBE channel [channel ...]
    ```
 
-6. 退订给定的一个或多个频道
+7. 退订给定的一个或多个频道
 
    ```shell
    UNSUBSCRIBE channel [channel ...]
    ```
 
-7. 查看帮助信息
+8. 查看帮助信息
 
    ```shell
    redis -h

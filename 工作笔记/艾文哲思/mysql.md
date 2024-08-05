@@ -98,6 +98,61 @@ docker pull mysql:5.7
 
 
 
+## 1.3 启动命令
+
+1. 使用systemctl
+
+   ```shell
+   systemctl start mysqld
+   ```
+
+2. 使用mysqld启动，可以配合pm2进行管理
+
+   ```shell
+   # 精灵模式
+   mysqld --defaults-file=/etc/my.cnf --daemonize --user=mysql
+   
+   # 前台启动, 配合PM2管理即可,方便监控
+   mysqld --defaults-file=/etc/my.cnf --user=mysql
+   
+   #PM2的配置文件
+   module.exports = {
+     apps : [{
+       "name"       : "mysqld",
+       "script"     : "/usr/sbin/mysqld",
+       "exec_interpreter": "none",
+       "exec_mode"  : "fork_mode",
+       "args"       : "--defaults-file=/etc/my.cnf --user=mysql"
+     }]
+   };
+   ```
+
+
+
+## 1.4 关闭Mysql
+
+1. 使用systemctl
+
+   ```shell
+   systemctl stop mysqld
+   ```
+
+2. 使用mysql客户端关闭
+
+   ```shell
+   mysql客户端连上后; 执行shutdown 命令
+   ```
+
+3. kill命令：不推荐
+
+   ```shell
+   kill -9 ${pid}
+   ```
+
+   
+
+
+
 # 第二章 常见操作
 
 
