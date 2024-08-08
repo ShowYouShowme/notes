@@ -312,7 +312,18 @@ ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
 
 # sudo
 
-作用：以root身份执行命令，主要在Debian的发行版上。
+作用：
+
+1. 以root身份执行命令，主要在Debian的发行版上。
+
+2. 以特定用户启动服务，常用于部署线上服务
+
+   ```shell
+   # 先创建一个nologin 用户,然后用该用户启动服务即可
+   sudo -u ${user} bash -c 'pm2 restart server'
+   ```
+
+   
 
 
 
@@ -1213,7 +1224,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                         
+  >                                                                                                                            
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1237,7 +1248,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                         
+  >                                                                                                                            
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```

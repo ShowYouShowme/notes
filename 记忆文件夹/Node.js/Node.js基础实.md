@@ -3026,7 +3026,8 @@ module.exports = {
     "exec_interpreter": "none",
     "exec_mode"  : "fork_mode",
     "cwd"        : "/home/li/local/nginx/sbin",
-    "args"       : "-a 13 -b 12"
+    "args"       : "-a 13 -b 12",
+    "user"       : "developer"  // 启动服务的用户,线上的服务一定要设置此选项
   }]  
 };
 
@@ -3126,6 +3127,30 @@ pm2 flush
 
 ```shell
 pm2 report
+```
+
+
+
+### 19.1.20 JavaScript Api
+
+```typescript
+const pm2 = require('pm2')
+
+// 用此程序定时把服务数据写入DB,实现监控的功能
+pm2.connect(function (err: Error) {
+    if (err) {
+        console.error(err)
+        process.exit(2)
+    }
+    pm2.list((err: Error, list: any) => {
+        for(let process of list){
+            console.log(`server : ${process.name}, pid : ${process.pid}, cpu : ${process.monit.cpu}, memory : ${process.monit.memory}`);
+        }
+
+        // 断开链接
+        pm2.disconnect()
+    })
+})
 ```
 
 

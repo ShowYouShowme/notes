@@ -4811,7 +4811,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                             
+   >                                                                                                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -8448,4 +8448,35 @@ tail: []
 ```
 
 
+
+
+
+# 第三十八章 gorm
+
+文档：https://www.tizi365.com/archives/6.html
+
+
+
+# 第三十九章 Makefile构建
+
+使用makefile构建和发布项目
+
+```makefile
+deploy:build
+	pm2 stop gateway && pm2 start gateway
+updateCode:
+	git pull && git submodule update --recursive --remote
+
+genNetMsg:updateCode
+	protoc --go_out=. --go-grpc_out=. common/netmsg.proto
+
+genApiMsg:updateCode
+	protoc --go_out=. --go-grpc_out=. common/apimsg.proto
+
+genErrMsg:updateCode
+	protoc --go_out=. --go-grpc_out=. common/errcode.proto
+
+build:genNetMsg genApiMsg genErrMsg
+	go build
+```
 

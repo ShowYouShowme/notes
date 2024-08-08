@@ -37,11 +37,22 @@ rpm -ivh rabbitmq-server-3.8.14-1.el7.noarch.rpm
 2. 服务管理
 
    ```python
+   # rabbitmq的工作目录 /var/lib/rabbitmq
    # 使用systemctl管理服务
    systemctl start rabbitmq-server #启动服务
+   # 或者
+   /usr/sbin/rabbitmq-server
+   
+   
    systemctl status rabbitmq-server #查看服务状态
+   
+   
    systemctl stop rabbitmq-server #停止服务
-   systemctl enable rabbitmq-server #开启启动服务
+   # 或者
+   /usr/sbin/rabbitmqctl shutdown
+   
+   
+   systemctl enable rabbitmq-server #开机启动服务
    
    # 关闭服务
    rabbitmqctl stop_app
