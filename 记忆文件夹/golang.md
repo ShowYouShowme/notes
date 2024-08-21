@@ -163,7 +163,26 @@ func main()  {
 
 2. 方法名以Test开头：func Testxxx()
 
-3. 代码示例
+3. api接口
+
+   ```GO
+   package try_test
+   
+   import (
+   	"testing"
+   )
+   
+   // go test -v first_test.go
+   func TestFirstTry(t *testing.T)  {
+   	t.Fatal("请在启动参数里面指定配置文件!") 			// 打印日志并且退出
+   	t.Errorf("读取手牌出错: %s\n", err.Error()) 	// 打印错误日志,不退出
+   	t.Logf("%v 测试通过!", row.Cards) 			 // 打印Info日志
+   }
+   ```
+
+   
+
+4. 代码示例
 
    ```GO
    // go test -v first_test.go
@@ -174,9 +193,31 @@ func main()  {
    )
    
    func TestFirstTry(t *testing.T)  {
-   	var a int = 1
-   	var b int = 2
-   	t.Log("a = ", a, " b = " , b)
+   	rawConf, err := ioutil.ReadFile("handcard.json")
+   	if err != nil {
+   		t.Fatal("请在启动参数里面指定配置文件!")
+   	}
+   	e := new(CardConfig)
+   	err = json.Unmarshal([]byte(rawConf), e)
+   	if err != nil {
+   		t.Fatal(err)
+   	}
+   
+   	for _, row := range e.Cards {
+   		inputHandCards, err := ReadCards2(row.Cards)
+   		if err != nil {
+   			t.Errorf("读取手牌出错: %s\n", err.Error())
+   		}
+   		handCards := inputHandCards[1:]
+   		laizi := inputHandCards[0]
+   		bestResult := algorithm.FindBestResult(handCards, laizi, false)
+   		if bestResult.Score == row.Score && bestResult.CanDeclare == row.CanDeclare {
+   			t.Logf("%v 测试通过!", row.Cards)
+   		} else {
+   			t.Fatalf("测试失败! 失败用例: %v", row.Cards)
+   		}
+   	}
+   	t.Logf("全部测试用例成功!\n")
    }
    ```
 
@@ -365,6 +406,15 @@ const (
 	CMD_C_SYS_PING         CMD = 1001
 	CMD_S_SYS_PONG         CMD = 1002
 	 )
+
+
+type TrackEvent int32
+
+const (
+	TrackEvent_EventNil     TrackEvent = 0
+	TrackEvent_EventOnline  TrackEvent = 1
+	TrackEvent_EventOffline TrackEvent = 2
+)
 ```
 
 
@@ -698,7 +748,11 @@ fmt.Printf("body : %s \n", body)
    
    	s1 := []int{1,2,3,4} // 定义方式二
    	t.Log(len(s1), cap(s1))
+       
+       // size 为0, 是empty数组; 用这个方式初始化即可
+       s2 := make([]int, 0)
    
+       // size 为3,每个元素都是0
    	s2 := make([]int, 3, 5) // size == 3 capacity == 5 定义方式三 
    	t.Log(len(s2), cap(s2))
    	// t.Log(s2[0], s2[1], s2[3], s2[4])
@@ -1015,7 +1069,34 @@ map作为struct的成员，必须在构造函数里面构造，比如make(map[in
    }
    ```
 
-   
+
+
+
+## 3.4 注意事项
+
+map和channel作为struct的成员时，使用之前必须利用make初始化；切片不需要初始化！
+
+```go
+type Person struct {
+	children []int
+	work     map[string]string
+	ch       chan bool
+}
+
+func main() {
+	person := &Person{}
+	person.children = append(person.children, 123)
+	person.work = make(map[string]string)
+	person.work["111"] = "hello"
+	person.ch = make(chan bool)
+	go func() {
+		time.Sleep(time.Second * 5)
+		<-person.ch
+	}()
+	person.ch <- true
+	fmt.Printf(".........")
+}
+```
 
 
 
@@ -1251,6 +1332,14 @@ func main()  {
 
 
 ### 6.1.2 行为定义
+
+**receiver 为值**的时候，不管你定义对象时用指针还是对象，调用成员函数都**不能改变**对象值，因为传递的是副本。
+
+**receiver 为指针**的时候，不管你定义对象时用指针还是对象，调用成员函数**都会改变**对象本身。
+
+
+
+建议：定义对象时统一用指针，receiver统一用指针！
 
 ***
 
@@ -1601,13 +1690,13 @@ func main() {
 
 
 
-### 空接口与类型断言
+### 空接口与类型断言(类型转换)
 
 ***
 
 1. 空接口可以表示任何类型
 
-2. 通过断言将空接口转换为制定类型
+2. 通过断言将空接口转换为指定类型
 
 3. 示例代码
 
@@ -4811,7 +4900,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                 
+   >                                                                                                                           
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -4922,6 +5011,136 @@ func BenchmarkStringAdd(b *testing.B) {
 	fmt.Println("t1 : ", time.Now())
 	time.Sleep(time.Second * 5)
 	fmt.Println("t2 : ", time.Now())
+```
+
+
+
+
+
+## 17.4 计时器封装
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+type Timer struct {
+	cb       func()
+	duration int // 以秒为单位
+}
+
+type TimeManager struct {
+	Mu     sync.Mutex
+	count  int
+	timers map[int]*Timer
+}
+
+func NewTimeManager() *TimeManager {
+	tm := &TimeManager{
+		count:  1,
+		timers: make(map[int]*Timer),
+	}
+	go tm.schedule()
+	return tm
+}
+
+// 启动计时器
+func (t *TimeManager) SetTimeout(f func(), delay int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	timeId := t.count
+	global.LOG.Info(fmt.Sprintf("注册计时器: %v fName : %v ,delay : %v \n", utils.GetFuncName(f), timeId, delay))
+	t.count += 1
+	t.timers[timeId] = &Timer{cb: f, duration: delay}
+	return timeId
+}
+
+// 停止计时器
+func (t *TimeManager) ClearTimeout(timerId int) {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if _, ok := t.timers[timerId]; ok {
+		delete(t.timers, timerId)
+	}
+}
+
+// 获取计时器剩余时间
+func (t *TimeManager) GetRemainingSeconds(timerId int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, ok := t.timers[timerId]; ok {
+		return timer.duration
+	}
+	panic(fmt.Sprintf("计时器: %v 不存在!", timerId))
+}
+
+func (t *TimeManager) Clone() map[int]*Timer {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	m := make(map[int]*Timer)
+	for timerId, timer := range t.timers {
+		m[timerId] = timer
+	}
+	return m
+}
+
+func (t *TimeManager) updateTimer() {
+	timers := t.Clone()
+	var expireTimerId []int
+	expireTimerId = []int{}
+	for timerId, timer := range timers {
+		timer.duration -= 1
+		if timer.duration <= 0 {
+			utils.SafeCall(timer.cb) // cb里面调用TimeManager的成员函数会死锁,因此先clone一份
+			expireTimerId = append(expireTimerId, timerId)
+		}
+	}
+
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	for _, timerId := range expireTimerId {
+		delete(t.timers, timerId)
+	}
+}
+
+// 计时器调度
+func (t *TimeManager) schedule() {
+	timer := time.NewTimer(time.Second)
+	for {
+		select {
+		case <-timer.C:
+			//fmt.Printf("scheudle... \n")
+			t.updateTimer()
+			timer.Reset(time.Second) // 必须有这行,否则全部线程都阻塞,程序退出
+		}
+	}
+}
+func sayHello() {
+	fmt.Printf("hello to everybody! \n")
+}
+
+func sayFuckYou() {
+	fmt.Printf("fuck everybody! \n")
+}
+
+func main() {
+	tm := NewTimeManager()
+	go tm.schedule()
+	forever := make(chan int)
+	t1 := tm.setTimeout(sayHello, 5)
+
+	t2 := tm.setTimeout(sayFuckYou, 10)
+
+	time.Sleep(time.Second * 5)
+
+	fmt.Printf("t1 : %v, t2 : %v \n", tm.GetRemainingSeconds(t1), tm.GetRemainingSeconds(t2))
+
+	tm.clearTimeout(t2)
+	<-forever
+}
 ```
 
 
@@ -8453,7 +8672,11 @@ tail: []
 
 # 第三十八章 gorm
 
-文档：https://www.tizi365.com/archives/6.html
+小白文档：https://www.tizi365.com/archives/6.html
+
+
+
+官方文档：https://gorm.io/zh_CN/docs/delete.html
 
 
 
@@ -8479,4 +8702,131 @@ genErrMsg:updateCode
 build:genNetMsg genApiMsg genErrMsg
 	go build
 ```
+
+
+
+
+
+# 第四十章 etcd
+
+etcd主要功能是服务注册与发现、配置中心（配置更改后可以通知到watch的服务）
+
+
+
+## 40.1 常见命令
+
+```ini
+[put]
+; 添加键值
+syntax = etcdctl put [options] <key> <value> [flags]
+sample = etcdctl put name Surpass
+
+[get]
+; 获取键值
+syntax = etcdctl get [options] <key> [range_end] [flags]
+sample = etcdctl get name
+
+[del]
+; 删除键值
+syntax = etcdctl del [options] <key> [range_end] [flags]
+sample = etcdctl del name
+
+[租约]
+; 和redis的过期时间一样
+
+[添加租约]
+syntax = etcdctl lease grant <ttl> [flags]
+sample = etcdctl lease grant 600
+
+[列出租约]
+syntax = etcdctl lease list [flags]
+sample = etcdctl lease list
+
+[删除租约]
+syntax = etcdctl lease revoke <leaseID> [flags]
+sample = etcdctl lease revoke 694d81417acd4754
+
+```
+
+
+
+# 第四十一章 统计
+
+统计需求建议采用数数科技sdk，尽量不要自己实现
+
+
+
+统计需求自己实现
+
+```proto
+service Game {
+  // 事件上报
+  rpc Track (TrackReq) returns (TrackResp);
+}
+
+message TrackReq {
+	string event      = 1;
+    string properties = 2; //Json 格式
+}
+
+message TrackResp{
+
+}
+```
+
+
+
+
+
+示例代码
+
+```go
+// 创建 LogConfig 配置文件
+config := thinkingdata.TDLogConsumerConfig {
+    Directory: "./log_directory", // 事件采集的文件路径
+}
+// 初始化 logConsumer
+consumer, _ := thinkingdata.NewLogConsumerWithConfig(config)
+// 创建 te 对象
+te := thinkingdata.New(consumer)
+
+accountId := "te_account_id"
+distinctId := "te_distinct_id"//accountId和distinctId不能全部为空
+properties := map[string]interface{}{
+    //设置用户的ip地址，TE系统会根据IP地址解析用户的地理位置信息
+    "#ip":       "123.123.123.123",
+    "channel":   "te",       // 字符串
+    "age":       1,          // 数字
+    "isSuccess": true,       // 布尔
+    "birthday":  time.Now(), // 时间
+    // 对象
+    "object": map[string]interface{}{
+       "key": "value",
+    },
+    //对象组
+    "objectArr": []interface{}{
+       map[string]interface{}{
+          "key": "value",
+       },
+    },
+    "arr":     []string{"value"}, // 数组
+}
+// 上传事件 ---- 重点
+err := te.Track(accountId, distinctId, "payment", properties)
+if err != nil {
+    fmt.Println(err)
+}
+//设置用户属性
+err = te.UserSet("accountId", "distinctId", map[string]interface{}{
+    "user_name": "TE",
+})
+if err != nil {
+    fmt.Println(err)
+}
+//调用flush接口数据会立即写入文件，生产环境注意避免频繁调用flush引发IO或网络开销问题
+te.Flush()
+
+```
+
+
 

@@ -343,7 +343,7 @@ server {
      server_name dev.icashflow.cc;
      listen 8283 ssl;
      location / { 
-         proxy_pass http://websocket:8000;
+         proxy_pass http://websocket;
          # 超时配置
          proxy_read_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
          proxy_send_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可

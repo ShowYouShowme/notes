@@ -2967,6 +2967,9 @@ pm2 restart app_name|app_id
 
 ```shell
 pm2 delete app_name|app_id
+
+# 删除全部服务
+pm2 delete all 
 ```
 
 
@@ -3427,6 +3430,51 @@ class MysqlClient {
     })
   }
 }
+```
+
+
+
+## 21.3 Sequelize
+
+Sequelize是nodejs和typescript的orm包，是操作数据库(mysql和sqlite)的首选
+
+
+
+安装
+
+```shell
+npm install --save sequelize
+```
+
+
+
+官网 = https://sequelize.org/
+
+
+
+模型定义
+
+```typescript
+import { Sequelize, DataTypes } from 'sequelize';
+
+const sequelize = new Sequelize('sqlite::memory:');
+const User = sequelize.define('User', {
+  username: DataTypes.STRING,
+  birthday: DataTypes.DATE,
+});
+```
+
+
+
+查询
+
+```typescript
+const jane = await User.create({
+  username: 'janedoe',
+  birthday: new Date(1980, 6, 20),
+});
+
+const users = await User.findAll();
 ```
 
 
@@ -3920,4 +3968,18 @@ const bufferDecompressed = zlib.brotliDecompress(bufferCompressed);
 ```
 
 
+
+
+
+# 第二十九章 内存限制
+
+64位系统nodejs最大可使用内存大约1.4G，可以在服务启动时用参数显式修改！
+
+```shell
+# 命令行启动
+node --max-old-space-size=8192 index.js #increase to 8GB
+
+# pm2 启动命令
+pm2 start app.js --node-args="--max-old-space-size=8192"
+```
 
