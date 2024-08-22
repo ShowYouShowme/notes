@@ -3096,6 +3096,22 @@ pm2 start ecosystem.config.js --env production
 ```shell
 #非常方便
 pm2 serve <path> <port>
+
+pm2 serve /var/www/html --port 3000
+```
+
+
+
+配置文件
+
+```json
+module.exports = {
+  script: "serve",
+  env: {
+    PM2_SERVE_PATH: '.',
+    PM2_SERVE_PORT: 8080
+  }
+}
 ```
 
 

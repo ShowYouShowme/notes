@@ -174,8 +174,8 @@ func main()  {
    
    // go test -v first_test.go
    func TestFirstTry(t *testing.T)  {
-   	t.Fatal("请在启动参数里面指定配置文件!") 			// 打印日志并且退出
-   	t.Errorf("读取手牌出错: %s\n", err.Error()) 	// 打印错误日志,不退出
+   	t.Fatal("请在启动参数里面指定配置文件!") 			// 打印日志, 测试终止[失败]
+   	t.Errorf("读取手牌出错: %s\n", err.Error()) 	// 打印错误日志,测试继续进行
    	t.Logf("%v 测试通过!", row.Cards) 			 // 打印Info日志
    }
    ```
@@ -1954,14 +1954,13 @@ os.Exit 与 panic
    }
    ```
 
-2. 从panic中恢复
+2. 从panic中恢复，并且打印堆栈信息
 
    ```go
    func main()  {
    	defer func() {
-           // 处理错误
-   		if err := recover(); err != nil{
-   			fmt.Println("recovered from ", err)
+   		if err := recover(); err != nil {
+   			log.Warnf("err=%v, stack=%s\n", err, string(debug.Stack()))
    		}
    	}()
    	fmt.Println("start")
@@ -1991,7 +1990,7 @@ os.Exit 与 panic
    func main() {
    	defer func() {
    		if err := recover(); err != nil {
-   			fmt.Println("recovered from ", err)
+   			log.Warnf("err=%v, stack=%s\n", err, string(debug.Stack()))
    		}
    	}()
    
@@ -4900,7 +4899,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                           
+   >                                                                                                                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
