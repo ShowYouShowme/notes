@@ -687,6 +687,17 @@ select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # �
 
 ```shell
 show variables like "%time_zone%";
+
+// 查看当前时间
+select now();
+
+mysql> select now();
++---------------------+
+| now()               |
++---------------------+
+| 2024-08-23 09:07:43 |
++---------------------+
+1 row in set (0.00 sec)
 ```
 
 

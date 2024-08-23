@@ -805,7 +805,19 @@ git push -u origin dev
 
 # 第六章 安装
 
+1. 包管理器安装
 
+   ```shell
+   wget http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-1.noarch.rpm
+   
+   yum localinstall wandisco-git-release-7-1.noarch.rpm -y
+   
+   yum install -y git
+   ```
+
+   
+
+2. 源码安装
 
 ```shell
  sudo yum -y install expat-devel openssl-devel libcurl-devel

@@ -3022,16 +3022,17 @@ pm2 init
 
 #配置文件内容
 #NGINX需要加上配置daemon off;让服务在前台运行
-module.exports = { 
+module.exports = {
   apps : [{
-    "name"       : "nginx",
-    "script"     : "/home/li/local/nginx/sbin/nginx",
+    "name"       : "gateway",
+    "script"     : "/data/rummy-game/gateway/gateway",
     "exec_interpreter": "none",
     "exec_mode"  : "fork_mode",
-    "cwd"        : "/home/li/local/nginx/sbin",
-    "args"       : "-a 13 -b 12",
-    "user"       : "developer"  // 启动服务的用户,线上的服务一定要设置此选项
-  }]  
+    "cwd"        : "/data/rummy-game/gateway",
+    "args"       : "-conf=gateway.conf",
+    "out_file" : "/data/rummy-game/log/gateway-out.log",
+    "error_file" : "/data/rummy-game/log/gateway-error.log"
+  }]
 };
 
 # WINDOWS 配置

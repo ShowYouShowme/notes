@@ -1224,7 +1224,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                            
+  >                                                                                                                                  
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1248,7 +1248,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                            
+  >                                                                                                                                  
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1483,49 +1483,94 @@ firewall是iptables的封装，推荐使用它替代iptables
    firewall-cmd --list-all
    ```
 
-2. 放行指定的端口，tcp协议
+2. 重新加载配置
 
    ```shell
-   firewall-cmd --permanent --add-port=${port}/tcp
-   
-   firewall-cmd --permanent --add-port=3000/tcp
-   
    firewall-cmd --reload
    ```
 
-3. 删除端口
+3. 打开端口
 
-   ```shell
-   firewall-cmd  --permanent --remove-port=80/tcp 
-   ```
+   + 打开单个端口
 
-4. 关闭防火墙
+     ```shell
+     # 开放某个端口，立即生效。本次运行
+     firewall-cmd --add-port=80/tcp
+     
+     # 开放某个端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=3306/tcp --permanent
+     ```
+
+   + 打开多个端口
+
+     ```shell
+     # 开放多个不连续端口，立即生效。本次运行
+     firewall-cmd --add-port=80/tcp --add-port=8080/tcp
+     
+     
+     # 开放多个不连续端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=80/tcp --add-port=8080/tcp --permanent
+     ```
+
+   + 打开多个连续端口
+
+     ```shell
+     # 开放多个连续端口，立即生效。本次运行
+     firewall-cmd --add-port=8080-8090/tcp
+     
+     # 开放多个连续端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=8080-8090/tcp --permanent
+     ```
+
+4. 关闭端口
+
+   + 关闭单个端口
+
+     ```shell
+     # 关闭某个端口，立即生效。本次运行
+     firewall-cmd --remove-port=80/tcp
+     
+     # 关闭某个端口，重新加载配置后生效。持久
+     firewall-cmd --remove-port=3306/tcp --permanent
+     ```
+
+   + 关闭多个端口
+
+     ```shell
+     # 关闭多个不连续端口，立即生效。本次运行
+     firewall-cmd --remove-port=80/tcp --remove-port=8080/tcp
+     
+     
+     # 关闭多个不连续端口，重新加载配置后生效。持久
+     firewall-cmd --remove-port=80/tcp --remove-port=8080/tcp --permanent
+     ```
+
+   + 关闭多个连续窗口
+
+     ```shell
+     # 关闭多个连续端口，立即生效。本次运行
+     firewall-cmd --remove-port=8080-8090/tcp 
+     
+     # 关闭多个连续端口，重新加载配置后生效。持久
+     firewall-cmd --remove-port=8080-8090/tcp --permanent
+     ```
+
+5. 服务管理
 
    ```shell
    systemctl stop firewalld.service # 停止防火墙
    systemctl disable firewalld.service  # 禁止防火墙开机启动
+   systemctl start firewalld  # 启动服务
+   systemctl status firewalld # 查看服务状态
    ```
 
-5. 查看防火墙状态
+6. 查看防火墙状态
 
    ```shell
    firewall-cmd --state
    ```
 
-6. 开启防火墙
-
-   ```shell
-   systemctl start firewalld
-   ```
-
-7. 查看防火墙的状态
-
-   ```shell
-   # dead 是未开启
-   systemctl status firewalld
-   ```
-
-8. 端口转发
+7. 端口转发
 
    + 本机内部转发
 
@@ -1539,19 +1584,19 @@ firewall是iptables的封装，推荐使用它替代iptables
      firewall-cmd --add-forward-port=port=9000:proto=tcp:toport=8000:toaddr=192.168.1.102
      ```
 
-9. 允许指定ip的全部流量
+8. 允许指定ip的全部流量
 
    ```shell
    firewall-cmd --zone=public --add-source=192.168.172.32 
    ```
 
-10. 开启nat
+9. 开启nat
 
-    ```shell
-    firewall-cmd --permanent --zone=public --add-masquerade
-    ```
+   ```shell
+   firewall-cmd --permanent --zone=public --add-masquerade
+   ```
 
-11. 安装防火墙
+10. 安装防火墙
 
     ```shell
     #aws的centos7默认未安装
@@ -2740,7 +2785,7 @@ vim /etc/fstab
 3. 再次查看时间
 
    ```shell
-   data -R
+   date -R
    ```
    
 4. 文件备份

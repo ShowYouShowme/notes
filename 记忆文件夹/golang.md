@@ -4899,7 +4899,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                             
+   >                                                                                                                               
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5867,6 +5867,21 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
 
 
 
+## 23.0 设置超时，默认阻塞
+
+```go
+client := http.Client{
+    Timeout: 3 * time.Second,
+}
+resp, err := client.Get("http://192.168.2.110:8100")
+```
+
+
+
+
+
+
+
 ## 23.1 Get请求
 
 ```go
@@ -5886,7 +5901,10 @@ type Result struct {
 }
 
 func main() {
-	resp, err := http.Get("http://192.168.2.110:8100")
+    client := http.Client{
+        Timeout: 3 * time.Second,
+    }
+	resp, err := client.Get("http://192.168.2.110:8100")
 	if err != nil {
 		fmt.Println(err)
 		return
