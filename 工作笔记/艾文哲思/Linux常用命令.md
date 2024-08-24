@@ -1224,7 +1224,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                  
+  >                                                                                                                                     
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1248,7 +1248,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                  
+  >                                                                                                                                     
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1477,13 +1477,15 @@ tcp的客户端，测试端口是否处于监听状态。
 
 firewall是iptables的封装，推荐使用它替代iptables
 
+命令加了参数 --permanent，需要reload才生效，并且永久；不加--permanent立即生效，reload后会丢失
+
 1. 查看全部放行的端口
 
    ```shell
    firewall-cmd --list-all
    ```
 
-2. 重新加载配置
+2. 重新加载配置；加了--permanent后reload才生效
 
    ```shell
    firewall-cmd --reload
@@ -1570,7 +1572,7 @@ firewall是iptables的封装，推荐使用它替代iptables
    firewall-cmd --state
    ```
 
-7. 端口转发
+7. 端口转发：不需要修改文件/etc/sysctl.conf
 
    + 本机内部转发
 
@@ -1578,10 +1580,22 @@ firewall是iptables的封装，推荐使用它替代iptables
      firewall-cmd --add-forward-port=port=7777:proto=tcp:toport=8888
      ```
 
-   + 转发到其他机器
+   + 转发到其他机器，必须要先开启ip伪装
 
      ```shell
      firewall-cmd --add-forward-port=port=9000:proto=tcp:toport=8000:toaddr=192.168.1.102
+     ```
+     
+   + 列出转发的端口
+
+     ```shell
+     firewall-cmd --list-forward-ports
+     ```
+
+   + 删除转发
+
+     ```shell
+     firewall-cmd --remove-forward-port=port=7000:proto=tcp:toport=7000:toaddr=192.168.1.115
      ```
 
 8. 允许指定ip的全部流量
@@ -1590,10 +1604,16 @@ firewall是iptables的封装，推荐使用它替代iptables
    firewall-cmd --zone=public --add-source=192.168.172.32 
    ```
 
-9. 开启nat
+9. 开启ip伪装
 
    ```shell
-   firewall-cmd --permanent --zone=public --add-masquerade
+   firewall-cmd --zone=public --add-masquerade --permanent
+   
+   # 查询伪装
+   --query-masquerade
+   
+   # 删除伪装
+   --remove-masquerade
    ```
 
 10. 安装防火墙

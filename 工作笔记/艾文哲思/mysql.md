@@ -1035,6 +1035,27 @@ Using where = 优化器需要通过索引回表查询数据
 
 
 
+### 2.11.22 SQL_MODE
+
+查看
+
+```shell
+select @@GLOBAL.sql_mode
+```
+
+
+
+设置[关闭ONLY_FULL_GROUP，方便写统计业务]
+
+```shell
+[mysqld]
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+```
+
+
+
+
+
 
 ## 2.12 压力测试
 

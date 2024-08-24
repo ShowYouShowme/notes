@@ -73,7 +73,11 @@ ldconfig -v | grep hiredis # 不知道是否需要ldconfig,可以用此命令测
 
 # 第三章 Redis操作
 
+
+
 ## 3.1 关闭保护模式
+
+当启用保护模式，而且没有密码时，服务器只接受来自IPv4地址(127.0.0.1)、IPv6地址(::1)或Unix套接字本地连接
 
 ***
 
@@ -88,10 +92,16 @@ ldconfig -v | grep hiredis # 不知道是否需要ldconfig,可以用此命令测
 ***
 
 ```shell
+
+# 临时修改
 CONFIG SET requirepass ${passwd}
 
 # 示例
 CONFIG SET requirepass tars2015
+
+
+# 永久修改, 改配置文件redis.conf
+requirepass jNu2yHNjMINN8cgH
 ```
 
 
