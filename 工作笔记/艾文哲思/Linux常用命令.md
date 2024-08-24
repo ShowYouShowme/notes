@@ -1224,7 +1224,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                     
+  >                                                                                                                                        
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1248,7 +1248,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                     
+  >                                                                                                                                        
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1741,7 +1741,18 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
 ## 2 密钥登陆
 
-1. 配置服务器权限
+1. 最简单的方法
+
+   ```shell
+   su - ${user}
+   ssh-keygen
+   cd .ssh
+   mv id_rsa.pub authorized_keys
+   
+   # 把id_rsa 分发给别人用就可以了
+   ```
+
+2. 配置服务器权限
 
    ```ini
    [.ssh]
@@ -1774,7 +1785,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
    
 
-2. 生成密钥
+3. 生成密钥
 
    ```shell
    # 指定加密类型和注释，rsa长度默认为2048位
@@ -1784,7 +1795,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    ssh-keygen
    ```
 
-3. ssh-keygen 用法
+4. ssh-keygen 用法
 
    ```ini
    [参数]
@@ -1807,7 +1818,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
    
 
-4. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
+5. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
 
    ```shell
    ssh-copy-id -i ~/.ssh/id_rsa.pub slzg@192.168.0.10
@@ -1817,7 +1828,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    # 推荐先在服务器生成公私钥,然后再将私钥copy到客户端使用
    ```
 
-5. 登陆
+6. 登陆
 
    ```shell
    # 登陆命令
