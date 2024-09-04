@@ -675,6 +675,88 @@ select * from plot_statistics where date(log_time) = date_sub(CURDATE()  ,interv
 
 
 select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # 统计昨天和今天的
+
+# 获取当前时间戳,秒为单位
+SELECT UNIX_TIMESTAMP();
+
+
+# 日期格式转换
+
+## 日期 时间
+select DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s');
+## 日期
+select DATE_FORMAT(NOW(), '%Y-%m-%d');
+## 时间
+select DATE_FORMAT(NOW(), '%H:%i:%s');
+
+
+# 时间转化为秒数
+select TIME_TO_SEC(NOW());
+select TIME_TO_SEC('2024-03-07 23:45:20');
+select SEC_TO_TIME(85520);
+
+
+# 日期加减法 --统计必备
+
+## 日期时间戳加减
+select NOW();    -- 2024-03-07 23:41:47
+select DATE_SUB(NOW(),interval 1 year); -- 2023-03-07 23:41:47
+select DATE_SUB(NOW(),interval 1 quarter); -- 2023-12-07 23:41:47
+select DATE_SUB(NOW(),interval 1 month); -- 2024-02-07 23:41:47
+select DATE_SUB(NOW(),interval 1 week); -- 2024-02-29 23:41:47
+select DATE_SUB(NOW(),interval 1 day); -- 2024-03-06 23:41:47
+select DATE_SUB(NOW(),interval 1 hour); -- 2024-03-07 22:41:47
+select DATE_SUB(NOW(),interval 1 minute); -- 2024-03-07 23:40:47
+select DATE_SUB(NOW(),interval 1 second); -- 2024-03-07 23:41:46
+select DATE_SUB(NOW(),interval -1 day); -- 2024-03-08 23:41:47
+
+
+select NOW();  -- 2024-03-07 23:39:14
+select DATE_ADD(NOW(),interval 1 year); -- 2025-03-07 23:39:14
+select DATE_ADD(NOW(),interval 1 quarter); -- 2024-06-07 23:39:14
+select DATE_ADD(NOW(),interval 1 month); -- 2024-04-07 23:39:14
+select DATE_ADD(NOW(),interval 1 week); -- 2024-03-14 23:39:14
+select DATE_ADD(NOW(),interval 1 day); -- 2024-03-08 23:39:14
+select DATE_ADD(NOW(),interval 1 hour); -- 2024-03-08 00:39:14
+select DATE_ADD(NOW(),interval 1 minute); -- 2024-03-07 23:40:14
+select DATE_ADD(NOW(),interval 1 second); -- 2024-03-07 23:39:15
+select DATE_ADD(NOW(),interval -1 day); -- 2024-03-06 23:39:14
+
+
+## 日期加减
+select CURDATE();    -- 2024-08-27
+select DATE_SUB(CURDATE(),interval 1 year); -- 2023-08-27
+select DATE_SUB(CURDATE(),interval 1 quarter); -- 
+select DATE_SUB(CURDATE(),interval 1 month); -- 
+select DATE_SUB(CURDATE(),interval 1 week); -- 
+select DATE_SUB(CURDATE(),interval 1 day); -- 2024-08-26
+select DATE_SUB(CURDATE(),interval 1 hour); -- 
+select DATE_SUB(CURDATE(),interval 1 minute); -- 
+select DATE_SUB(CURDATE(),interval 1 second); --
+select DATE_SUB(CURDATE(),interval -1 day); -- 
+
+select CURDATE();  -- 
+select DATE_ADD(CURDATE(),interval 1 year); -- 
+select DATE_ADD(CURDATE(),interval 1 quarter); -- 
+select DATE_ADD(CURDATE(),interval 1 month); -- 
+select DATE_ADD(CURDATE(),interval 1 week); -- 
+select DATE_ADD(CURDATE(),interval 1 day); -- 
+select DATE_ADD(CURDATE(),interval 1 hour); -- 
+select DATE_ADD(CURDATE(),interval 1 minute); -- 
+select DATE_ADD(CURDATE(),interval 1 second); -- 
+select DATE_ADD(CURDATE(),interval -1 day); -- 
+
+
+# 统计入库时,一般会记录create_at(时间戳),create_date(日期)管理后台请求接口时传入日期;利用MySQL将日期转换为时间戳;
+# 利用条件WHERE from > t1 ADN to < t2 即可查出全部记录
+# 日期时间戳转换
+-- 将日期转为时间戳
+select UNIX_TIMESTAMP(); -- 1709827653(获取当前时间戳)
+select UNIX_TIMESTAMP('2024-03-08'); -- 1709827200(具体日期转为时间戳)
+select UNIX_TIMESTAMP('2022-03-08 00:26:30'); -- 1646670390(具体时间日期转为时间戳)
+-- 将时间戳转为具体时间
+select FROM_UNIXTIME(1646670390); -- 2022-03-08 00:26:30(时间戳转化成日期)
+select FROM_UNIXTIME(1646670390, '%y-%m-%d %H:%i:%s'); -- 22-03-08 00:26:30(时间戳转化成指定格式日期)
 ```
 
 
@@ -845,6 +927,8 @@ from information_schema.columns where table_schema='库名' and table_name='表�
 ```
 
 ### 2.11.13 普通索引
+
+索引字段是varchar时，必须要指定长度(navicat子部分填长度)
 
 ```mysql
 mysql> CREATE TABLE tb_stu_info

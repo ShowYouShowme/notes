@@ -365,6 +365,8 @@ $username  ALL=(ALL) NOPASSWD:ALL
 
 ## centos7
 
+注意：sudo 执行命令时，会重置PATH，通过配置文件里的选项Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin 去查找可执行文件，因此当需要sudo pm2 之类的命令时，需要将pm2、node的软连接放到目录/usr/bin/
+
 步骤1、2执行完即可
 
 1. 修改配置文件
@@ -1224,7 +1226,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                                        
+  >                                                                                                                                           
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1248,7 +1250,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                                        
+  >                                                                                                                                           
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1523,6 +1525,18 @@ firewall是iptables的封装，推荐使用它替代iptables
      # 开放多个连续端口，重新加载配置后生效。持久
      firewall-cmd --add-port=8080-8090/tcp --permanent
      ```
+     
+   + 开放所有端口号，和没开防火墙一样
+
+     ```shell
+     # 开放多个连续端口，立即生效。本次运行
+     firewall-cmd --add-port=1-65535/tcp
+     
+     # 开放多个连续端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=1-65535/tcp --permanent
+     ```
+
+     
 
 4. 关闭端口
 

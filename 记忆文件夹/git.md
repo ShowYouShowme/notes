@@ -348,7 +348,7 @@ git commit -m "${comment}"
      step-2 = git push --delete origin old_branch_name
      
      ;上传新命名的本地分支
-     step-3 = git push origin new_branch_name
+     step-3 = git push -u origin new_branch_name
      
      ;本地分支和远程分支关联
      step-4 = git branch --set-upstream-to origin/new_branch_name

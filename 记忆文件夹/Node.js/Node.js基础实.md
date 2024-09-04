@@ -2887,6 +2887,10 @@ if(php_port == undefined){
 ```shell
 #目前项目使用的是5.2.2 非常稳定,没有内存泄露
 npm install pm2 -g
+
+## sudo 执行pm2
+suo ln -s /usr/local/bin/pm2 /usr/bin/
+sudo ln -s /usr/local/bin/node /usr/bin/node
 ```
 
 
@@ -3012,6 +3016,41 @@ cmd = pm2 init 或者 pm2 ecosystem
 pm2 start ecosystem.config.js
 ```
 
+配置文件的常见配置项
+
+|       选项       |                        功能                         |
+| :--------------: | :-------------------------------------------------: |
+|       name       |                       服务名                        |
+|      script      |               脚本或者可执行文件路径                |
+| exec_interpreter |                    使用的解释器                     |
+|    exec_mode     |                      启动模式                       |
+|       cwd        |                    服务工作目录                     |
+|       args       |                      启动参数                       |
+|     out_file     |                标准输出保存文件路径                 |
+|    error_file    |                标准错误保存文件路径                 |
+|      watch       | 指定文件或者目录变更时服务重启，用于jenkins自动发布 |
+|   ignore_watch   |                 指定忽略监控的文件                  |
+
+
+
+```javascript
+module.exports = {
+  apps : [{
+    "name"       : "gateway",
+    "script"     : "/data/rm/gateway/gateway",
+    "exec_interpreter": "none",
+    "exec_mode"  : "fork_mode",
+    "cwd"        : "/data/rm/gateway",
+    "args"       : "-conf=gateway.conf",
+    "out_file" : "/data/rm/log/gateway-out.log",
+    "error_file" : "/data/rm/log/gateway-error.log",
+    "watch" : ["gateway"]
+  }]
+};
+```
+
+
+
 
 
 ### 19.1.12 运行二进制文件
@@ -3100,22 +3139,6 @@ pm2 serve <path> <port>
 
 pm2 serve /var/www/html --port 3000
 ```
-
-
-
-配置文件
-
-```json
-module.exports = {
-  script: "serve",
-  env: {
-    PM2_SERVE_PATH: '.',
-    PM2_SERVE_PORT: 8080
-  }
-}
-```
-
-
 
 
 

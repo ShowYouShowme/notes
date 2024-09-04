@@ -172,6 +172,7 @@ worker_processes  1;
 [配置最大连接数]
 ;生产服务一般配置为65536,同时得修改ulimit
 worker_connections  1024;
+
 ```
 
 
@@ -244,6 +245,50 @@ server {
    
 
 ## 2.2 基本http服务配置
+
+root与alias的区别
+
+```nginx
+        # 请求 127.0.0.1:80/dev 时 nginx去 /usr/share/nginx/html 查找
+		location /dev{
+                alias         /usr/share/nginx/html;
+                index index.html index.htm;
+        }
+
+        # 请求 127.0.0.1:80/dev 时 nginx去 /usr/share/nginx/html/dev 查找
+        location /dev{
+                root         /usr/share/nginx/html;
+                index index.html index.htm;
+        }
+```
+
+示范1：一个端口部署多个网站
+
+```nginx
+    server {
+        listen       80; 
+        listen       [::]:80;
+        server_name  _;  
+        include /etc/nginx/default.d/*.conf;
+    
+        location / { 
+                root /opt/htdoc;
+        }   
+        location /dev{
+                alias         /usr/share/nginx/html;
+                index index.html index.htm;
+        }   
+
+        location /prod{
+                alias        /usr/share/nginx/html-prod;
+                index index.html index.htm;
+        }   
+    } 
+```
+
+
+
+示范2
 
 ```nginx
 # 如果是非root用户编译安装Nginx,打算监听80端口,必须用sudo 启动,同时配置 user 为 该用户而不是nobody
@@ -1177,7 +1222,7 @@ location ^~ /your-service/ {
 
      
 
-1. concat模块
+2. concat模块
 
    ```ini
    ; 页面需要访问多个小文件时,把他们的内容合并到一次http响应中返回
@@ -1244,9 +1289,9 @@ location ^~ /your-service/ {
 
    
 
-2. random_index模块
+3. random_index模块
 
-3. index模块
+4. index模块
 
    ```ini
    ; 优先于auto_index模块
@@ -1271,7 +1316,7 @@ location ^~ /your-service/ {
 
    
 
-4. auto_index模块
+5. auto_index模块
 
    ```ini
    [autoindex]

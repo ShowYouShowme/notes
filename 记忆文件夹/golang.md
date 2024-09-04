@@ -30,11 +30,13 @@
    # windows 安装,使用goland或者vscode开发,需要配置环境变量GOROOT和GOPATH
    ```
    
-3. 开启go mod并配置代理
+3. 开启go mod并配置代理，参考网站https://goproxy.io/zh/
 
    ```shell
    go env -w GO111MODULE=on
-   go env -w GOPROXY="https://goproxy.io,direct"
+   
+   # 配置环境变量
+   export GOPROXY=https://goproxy.io,direct
    ```
 
 4. 创建项目
@@ -4899,7 +4901,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                               
+   >                                                                                                                                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -8773,7 +8775,7 @@ sample = etcdctl lease revoke 694d81417acd4754
 
 
 
-统计需求自己实现
+统计需求自己实现，使用group by  + 各种MySQL聚合函数(SUM、COUNT、MAX、MIN、AVG)
 
 ```proto
 service Game {
@@ -8783,7 +8785,7 @@ service Game {
 
 message TrackReq {
 	string event      = 1;
-    string properties = 2; //Json 格式
+    bytes properties = 2; // GRPC Message
 }
 
 message TrackResp{
@@ -8846,4 +8848,60 @@ te.Flush()
 ```
 
 
+
+# 第四十二章 数值计算
+
+小数计算不丢失精度，https://github.com/shopspring/decimal；
+
+也可以自己实现一个Fraction（分数），需要实现Add，Mul，div，Sub四个方法即可
+
+
+
+
+
+# 第四十三章 gin-vue-admin
+
+
+
+## 1  web项目
+
+```shell
+cd web
+# 安装依赖
+npm install --force
+
+# 启动web项目
+npm run serve
+
+# 构建,产生静态资源文件在dist目录,用nginx代理到此目录下
+npm run build
+```
+
+
+
+配置文件：.env.development
+
+```shell
+VITE_CLI_PORT = 8080 				# 管理后台页面端口
+VITE_SERVER_PORT = 8891  			# api服务的端口
+VITE_BASE_PATH = http://127.0.0.1 	# api服务地址
+```
+
+
+
+## 2 server项目
+
+```shell
+
+# 克隆项目
+git clone https://github.com/flipped-aurora/gin-vue-admin.git
+# 进入server文件夹
+cd server
+
+# 使用 go mod 并安装go依赖包
+go generate
+
+# 运行
+go run . 
+```
 
