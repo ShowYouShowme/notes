@@ -299,12 +299,14 @@ docker pull mysql:5.7
    mysql > flush privileges;
    
    
+   # 允许从任何机器登录
+   grant all on *.* to 'tars'@'%' identified by 'tars2015';
+   
    ## 限定账号tars只能在10.10.10.23上面登录
    grant all on *.* to 'tars'@'10.10.10.23' identified by 'tars2015';
    
    # 授予局域网172.31.31 里面的任何机器
    grant all on db_tars.* to 'tars'@'172.31.31.%' identified by 'tars2015';
-   
    
    grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密码}";
    ```
@@ -930,6 +932,10 @@ from information_schema.columns where table_schema='库名' and table_name='表�
 
 索引字段是varchar时，必须要指定长度(navicat子部分填长度)
 
+date 为varchar，最大长度255
+
+KEY `date` (`date`(32)) USING BTREE
+
 ```mysql
 mysql> CREATE TABLE tb_stu_info
     -> (
@@ -1466,7 +1472,101 @@ DROP PROCEDURE [ IF EXISTS ] <过程名>
 
 
 
-# 第三章 附录
+# 第三章  差异对比
+
+使用mysqldbcompare来对比两个数据库的差异
+
+
+
+## 3.1 安装
+
+url = https://dev.mysql.com/doc/connector-python/en/connector-python-versions.html
+
+数据库版本：5.7, 5.6, 5.5
+
+python版本： 3.5, 3.4, 2.7, 2.6
+
+```shell
+wget https://cdn.mysql.com/archives/mysql-connector-python-2.0/mysql-connector-python-2.0.5-1.el7.noarch.rpm
+
+wget https://cdn.mysql.com/archives/mysql-utilities/mysql-utilities-1.6.5-1.el7.noarch.rpm
+
+yum localinstall -y mysql-connector-python-2.0.5-1.el7.noarch.rpm
+yum localinstall mysql-utilities-1.6.5-1.el7.noarch.rpm -y
+```
+
+
+
+## 3.2 对比差异
+
+1. 创建数据库
+
+   ```shell
+   # 查看线上环境创建库的命令
+   show create database rummy;
+   
+   # 在本地创建库
+   CREATE DATABASE `rummy` DEFAULT CHARACTER SET utf8mb4
+   
+   # 用navicat 导入sql文件创建表; navicat 只需要导出线上数据库的表结构,不需要数据
+   ```
+
+2. 对比
+
+   ```shell
+   # test 是线上数据库, rummy是开发环境;这样可以得到线上数据库 变成 rummy需要的sql语句
+   mysqldbcompare --server1=root:tars2015@192.168.1.49 --skip-row-count --skip-data-check --skip-table-options --server2=root:tars2015@192.168.1.49 test:rummy --changes-for=server1 --run-all-test --difftype=sql >> diff.txt
+   
+   --skip-data-check：跳过数据一致性验证
+   --skip-row-count：跳过行数检查
+   --skip-table-options：跳过CREATE语句() 外面的部分, 比如ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT
+   -run-all-tests：运行完整比较，遇到第一次差异时不停止
+   --changes-for=: 比较的基准,值为server1 或者 server2 默认是server1
+   --difftype=DIFFTYPE：差异的信息显示的方式，有[unified|context|differ|sql]，默认是unified。如果使用sql，那么就直接生成差异的SQL，这样非常方便
+   ```
+
+3. 查找差异
+
+   ```shell
+   用notepad++ 查找 字符 ALTER 即可
+   ```
+
+4. 对比的Makefile
+
+   ```makefile
+   prod:exportProd compare
+   stage:exportStage compare
+   exportProd:
+   	rm -f backup.sql;
+   	mysqldump -P 2000 -h192.168.1.115 -u root -p"f2Hw_%rvl?bSlm<o" --opt -d rummy > backup.sql
+   
+   exportStage:
+   	rm -f backup.sql;
+   	mysqldump -P 2500 -h192.168.1.115 -u tars -p"y=]qWzlOCLLd?TB9"  --opt -d rummy > backup.sql
+   deleteTest:
+   	mysql -h 192.168.1.49 -uroot -p"tars2015" -e "drop database test"
+   
+   createTest:
+   	mysql -h 192.168.1.49 -uroot -p"tars2015" -e "CREATE DATABASE test DEFAULT CHARACTER SET utf8mb4"
+   
+   import:
+   	mysql -h 192.168.1.49 -uroot -p"tars2015" test < backup.sql
+   
+   compare:deleteTest createTest import
+   	mysqldbcompare --server1=root:tars2015@192.168.1.49 --skip-row-count --skip-data-check --skip-table-options --server2=root:tars2015@192.168.1.49 test:rummy --changes-for=server1 --run-all-test --difftype=sql
+   ```
+
+   
+
+
+
+## 3.3 使用navicat对比
+
+点击工具--结构同步，然后对比就可以了
+
+
+
+# 第四章 附录
 
 
 1. Waiting for table metadata lock：后续对该表任何操作都会阻塞
