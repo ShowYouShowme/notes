@@ -1538,11 +1538,11 @@ yum localinstall mysql-utilities-1.6.5-1.el7.noarch.rpm -y
    stage:exportStage compare
    exportProd:
    	rm -f backup.sql;
-   	mysqldump -P 2000 -h192.168.1.115 -u root -p"f2Hw_%rvl?bSlm<o" --opt -d rummy > backup.sql
+   	mysqldump -P 2000 -h192.168.1.115 -u root -p"yourPassword" --opt -d rummy > backup.sql
    
    exportStage:
    	rm -f backup.sql;
-   	mysqldump -P 2500 -h192.168.1.115 -u tars -p"y=]qWzlOCLLd?TB9"  --opt -d rummy > backup.sql
+   	mysqldump -P 2500 -h192.168.1.115 -u tars -p"yourPassword"  --opt -d rummy > backup.sql
    deleteTest:
    	mysql -h 192.168.1.49 -uroot -p"tars2015" -e "drop database test"
    
