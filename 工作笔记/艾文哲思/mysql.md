@@ -1531,7 +1531,28 @@ yum localinstall mysql-utilities-1.6.5-1.el7.noarch.rpm -y
    用notepad++ 查找 字符 ALTER 即可
    ```
 
-4. 对比的Makefile
+4. 对比结果
+
+   ```ini
+   [有差异]
+   desc = Database consistency check failed
+   
+   [相同]
+   desc = Databases are consistent given skip options specified
+   
+   ; 表rm_player_career 在 test1 但不在test2
+   WARNING: Objects in server1.test1 but not in server1.test2
+   	TABLE: rm_player_career
+   	
+   ; 字段不一样
+   ALTER TABLE `test1`.`rm_player_flow` 
+     CHANGE COLUMN scene scene bigint(11) unsigned NOT NULL DEFAULT '0' COMMENT '场景类型', 
+     CHANGE COLUMN channel channel float(11,0) unsigned NOT NULL DEFAULT '0' COMMENT '最新渠道id';
+   ```
+
+   
+
+5. 对比的Makefile
 
    ```makefile
    prod:exportProd compare
