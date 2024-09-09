@@ -24,6 +24,24 @@
    "strictNullChecks": true,
    ```
 
+4. 运行代码
+
+   + 先编译为js代码再运行
+
+     ```shell
+     tsc test.ts
+     node test.js
+     ```
+
+   + 直接运行
+
+     ```shell
+     npm install -g typescript ts-node
+     ts-node .\test_best_sort.ts
+     ```
+
+     
+
 
 
 # 第二章 调试项目

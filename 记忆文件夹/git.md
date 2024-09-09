@@ -192,7 +192,7 @@ git commit -m "${comment}"
 
    ```shell
    # 命令
-   git pull
+   git pull --all
    
    # 可能会失败，提示"error: Your local changes to the following files would be overwritten by merge:"
    # 失败原因:其它开发者的提交中修改了文件a，而你本地的文件a也被修改了

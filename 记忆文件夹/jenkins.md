@@ -387,4 +387,46 @@ name = Role-based Authorization
    pm2 stop gateway && pm2 start gateway
    ```
 
+
+
+
+# 第八章 权限配置
+
+1. 安装插件
+
+   ```shell
+   Role-based Authorization
+   ```
+
+2. 创建角色
+
+   每种角色具备不同的权限，先创建角色，然后把角色赋予用户，就可以配置指定用户权限了
+
+   ```ini
+   Manager Roles
+   
+   ; 全局角色
+   + Global Roles
+   ; 创建一个角色命名为"开发人员", 赋予全部--Read权限即可
+   
+   ; 项目角色
+   + Item roles
+   ;创建一个角色命名为"开发环境", dev.*  拥有该角色的用户即可访问全部dev开头的job
+   ```
+
+3. 给账号赋予角色
+
+   ```ini
+   Global roles
+   
+   ;Anonymous 和 Authenticated Users 不给任何角色
+   ; peter(管理员) 给 admin角色
+   ; 其它账号给开发人员角色
+   
+   
+   Item roles
+   ;Anonymous 和 Authenticated Users 不给任何角色
+   ;普通账号给开发环境角色，这样普通账号可以访问dev开头的job
+   ```
+
    

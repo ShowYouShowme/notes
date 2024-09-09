@@ -2237,7 +2237,8 @@ request.post({
 import request from 'request';
 class HttpClient {
   static async Post(url: string, body: Object) {
-    return new Promise(function (resolve, reject) {
+    // 箭头函数可以捕获this
+    return new Promise((resolve, reject)=> {
       request({
         url: url,
         method: "POST",
