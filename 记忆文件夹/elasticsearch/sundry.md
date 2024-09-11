@@ -381,4 +381,9 @@ Kibana --> Analytics --> Discover--> 选择一个索引
    message: "null pointer"
    ```
 
-   
+
+
+
+# 第四章 实时日志
+
+kibana可以模拟tail -f 查看实时日志。
