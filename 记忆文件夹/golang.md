@@ -1805,6 +1805,7 @@ func main() {
 1. 没有异常机制
 2. error类型实现了error接口
 3. 用error.New快速创建错误实例
+4. **自定义类型，实现接口Error() string，推荐次方法**
 
 
 
@@ -1815,30 +1816,44 @@ func main() {
 1. 抛出指定错误
 
    ```go
-   var LessThanTwoError  = errors.New("n should be not less than 2")
-   var LargeThanHundredError = errors.New("n should be not large than 100")
-   func GetFibonacci(n int)  ([]int, error){
-   	if n < 2 {
-   		return nil, LessThanTwoError
-   	}
+   package main
    
-   	if n > 100{
-   		return nil, LargeThanHundredError
-   	}
-   	fibList := []int{1,1}
-   	for i := 2; i< n; i++{
-   		fibList = append(fibList, fibList[i -2] + fibList[i -1])
-   	}
-   	return fibList, nil
+   import (
+   	"errors"
+   	"fmt"
+   	"math/rand"
+   	"runtime/debug"
+   )
+   
+   // 自定义错误类型
+   type LogicError struct {
+   	Code int
+   	Msg  string
    }
-   func TestGetFibonacci(t *testing.T)  {
-   	if v,err := GetFibonacci(-10); err != nil{
-   		if err == LessThanTwoError{
-   			t.Log("It is less.")
+   
+   // 必须实现接口 Error() string
+   func (receiver *LogicError) Error() string {
+   	return receiver.Msg
+   }
+   
+   func main() {
+   	defer func() {
+   		rawError := recover()
+   		err, ok := rawError.(LogicError)
+   		if ok {
+   			fmt.Printf(err.Error()) // 实际开发用log.Error()
+   		} else {
+   			// 意料之外的错误,打印错误信息和堆栈
+   			fmt.Printf("error msg=%v \n", rawError)
+   			fmt.Printf("Stack trace:\n%s", string(debug.Stack()))
    		}
-   		t.Error(err)
-   	}else{
-   		t.Log(v)
+   	}()
+   
+   	num := rand.Int() % 100
+   	if num > 50 {
+   		panic(LogicError{Code: 200, Msg: "hello"})
+   	} else {
+   		panic(errors.New("unexpected error!"))
    	}
    }
    ```
