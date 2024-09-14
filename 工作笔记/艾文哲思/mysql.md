@@ -31,7 +31,7 @@
    mysql -uroot -p   直接回车,没有密码
    ```
 
-2. mysql
+2. mysql：版本是5.7.44，注意docker安装的要和这个版本一样
 
    ```shell
    #下载yum源

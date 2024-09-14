@@ -315,7 +315,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                         
+   >                                                                            
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -570,7 +570,7 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
 1. 下载镜像
 
    ```shell
-   docker pull mysql:5.6.47
+   docker pull mysql:5.7.44
    ```
 
 2. 启动镜像
@@ -578,19 +578,19 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
    > + 从宿主机挂载数据目录
    >
    >   ```shell
-   >   docker run --name mysql -e MYSQL_ROOT_PASSWORD=tars2015 -d -p 3306:3306 -v /home/wzc/mysql-data:/var/lib/mysql mysql:5.6.47
+   >   docker run --name mysql5.7.44 -e MYSQL_ROOT_PASSWORD=tars2015 -d -p 3306:3306 -v /home/wzc/mysql-data:/var/lib/mysql mysql:5.7.44
    >   ```
    >
    > + 使用自定义配置文件
    >
    >   ```shell
-   >   docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+   >   docker run --name mysql5.7.44 -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
    >   ```
 
 3. 链接mysql
 
    ```ini
-   docker run -it --rm mysql:5.7 mysql -h192.168.2.110 -uroot -ptars2015
+   docker run -it --rm mysql:5.7.44 mysql -h192.168.1.49 -uroot -ptars2015
    ```
 
    

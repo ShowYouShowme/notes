@@ -4901,7 +4901,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                   
+   >                                                                                                                                       
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5022,16 +5022,18 @@ func BenchmarkStringAdd(b *testing.B) {
 
 ```go
 package main
-
 import (
 	"fmt"
 	"sync"
 	"time"
 )
+
 type Timer struct {
-	cb       func()
-	duration int // 以秒为单位
+	cb        func()
+	expiredAt int64  // 过期时间戳
 }
+
+const ScheduleInterval = 10 // 10ms调度一次
 
 type TimeManager struct {
 	Mu     sync.Mutex
@@ -5053,9 +5055,9 @@ func (t *TimeManager) SetTimeout(f func(), delay int) int {
 	t.Mu.Lock()
 	defer t.Mu.Unlock()
 	timeId := t.count
-	global.LOG.Info(fmt.Sprintf("注册计时器: %v fName : %v ,delay : %v \n", utils.GetFuncName(f), timeId, delay))
+	global.LOG.Info(fmt.Sprintf("注册计时器: %v fName : %v, delay : %v", utils.GetFuncName(f), timeId, delay))
 	t.count += 1
-	t.timers[timeId] = &Timer{cb: f, duration: delay}
+	t.timers[timeId] = &Timer{cb: f, expiredAt: time.Now().UnixMilli() + int64(delay*1000)}
 	return timeId
 }
 
@@ -5068,14 +5070,16 @@ func (t *TimeManager) ClearTimeout(timerId int) {
 	}
 }
 
-// 获取计时器剩余时间
-func (t *TimeManager) GetRemainingSeconds(timerId int) int {
+// 获取计时器剩余时间 单位是毫秒
+func (t *TimeManager) GetRemainingMilliseconds(timerId int) int {
 	t.Mu.Lock()
 	defer t.Mu.Unlock()
 	if timer, ok := t.timers[timerId]; ok {
-		return timer.duration
+		now := time.Now().UnixMilli()
+		return int(timer.expiredAt - now)
 	}
-	panic(fmt.Sprintf("计时器: %v 不存在!", timerId))
+	fmt.Println(fmt.Sprintf("计时器: %v 不存在!", timerId))
+	return -1
 }
 
 func (t *TimeManager) Clone() map[int]*Timer {
@@ -5093,8 +5097,9 @@ func (t *TimeManager) updateTimer() {
 	var expireTimerId []int
 	expireTimerId = []int{}
 	for timerId, timer := range timers {
-		timer.duration -= 1
-		if timer.duration <= 0 {
+		now := time.Now().UnixMilli()
+		if timer.expiredAt <= now {
+			global.LOG.Info(fmt.Sprintf("计时器执行: %v fName : %v, 过期时间戳: %v, 执行时间戳: %v, 超时时间: %vms", utils.GetFuncName(timer.cb), timerId, timer.expiredAt, now, now-timer.expiredAt))
 			utils.SafeCall(timer.cb) // cb里面调用TimeManager的成员函数会死锁,因此先clone一份
 			expireTimerId = append(expireTimerId, timerId)
 		}
@@ -5109,16 +5114,19 @@ func (t *TimeManager) updateTimer() {
 
 // 计时器调度
 func (t *TimeManager) schedule() {
-	timer := time.NewTimer(time.Second)
+	timer := time.NewTimer(ScheduleInterval * time.Millisecond)
 	for {
 		select {
 		case <-timer.C:
-			//fmt.Printf("scheudle... \n")
 			t.updateTimer()
-			timer.Reset(time.Second) // 必须有这行,否则全部线程都阻塞,程序退出
+			// 必须有这行,否则全部线程都阻塞,程序退出;
+			// 把timer.Reset放到t.updateTimer()可以确保 调度时间一致;
+			//但是当t.updateTimer()执行时间过长时,会让整个cpu时间全部被timer霸占
+			timer.Reset(ScheduleInterval * time.Millisecond)
 		}
 	}
 }
+
 func sayHello() {
 	fmt.Printf("hello to everybody! \n")
 }
@@ -5141,6 +5149,128 @@ func main() {
 
 	tm.clearTimeout(t2)
 	<-forever
+}
+```
+
+
+
+高精度计时器
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+)
+
+type Timer struct {
+	cb        func()
+	expiredAt int64 // 过期时间戳
+	cancel    context.CancelFunc
+}
+
+type TimeManager struct {
+	Mu     sync.Mutex
+	count  int
+	timers map[int]*Timer
+	ch     chan int
+}
+
+func NewTimeManager() *TimeManager {
+	tm := &TimeManager{
+		count:  1,
+		timers: make(map[int]*Timer),
+		ch:     make(chan int, 1024), // 缓冲区长度为1024
+	}
+	go tm.schedule()
+	return tm
+}
+
+func GetFuncName(f func()) string {
+	fValue := reflect.ValueOf(f)
+	fName := runtime.FuncForPC(fValue.Pointer()).Name()
+	return fName
+}
+
+// 启动计时器
+func (t *TimeManager) SetTimeout(f func(), delay int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	timeId := t.count
+	fmt.Printf("注册计时器: fName : %v, timeId : %v, delay : %v \n", GetFuncName(f), timeId, delay)
+	t.count += 1
+	t.timers[timeId] = &Timer{cb: f, expiredAt: time.Now().UnixMilli() + int64(delay*1000)}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.timers[timeId].cancel = cancel
+	timer := time.NewTimer(time.Duration(delay*1000) * time.Millisecond)
+	go func() {
+		for {
+			select {
+			case <-timer.C:
+				t.ch <- timeId
+				fmt.Printf("计时器到期,timeId=%v \n", timeId)
+				return
+			case <-ctx.Done():
+				// 计时器取消
+				fmt.Printf("取消计时器,timeId=%v 当前计时器数量=%v\n", timeId, len(t.timers))
+				return
+			}
+		}
+	}()
+	return timeId
+}
+
+// 停止计时器
+func (t *TimeManager) ClearTimeout(timerId int) {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, ok := t.timers[timerId]; ok {
+		delete(t.timers, timerId)
+		timer.cancel()
+	}
+}
+
+// 获取计时器剩余时间 单位是毫秒
+func (t *TimeManager) GetRemainingMilliseconds(timerId int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, ok := t.timers[timerId]; ok {
+		now := time.Now().UnixMilli()
+		remaining := int(timer.expiredAt - now)
+		if remaining < 0 {
+			remaining = 0
+		}
+		return remaining
+	}
+	fmt.Println(fmt.Sprintf("计时器: %v 不存在!", timerId))
+	return -1
+}
+
+func (t *TimeManager) runTask(timerId int) {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, exist := t.timers[timerId]; exist {
+		delete(t.timers, timerId)
+		now := time.Now().UnixMilli()
+		fmt.Printf("计时器执行: %v fName : %v, 过期时间戳: %v, 执行时间戳: %v, 超时时间: %vms \n", GetFuncName(timer.cb), timerId, timer.expiredAt, now, now-timer.expiredAt)
+		timer.cb()
+	}
+}
+
+// 计时器调度
+func (t *TimeManager) schedule() {
+	for {
+		select {
+		case timerId := <-t.ch:
+			t.runTask(timerId)
+		}
+	}
 }
 ```
 
