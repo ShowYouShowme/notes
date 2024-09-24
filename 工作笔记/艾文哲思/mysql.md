@@ -625,10 +625,28 @@ docker pull mysql:5.7
 
    + 数据类型为TINYINT、SMALLINT、MEDIUMINT、INT和BIGINT时，Length指**显示宽度**，不用填写！
 
+   + DATETIME：默认显示长度为19个字符，设置为0即可
+
+     ```
+     Length = 8
+     8个字符显示,精确到秒
+     
+     Length = 14
+     14个字符显示,精确到秒
+     
+     Length = 17
+     17个字符显示,精确到毫秒
+     
+     Length = 19
+     19个字符显示,精确到秒
+     ```
+   
+     
+   
    + 小数
-
+   
      + 浮点数
-
+   
        ```shell
        #FLOAT 4 字节
        
@@ -636,9 +654,9 @@ docker pull mysql:5.7
        
        #定义浮点数时不用指定Length和decimals,否则无法迁移到其它数据库
        ```
-
+   
      + 定点数
-
+   
        ```shell
        #DECIMAL 用于存放精确的小数,定义时必须填写Length和decimals
        
@@ -652,7 +670,7 @@ docker pull mysql:5.7
        
        #amount的范围是-9999.99到9999.99
        ```
-
+   
    + 数据库里使用小数的情况很少，只有字段为CHAR和VARCHAR时需要关注Length，decimals不用管！
 
 
@@ -891,7 +909,9 @@ CONVERT_TZ
    CREATE DATABASE test_db;
    
    #创建数据库时指定编码
-    CREATE DATABASE `test2` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+   #utf8最多只能支持3bytes长度的字符编码，对于一些需要占据4bytes的文字，mysql的utf8就不支持了，要使用utf8mb4才行
+   #utf8mb4_general_ci:排序规则,来用排序VARCHAR,CHAR,TEXT类型
+    CREATE DATABASE `test2` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
    ```
 
 ### 2.11.8 查看数据库
@@ -1583,7 +1603,7 @@ yum localinstall mysql-utilities-1.6.5-1.el7.noarch.rpm -y
 
 ## 3.3 使用navicat对比
 
-点击工具--结构同步，然后对比就可以了
+点击工具--结构同步，源选择开发环境数据库，目标选择测试环境或者正式环境数据库，然后对比就可以了
 
 
 
@@ -1667,5 +1687,40 @@ yum localinstall mysql-utilities-1.6.5-1.el7.noarch.rpm -y
    cmd = mysqldbcompare --server1=user:pass@host:port:socket --server2=user:pass@host:port:socket db1:db2
    ```
 
+
+
+
+# 第五章 navicat 用法
+
+1. 创建连接时，可以设置ssh通道(服务器的3306端口不暴露于公网)
+
+2. 工具--> 结构同步：用于对比开发环境和正式环境的数据库差异
+
+3. 工具--->命令列：和mysql的客户端一样
+
+4. 新建查询：打开一个查询标签页面
+
+5. 清空表 vs 截断表
+
+   ```ini
+   [清空表]
+   sql   	  	  = DELETE FROM table_name
+   返回值 		= 返回删除行数
+   自增字段处理    = 不会重置自增字段
+   效率           = 扫描全表，表数据越多越慢
+   日志           = 会记录日志，可恢复
    
+   [截断表]
+   sql   	  	  = TRUNCATE [TABLE] table_name
+   返回值 		= 返回0
+   自增字段处理    = 自增字段重置为初始值
+   效率           = 不扫描全表，效率高
+   日志           = 不会记录日志，无法恢复
+   ```
+
+6. 运行sql文件：常用于导入某个表或者某个数据库
+
+7. 转储sql文件：常用于备份某个表或者某个数据库
+
+8. 删除表：drop Table table_name
 

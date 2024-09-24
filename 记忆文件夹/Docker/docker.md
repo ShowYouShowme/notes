@@ -9,6 +9,10 @@
 # 参考官方文档
 # https://docs.docker.com/engine/install/centos/
 
+# 配置yum的代理
+vim /etc/yum.conf
+proxy=http://192.168.1.115:3128
+
 # centos7 安装docker
 sudo yum remove docker \
                   docker-client \
@@ -27,6 +31,9 @@ sudo yum-config-manager \
 # 安装最新版本
 sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
 
+# 安装指定版本k8s需要
+yum install -y docker-ce-20.10.0
+
 # 启动docker
 sudo systemctl enable docker
 sudo systemctl start docker
@@ -35,6 +42,32 @@ sudo systemctl start docker
 # 测试docker是否可用
 sudo docker run hello-world
 ```
+
+
+
+安装方法二：自己配置Docker.repo
+
+```shell
+cd /etc/yum.repos.d
+
+cat > Docker.repo << EOF
+[Docker-CE]
+name=Docker Release
+baseurl=https://download.docker.com/linux/centos/7/x86_64/stable/
+enabled=1
+gpgcheck=0
+EOF
+
+yum makecache
+# 安装最新版本
+sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
+
+# 启动docker
+sudo systemctl enable docker
+sudo systemctl start docker
+```
+
+
 
 
 
@@ -315,7 +348,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                            
+   >                                                                                     
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```

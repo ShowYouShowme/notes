@@ -4916,7 +4916,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                       
+   >                                                                                                                                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6009,6 +6009,12 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
 
 
 
+## 22.3 protobuf转json
+
+url = [google.golang.org/protobuf/encoding/protojson](http://google.golang.org/protobuf/encoding/protojson)
+
+
+
 
 # 第二十三章 http客户端
 
@@ -6207,7 +6213,99 @@ func main() {
    }
    ```
 
-   
+
+
+
+### 23.2.3 上传文件
+
+参考资料 = https://hayageek.com/golang-send-file-upload-with-post-request/
+
+上传单个文件
+
+```go
+func UploadFile(url string, paramName string, filePath string) error {
+  file, err := os.Open(filePath)
+  if err != nil {
+    return err
+  }
+  defer file.Close()
+
+  body := &bytes.Buffer{}
+  writer := multipart.NewWriter(body)
+  part, err := writer.CreateFormFile(paramName, filepath.Base(filePath))
+  if err != nil {
+    return err
+  }
+  _, err = io.Copy(part, file)
+
+  err = writer.Close()
+  if err != nil {
+    return err
+  }
+
+  request, err := http.NewRequest("POST", url, body)
+  request.Header.Add("Content-Type", writer.FormDataContentType())
+  client := &http.Client{}
+  response, err := client.Do(request)
+
+  if err != nil {
+    return err
+  }
+  defer response.Body.Close()
+
+  // Handle the server response...
+  return nil
+}
+```
+
+
+
+上传多个文件
+
+```go
+func UploadMultipleFiles(url string, paramName string, filePaths []string) error {
+  body := &bytes.Buffer{}
+  writer := multipart.NewWriter(body)
+
+  for _, filePath := range filePaths {
+    file, err := os.Open(filePath)
+    if err != nil {
+      return err
+    }
+    defer file.Close()
+
+    part, err := writer.CreateFormFile(paramName, filepath.Base(filePath))
+    if err != nil {
+      return err
+    }
+    _, err = io.Copy(part, file)
+
+    if err != nil {
+      return err
+    }
+  }
+
+  err := writer.Close()
+  if err != nil {
+    return err
+  }
+
+  request, err := http.NewRequest("POST", url, body)
+  request.Header.Add("Content-Type", writer.FormDataContentType())
+  client := &http.Client{}
+  response, err := client.Do(request)
+
+  if err != nil {
+    return err
+  }
+  defer response.Body.Close()
+
+  // Handle the server response...
+  return nil
+}
+```
+
+
 
 
 
@@ -6683,9 +6781,11 @@ xshell 、chrome、火狐浏览器可以配置socks5代理来加速。
 
 # 第二十九章  日志
 
- 常用的日志库logrus
+ 常用的日志库logrus、zap
 
 
+
+## 29.1 logrus
 
 用法
 
@@ -6759,6 +6859,56 @@ func (m *CustomizeFormatter) Format(entry *log.Entry) ([]byte, error) {
 
 log.SetFormatter(&utils.CustomizeFormatter{})
 ```
+
+
+
+
+
+## 29.2 zap
+
+创建logger
+
++ zap.NewProduction()：用于生产环境
++ zap.NewDevelopment()：用于开发环境
++ zap.NewExample()：用于测试代码
+
+
+
+示例1
+
+```go
+logger, _ := zap.NewDevelopment()
+defer logger.Sync() // flushes buffer, if any
+sugar := logger.Sugar()
+
+// key-value 的风格
+sugar.Infow("failed to fetch URL",
+  // Structured context as loosely typed key-value pairs.
+  "url", url,
+  "attempt", 3,
+  "backoff", time.Second,
+)
+
+// printf 的风格
+sugar.Infof("Failed to fetch URL: %s", url)
+```
+
+
+
+示例2
+
+```go
+logger, _ := zap.NewProduction()
+defer logger.Sync()
+logger.Info("failed to fetch URL",
+  // Structured context as strongly typed Field values.
+  zap.String("url", url),
+  zap.Int("attempt", 3),
+  zap.Duration("backoff", time.Second),
+)
+```
+
+
 
 
 
@@ -8844,6 +8994,34 @@ tail: []
 
 
 
+
+
+## 38.1 日志
+
+1. 打印单个日志
+
+   ```go
+   db.Debug().Where("name = ?", "jinzhu").First(&User{})
+   ```
+
+2. 打印全部日志
+
+   ```go
+   // 启用Logger，显示详细日志
+   db.LogMode(true)
+   ```
+
+3. 关闭日志
+
+   ```go
+   // 禁用日志记录器，不显示任何日志
+   db.LogMode(false)
+   ```
+
+   
+
+
+
 # 第三十九章 Makefile构建
 
 使用makefile构建和发布项目
@@ -9049,4 +9227,30 @@ go generate
 # 运行
 go run . 
 ```
+
+
+
+# 第四十四章 飞书报警
+
+1. 创建--创建群组
+
+2. 设置--群机器人--添加机器人--自定义机器人（保存webhook地址）；安全配置可以先不配置，也可以增加IP白名单或者关键词
+
+3. 发送消息
+
+   + 请求方法：POST
+
+   + 请求头：Content-Type: application/json
+
+   + 请求体：{"msg_type":"text","content":{"text":"request example"}}
+
+   + 例子
+
+     ```shell
+     curl.exe -X POST -H "Content-Type: application/json" -d '{\"msg_type\":\"text\",\"content\":{\"text\":\"requestexample\"}}' https://open.feishu.cn/open-apis/bot/v2/hook/****
+     ```
+
+     
+
+   
 
