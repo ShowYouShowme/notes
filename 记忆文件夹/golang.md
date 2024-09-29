@@ -4916,7 +4916,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                             
+   >                                                                                                                                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5036,16 +5036,20 @@ func BenchmarkStringAdd(b *testing.B) {
 ## 17.4 计时器封装
 
 ```go
+// 计时器
 package main
+
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
+	"reflect"
+	"runtime"
 	"sync"
 	"time"
 )
 
 type Timer struct {
 	cb        func()
-	expiredAt int64  // 过期时间戳
+	expiredAt int64 // 过期时间戳
 }
 
 const ScheduleInterval = 10 // 10ms调度一次
@@ -5065,12 +5069,18 @@ func NewTimeManager() *TimeManager {
 	return tm
 }
 
+func GetFuncName(f func()) string {
+	fValue := reflect.ValueOf(f)
+	fName := runtime.FuncForPC(fValue.Pointer()).Name()
+	return fName
+}
+
 // 启动计时器
 func (t *TimeManager) SetTimeout(f func(), delay int) int {
 	t.Mu.Lock()
 	defer t.Mu.Unlock()
 	timeId := t.count
-	global.LOG.Info(fmt.Sprintf("注册计时器: %v fName : %v, delay : %v", utils.GetFuncName(f), timeId, delay))
+	log.Infof("msg = 注册计时器, fName = %v, timeId = %v, delay = %v", GetFuncName(f), timeId, delay)
 	t.count += 1
 	t.timers[timeId] = &Timer{cb: f, expiredAt: time.Now().UnixMilli() + int64(delay*1000)}
 	return timeId
@@ -5093,7 +5103,7 @@ func (t *TimeManager) GetRemainingMilliseconds(timerId int) int {
 		now := time.Now().UnixMilli()
 		return int(timer.expiredAt - now)
 	}
-	fmt.Println(fmt.Sprintf("计时器: %v 不存在!", timerId))
+	log.Warnf("msg = 计时器不存在! timerId = %v", timerId)
 	return -1
 }
 
@@ -5114,8 +5124,9 @@ func (t *TimeManager) updateTimer() {
 	for timerId, timer := range timers {
 		now := time.Now().UnixMilli()
 		if timer.expiredAt <= now {
-			global.LOG.Info(fmt.Sprintf("计时器执行: %v fName : %v, 过期时间戳: %v, 执行时间戳: %v, 超时时间: %vms", utils.GetFuncName(timer.cb), timerId, timer.expiredAt, now, now-timer.expiredAt))
-			utils.SafeCall(timer.cb) // cb里面调用TimeManager的成员函数会死锁,因此先clone一份
+			log.Infof("msg = 计时器到期! timerId = %v, fName = %v, 过期时间戳 = %v, 执行时间戳 = %v, 超时时间 = %vms",
+				timerId, GetFuncName(timer.cb), timer.expiredAt, now, now-timer.expiredAt)
+			timer.cb() // cb里面调用TimeManager的成员函数会死锁,因此先clone一份
 			expireTimerId = append(expireTimerId, timerId)
 		}
 	}
@@ -5124,6 +5135,7 @@ func (t *TimeManager) updateTimer() {
 	defer t.Mu.Unlock()
 	for _, timerId := range expireTimerId {
 		delete(t.timers, timerId)
+		log.Infof("msg = 删除计时器! timerId = %v", timerId)
 	}
 }
 
@@ -5143,28 +5155,28 @@ func (t *TimeManager) schedule() {
 }
 
 func sayHello() {
-	fmt.Printf("hello to everybody! \n")
+	log.Info("hello to everybody!")
 }
 
 func sayFuckYou() {
-	fmt.Printf("fuck everybody! \n")
+	log.Info("fuck everybody!")
 }
 
 func main() {
 	tm := NewTimeManager()
-	go tm.schedule()
 	forever := make(chan int)
-	t1 := tm.setTimeout(sayHello, 5)
+	t1 := tm.SetTimeout(sayHello, 5)
 
-	t2 := tm.setTimeout(sayFuckYou, 10)
+	t2 := tm.SetTimeout(sayFuckYou, 10)
 
 	time.Sleep(time.Second * 5)
 
-	fmt.Printf("t1 : %v, t2 : %v \n", tm.GetRemainingSeconds(t1), tm.GetRemainingSeconds(t2))
+	log.Infof("t1 = %v, t2 = %v", tm.GetRemainingMilliseconds(t1), tm.GetRemainingMilliseconds(t2))
 
-	tm.clearTimeout(t2)
+	//tm.ClearTimeout(t2)
 	<-forever
 }
+
 ```
 
 
@@ -6235,8 +6247,13 @@ func UploadFile(url string, paramName string, filePath string) error {
   part, err := writer.CreateFormFile(paramName, filepath.Base(filePath))
   if err != nil {
     return err
-  }
+  }  
   _, err = io.Copy(part, file)
+    
+  err = writer.WriteField("token", "bdVkODcJVzBWPqr8MpoL6InTyGeUTbex")
+  if err != nil {
+      panic(err)
+  }    
 
   err = writer.Close()
   if err != nil {
@@ -7496,7 +7513,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 1. 游戏框架模拟网易的pomelo和skynet，利用单进程多线程的方式，方便开发、部署、git仓库管理。
 
 2. 传统的web 的微服务的开发模式，每一个服务是一个项目，项目的管理上就显得非常麻烦！
-3. 还有一种更简单的设计方案是，长连接用websocket，短连接用http，token时间设置为一个月，token过期后发起http请求时提示用户重新登录。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
+3. 还有一种更简单的设计方案是，长连接用websocket（只能用token建立一次ws链接），短连接用http，token过期时间设置为一分钟，之后客户端每间隔10s请求Token延期，服务器收到请求后将token过期时间设置为当前时间戳 + 60s。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
 4. 如果微服务用http通信，那么可以写一个Rpc类，里面有多个成员，每个成员是一个service，然后就可以像调用函数一样rpc了，比如Rpc.login.getUserInfo()
 
 
@@ -9252,5 +9269,90 @@ go run .
 
      
 
-   
+
+
+
+
+
+# 第四十五章 websocket
+
+
+
+官网 = https://github.com/gorilla/websocket
+
+
+
+## 45.1 nginx配置
+
+```nginx
+map $http_upgrade $connection_upgrade {
+    default upgrade;      '' close;
+}   
+upstream websocket {
+    server 192.168.1.115:7000; # appserver_ip:ws_port
+    #server 127.0.0.1:7000; # appserver_ip:ws_port
+}   
+    
+server {
+     listen 5000;
+     location / { 
+         proxy_pass http://websocket;
+
+         # 超时配置
+         proxy_read_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
+         proxy_send_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
+     
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+         proxy_http_version 1.1;
+         proxy_set_header Upgrade $http_upgrade;
+         proxy_set_header Connection $connection_upgrade;
+     }
+}
+```
+
+
+
+## 45.2 客户端
+
+客户端需要每间隔3s或者5s向服务器发送心跳请求，否则会被nginx断开
+
+
+
+## 45.3 服务端
+
+
+
+方案一[推荐的方案]：
+
+服务端收到客户端Ping时，立刻返回Pong(应用层协议)
+
+
+
+方案二：
+
+服务端每隔3s或者5秒向客户端（或者nginx）发送PING，这样就不会被nginx断开
+
+```go
+// 发送PING的协程
+func pingWorker(conn *websocket.Conn) {
+	for {
+		log.Printf("msg = START PING, remote_addr = %v", conn.RemoteAddr())
+		err := conn.WriteMessage(websocket.PingMessage, []byte("hello from gateway"))
+		if err != nil {
+			log.Errorf("msg = 发送Ping小时失败! error = %v", err.Error())
+			return
+		}
+		time.Sleep(1 * time.Second)
+	}
+}
+
+// 注册Pong的回调
+conn.SetPongHandler(func(appData string) error {
+    log.Warnf("msg = receive pong ! data = %v", appData)
+    return nil
+})
+```
 
