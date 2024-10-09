@@ -373,6 +373,9 @@ daemon off;
 ## 2.6 ws反向代理 + wss配置
 
 ```nginx
+# websocket 协商时,请求头必须包含两个key-value
+# Connection: Upgrade
+# Upgrade: websocket
 http{
     
 map $http_upgrade $connection_upgrade {
@@ -390,13 +393,8 @@ server {
      location / { 
          proxy_pass http://websocket;
          # 超时配置
-         proxy_read_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
-         proxy_send_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
-
-         proxy_set_header Host $host;
-         proxy_set_header X-Real-IP $remote_addr;
-         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
+         proxy_read_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
+         proxy_send_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
          proxy_http_version 1.1;
          proxy_set_header Upgrade $http_upgrade;
          proxy_set_header Connection $connection_upgrade;

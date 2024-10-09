@@ -4916,7 +4916,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                 
+   >                                                                                                                                                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7469,7 +7469,7 @@ time.Now().UnixNano() / 1e9 	//时间戳（纳秒转换为秒）
 ## 32.2 时间格式化
 
 ```go
-nowtime:=time.Now().Format("2006-01-02 15:04:05")  //要显示的时间格式，2006-01-02 15:04:05，这几个值是固定写法,golang的诞生时间.
+nowtime:=time.Now().Format(time.DateTime)  //要显示的时间格式，2006-01-02 15:04:05，这几个值是固定写法,golang的诞生时间.
  
 fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 ```
@@ -7483,7 +7483,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
   ```go
   timeUnix:=time.Now().Unix() //时间戳
   
-  formatTimeStr:=time.Unix(timeUnix,0).Format("2006-01-02 15:04:05")
+  formatTimeStr:=time.Unix(timeUnix,0).Format(time.DateTime)
   
   fmt.Println(formatTimeStr) //打印结果：2021-02-02 13:22:04
   ```
@@ -7495,7 +7495,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
   ```go
   formatTimeStr := "2021-02-02 13:22:04" 
   
-  formatTime, err := time.Parse("2006-01-02 15:04:05", formatTimeStr)
+  formatTime, err := time.Parse(time.DateTime, formatTimeStr)
   
   fmt.Println(formatTime) //打印结果：2021-02-02 13:22:04 +0000 UTC
   ```

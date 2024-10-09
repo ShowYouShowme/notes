@@ -207,9 +207,11 @@ docker好像有版本需求，下次使用指定版本试试看
 
 # 第二章  部署步骤
 
-
+Node：一台物理机或者虚拟机称为一个Node
 
 ## 2.1 创建命名空间
+
+一个应用对应一个命名空间，比如rummy游戏的全部服务部署在命名空间rummy下
 
 ```ini
 创建 = kubectl create -f nginx-namespace.yaml 或者 kubectl create namespace test-env
@@ -227,7 +229,21 @@ docker好像有版本需求，下次使用指定版本试试看
 
 
 
-## 2.2 发布Deployment
+## 2.2 发布Pod
+
+StatefulSet：有状态服务
+
+Deployment：无状态服务
+
+DaemonSet：每个Node运行一个Pod，常用于监控，日志收集（配合elk）
+
+Job：一次性任务，比如批处理程序，完成后容器就退出
+
+CronJob：定时任务
+
+ReplicaSet：控制由其管理的pod，使pod副本的数量始终维持在预设的个数
+
+ReplicationController：和ReplicaSet一样
 
 ```ini
 创建 = kubectl create -f nginx-deployment.yaml
@@ -249,7 +265,7 @@ docker好像有版本需求，下次使用指定版本试试看
 
 ## 2.3 创建service
 
-
+service 用于对外暴露端口或者对内rpc调用暴露端口
 
 ```shell
 vim nginx-service.yaml

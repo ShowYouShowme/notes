@@ -39,6 +39,8 @@ make install
 
 ## 1.2 第一个程序
 
+文件名必须是hello_world.erl
+
 ```erlang
 % hello world program
 -module(hello_world).
@@ -85,12 +87,13 @@ start()->
 # 第二章 数据类型
 
 + Number：包含整数和浮点数
-+ Atom
++ Atom：全小写字母，类似其它语言的枚举类型
 + Boolean
 + Bit String：类似C++的Vector\<unsigned char>
 + Tuple
 + Map
 + List：string也是用List表示，类似C语言
++ record：结构体
 
 
 
@@ -888,9 +891,14 @@ start() ->
 ```erlang
 -module(helloworld). 
 -export([start/0]). 
--record(person, {name = "", id}). 
+
+%% 定义类型person,类似C定义结构体
+%% struct person {....}
+%% name 默认值为"", age默认值为28
+-record(person, {name = "", id, age = 28}). 
 
 start() -> 
+   %% 创建实例 
    P = #person{name="John",id = 1}.
 ```
 
@@ -1350,6 +1358,8 @@ echo_loop(Connection) ->
 
 # 第二十五章 分布式编程
 
+每台物理机运行一个Erlang VM，将这些Erlang VM互相连接，就会组成一个集群。运行在每个VM 里面的进程就可以用消息的模式通信。**注意：每一个Erlang VM 都要运行在受信网络，最好是一个局域网。不同的局域网需要用openVpn这样的工具互联。**
+
 
 
 ## 25.1 原因
@@ -1369,6 +1379,54 @@ echo_loop(Connection) ->
 | spawn节点 | 在节点上创建新进程         |
 | is_alive  | 判断节点是否处于活动状态   |
 | spawnlink | 在节点上创建新的过程链接   |
+
+
+
+## 25.3 节点启动
+
+1. 长节点名启动，网络必须配有DNS
+
+   ```shell
+   erl -name simple_cache
+   ```
+
+2. 短节点名启动，同一子网即可
+
+   ```shell
+   erl -sname simple_cache
+   ```
+
+
+
+## 25.4 节点互联
+
+1. 连接节点
+
+   ```shell
+   net_adm:ping('BeiJing@DESKTOP-34T414H').
+   ```
+
+2. 查看已经建立连接的节点
+
+   ```shell
+   nodes().
+   ```
+
+
+
+## 25.5 magic cookie
+
+1. 查看cookie
+
+   ```shell
+   auth:get_cookie()
+   ```
+
+2. 不同的节点配置相同的cookie即可互联，存在文件名为.erlang.cookie的文件里
+
+
+
+
 
 
 
@@ -1552,6 +1610,8 @@ start() ->
 
 ## 30.1 gen_server
 
+通用服务框架
+
 简介
 
 ```erlang
@@ -1642,6 +1702,8 @@ stop()->
 
 ## 30.2 gen_event
 
+事件处理框架。正常一个事件管理器对应一个文件；一个事件处理器对应一个文件；一个应用中可以存在多个事件处理器，类似web里面的中间件！
+
 简介
 
 ```erlang
@@ -1674,6 +1736,8 @@ gen_event:stop             ----->  Module:terminate/2
 ```
 
 
+
+示范代码一
 
 ```erlang
 -module(sc_event_logger).
@@ -1727,9 +1791,89 @@ lookup(Key) ->
 
 
 
+示范代码二
+
+sc_event_logger.erl
+
+```erlang
+-module(sc_event_logger).
+-behaviour(gen_event).
+-export([add_handler/0, delete_handler/0]).
+-export([init/1, handle_event/2, handle_call/2,
+handle_info/2, code_change/3, terminate/2]).
+-record(state, {}).
+
+add_handler() ->
+    sc_event:add_handler(?MODULE, []).
+
+delete_handler() ->
+    sc_event:delete_handler(?MODULE, []).
+
+init([]) ->
+    error_logger:info_msg("call handler:init ~n", []),
+    {ok, #state{}}.
+
+handle_event({create, {Key, Value}}, State) ->
+    error_logger:info_msg("create(~p, ~p)~n", [Key, Value]),
+    {ok, State}.
+
+handle_call(_Request, State) ->
+    Reply = ok,
+    {ok, Reply, State}.
+
+handle_info(_Info, State) ->
+    {ok, State}.
+
+terminate(_Reason, _State) ->
+    ok.
+
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+```
+
+sc_event.erl
+
+```erlang
+%%%==============================================
+%%% 事件管理器,负责启动进程、封装常见API
+%%%==============================================
+
+-module(sc_event).
+-export([start/0, add_handler/2, delete_handler/2, lookup/1, create/2,replace/2, delete/1]).
+-define(SERVER, ?MODULE).
+
+start() ->
+    gen_event:start({local, ?SERVER}).
+
+add_handler(Handler, Args) ->
+    gen_event:add_handler(?SERVER, Handler, Args).
+
+delete_handler(Handler, Args) ->
+    gen_event:delete_handler(?SERVER, Handler, Args).
+
+create(Key, Value) ->
+    gen_event:notify(?SERVER, {create, {Key, Value}}).
+
+```
+
+test.erl
+
+```erlang
+main() ->
+sc_event:start(),
+sc_event_logger:add_handler(),
+sc_event:create("Name", "Peter"),
+sc_event_logger:delete_handler(),
+sc_event:create("Name", "Peter").
+```
+
+
+
+
+
 ## 30.3 gen_fsm
 
-
+有限状态机，和gen_server类似，不确定用那个时用gen_server
 
 1. 文档：https://www.erlang.org/docs/19/man/gen_fsm.html
 
@@ -1851,4 +1995,74 @@ lookup(Key) ->
    
    ```
 
-   
+
+
+
+## 30.4 supervisor
+
+监督者是进程管理工具。负责其子进程的启动，停止和监视。监督者的基本思路是，保持其子进程能正常运行，并在必要时重新启动子进程。类似pm2。
+
+示例代码
+
+```erlang
+-module(sc_sup).
+
+-behaviour(supervisor).
+
+-export([start_link/0,
+         start_child/2
+        ]).
+
+-export([init/1]).
+
+-define(SERVER, ?MODULE).
+
+start_link() ->
+    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+
+start_child(Value, LeaseTime) ->
+    supervisor:start_child(?SERVER, [Value, LeaseTime]).
+
+init([]) ->
+    Element = {sc_element, {sc_element, start_link, []},
+               temporary, brutal_kill, worker, [sc_element]},
+    Children = [Element],
+    RestartStrategy = {simple_one_for_one, 0, 1},
+    {ok, {RestartStrategy, Children}}.
+```
+
+
+
+
+
+子进程规范
+
+Procs = [{cowboy_clock, {cowboy_clock, start_link, []},permanent, 5000, worker, [cowboy_clock]}]
+
+子进程规范有6个元素组成：{ID,Start,Restart,Shutdown,Type,Modules}
+
+ID：是一个用于在系统内部标识各规范的项式，简单起见，此处采用的是模块名
+
+Start：是一个用于启动进程的三元组{Module,Function,Arguments}，Module是模块名，Function是函数名，Arguments是函数的调用参数列表
+
+Restart：用于指明子进程发生故障时是否需要重启。permanent 子进程总会被重启；temporary 子进程从不会被重启；transient 子进程只有当其被异常终止时才会被重启，即，退出理由不是 normal 。
+
+Shutdown：用于指明如何终止进程。如果取值为一个整数，表示终止进程时应采用软关闭策略，给进程留出一段自我了断的时间(以毫秒为单位)，如果进程未能在指定时间内自行退出，将被无条件终止；如果取值为brutal_kill，表示在关闭监督进程时立即终止子进程；如果取值为infinity，主要用于子进程本身也同为监督者的情况，表示应给予子进程充分的时间自行退出。
+
+Type：用于表示进程是监督者(supervisor)还是工作者(worker)。
+
+Modules：列出该进程所依赖的模块。这部分信息仅用于在代码热升级时告知系统该以何种顺序升级各个模块，一般来说，只需列出子进程的主模块。
+
+
+
+监督者重启策略
+
+init/1回调函数的返回值的格式为{ok,{RestartStrategy,Children}}，其中Children是若干子进程规范组成的一个列表，RestartStrategy只是一个三元组{How,Max,Within}，此处它的值是{one_for_one, 10, 10}。
+
+How取值为one_for_one，表示一旦有子进程退出，监督者将针对该进程，且仅针对该进程进行重启。该重启操作不会影响同时运行的其他进程。
+
+one_for_one策略：给监督者静态指派的永久子进程会随监督者的启动而启动并在监督者的生命周期结束时退出。
+
+simple_one_for_one策略：监督者只能启动一种子进程，但却可以启动任意多个，它所有的子进程都是运行时动态添加的，监督者本身在启动时不会启动任何子进程。动态添加子进程只需调用简化版supervisor:start_child/2函数，令监督者启动新的子进程。其他类型(非simple_one_for_one)的监督者在动态添加子进程时，必须将完整的子进程规范传递给start_child/2，例如：supervisor:start_child(?MODULE,{Mod, {Mod, start_link, Args},transient, 100, worker, [Mod]}),
+
+Max和Within这两个值是相互关联的：它们共同确定了重启频率。Max指定的是最大重启次数，Within指定的是时间片，这里Max = 10，Within = 10，表示监督者最多可以在10秒内重启子进程10次，一旦超过限制，监督者都会在终止所有子进程后自我了断，并顺着监督者树向上汇报故障信息。如果这两个值分别取值为0和1，表示目前不启动自动重启，因为自动重启会妨碍我们发现代码中的潜在的问题。
