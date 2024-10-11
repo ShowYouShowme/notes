@@ -4916,7 +4916,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                   
+   >                                                                                                                                                     
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -9286,7 +9286,8 @@ go run .
 
 ```nginx
 map $http_upgrade $connection_upgrade {
-    default upgrade;      '' close;
+    default upgrade;      
+    '' close;
 }   
 upstream websocket {
     server 192.168.1.115:7000; # appserver_ip:ws_port
@@ -9302,10 +9303,6 @@ server {
          proxy_read_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
          proxy_send_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
      
-         proxy_set_header Host $host;
-         proxy_set_header X-Real-IP $remote_addr;
-         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
          proxy_http_version 1.1;
          proxy_set_header Upgrade $http_upgrade;
          proxy_set_header Connection $connection_upgrade;
@@ -9354,5 +9351,99 @@ conn.SetPongHandler(func(appData string) error {
     log.Warnf("msg = receive pong ! data = %v", appData)
     return nil
 })
+```
+
+
+
+
+
+# 第四十六章 异步
+
+异步io的demo
+
+```erlang
+package main
+
+import (
+	log "github.com/sirupsen/logrus"
+	"time"
+)
+
+//************************************************
+// 异步rpc请求的示例
+//************************************************
+
+// 假设这是一个获取用户信息的RPC 请求，耗时5s
+func RetrieveUserInfo(uid int, correlationId int) (string, int) {
+	time.Sleep(5 * time.Second)
+	log.Printf("msg = 从DB读取用户信息, uid = %v , correlationId = %v", uid, correlationId)
+	var name string = "Sam"
+	if correlationId%2 == 0 {
+		name = "Taylor"
+	}
+	return name, correlationId
+}
+
+var correlationId = 0
+
+type App struct {
+	taskQueue chan func()
+}
+
+func (receiver *App) Start() {
+	receiver.taskQueue = make(chan func(), 1024)
+	go receiver.schedule()
+}
+
+func (receiver *App) schedule() {
+	for {
+		select {
+		case task := <-receiver.taskQueue:
+			task()
+		}
+	}
+}
+
+func (receiver *App) scheduleOnce(task func()) {
+	receiver.taskQueue <- task
+}
+
+// 每个RPC 请求对应的关联ID,将请求和响应关联起来;可选
+func (receiver *App) getCorrelationId() int {
+	correlationId += 1
+	return correlationId
+}
+
+func (receiver *App) NotifyUserEnterTable(uid int) {
+	log.Warnf("msg = 收到用户入桌消息, uid = %v", uid)
+	go func() {
+		reqId := receiver.getCorrelationId()
+		log.Printf("msg = 开始RPC请求用户信息, uid = %v , correlationId = %v", uid, reqId)
+		name, cID := RetrieveUserInfo(uid, reqId)
+		// 收到响应后将cb 放入队列
+
+		task := func() {
+			log.Printf("msg = RPC成功获取用户信息,开始执行入桌逻辑, name = %v, cID = %v", name, cID)
+			//... your code
+		}
+		receiver.scheduleOnce(task)
+	}()
+}
+
+func (receiver *App) NotifyUserDiscard(uid int) {
+	log.Infof("msg = 收到用户出牌消息, uid = %v", uid)
+	log.Infof("msg = 执行出牌逻辑")
+}
+
+func main() {
+	var app = &App{}
+	app.Start()
+	app.NotifyUserEnterTable(100) // 入桌rpc请求用户信息耗时5s
+	app.NotifyUserEnterTable(101)
+	time.Sleep(1 * time.Second) // 请求用户信息过程中,收到出牌消息，可以直接处理
+	app.NotifyUserDiscard(102)
+
+	time.Sleep(12345678 * time.Second)
+}
 ```
 

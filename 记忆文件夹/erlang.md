@@ -39,11 +39,11 @@ make install
 
 ## 1.2 第一个程序
 
-文件名必须是hello_world.erl
+文件名必须是hello.erl
 
 ```erlang
-% hello world program
--module(hello_world).
+% hello program
+-module(hello).
 -export([start/0]).
 
 start()->
@@ -59,9 +59,9 @@ start()->
   ```shell
   ~/erlang$ erl
   
-  1> c(hello_world).   # 编译
+  1> c(hello).   # 编译
   
-  2> hello_world:start(). # 运行
+  2> hello:start(). # 运行
   ```
 
 + 在命令提示符下运行
@@ -71,14 +71,42 @@ start()->
   $ erlc hello.erl
   
   # 1--前台运行模块,加上 -s init stop 程序运行完会退出，不加不会
-  $ erl -noshell -s fac main -s init stop
+  $ erl -noshell -s hello start -s init stop
   
   # 2--前台带参数运行
-  $ erl -noshell -s fac main 25
+  $ erl -noshell -s hello start 25
   
   # 加载指定路径并执行其所包含的模块中的函数
   erl -noshell -pa path -s module fun
   ```
+
++ 当做escript运行，可以配合pm2之类的管理工具
+
+  代码文件：hello.erl
+
+  ```erlang
+  -module(hello).
+  -export([start/0, main/1]).
+  
+  start()->
+      io:fwrite("Hello, world!\n").
+  
+  main(Args) ->
+      start().
+  ```
+
+  运行
+
+  ```shell
+  # 解释运行
+  escript .\hello.erl
+  
+  # 编译再运行
+  erlc .\hello.erl
+  escript .\hello.beam
+  ```
+
+  
 
   
 
@@ -87,13 +115,411 @@ start()->
 # 第二章 数据类型
 
 + Number：包含整数和浮点数
-+ Atom：全小写字母，类似其它语言的枚举类型
++ Atom：小写字母开头，建议全小写。用于表示非数值常量
 + Boolean
 + Bit String：类似C++的Vector\<unsigned char>
-+ Tuple
++ Tuple：元祖，可以表示C的结构体
 + Map
 + List：string也是用List表示，类似C语言
 + record：结构体
+
+
+
+## 变量
+
+变量以大写字母开头，且只能赋值一次。erlang里面等号不是赋值，而是模式匹配！
+
+不可变变量的好处：并发编程非常方便，不需要加锁
+
+
+
+## 元祖
+
+1. 定义
+
+   ```c
+   struct Point{
+       int x;
+       int y;
+   };
+   
+   struct Point p1;
+   p1.x=10;
+   p1.y=45;
+   
+   // Erlang元祖表示
+   P = {10, 45}
+   P = {point,
+        {x, 10},
+        {y, 45}}.
+   ```
+
+2. 提取字段值
+
+   ```erlang
+   Point = {point, 10, 45}
+   
+   %% 匹配
+   {point, X, Y} = Point
+   
+   %% 利用占位符匹配
+   Person = {person, {name, jone}, {age, 45}}
+   {_,{_, Who},_} = Person.
+   ```
+
+
+
+## 列表
+
+```erlang
+Names = ["Peter", "Nash", "trump"]
+
+%% 列表元素类型不必相同
+[1+7, hello]
+
+Names2 = ["taylor" | Names]
+
+
+%% 提取元素
+[N1 | N2] = Names
+```
+
+
+
+## 字符串
+
+Erlang的字符串是整数列表
+
+```erlang
+Name = "Hello"
+
+Name2=[$H,$e,$l,$l,$o].
+```
+
+
+
+## 模式匹配
+
+```erlang
+{X, abc} = {123, abc}
+
+{X, Y} = {{abc, 12}, 42}
+
+[H|T] = [1,2,3,4,5]
+
+[H | T] = "cat"
+
+[A,B,C | T] = [a,b,c,d,e,f]
+```
+
+
+
+
+
+
+
+# 第三章  顺序编程
+
+
+
+## 3.1 模块
+
+geometry.erl
+
+```erlang
+-module(geometry).
+-export([area/1]).
+
+area({rectangle, Width, Height}) ->
+    Width * Height;
+
+area({circle, R}) ->
+    3.14 * R * R.
+```
+
+
+
+运行代码
+
+```erlang
+%% 编译
+c(geometry).
+
+%% 运行
+geometry:area({rectangle, 10, 5}).
+geometry:area({circle, 1.4}).
+```
+
+
+
+shop.erl
+
+```erlang
+-module(shop).
+-export([cost/1, total/1]).
+
+cost(orange) ->5;
+cost(apple) -> 2;
+cost(pear) ->9;
+cost(milk) ->7.
+
+total([{What, N} | T]) ->
+    cost(What) * N + total(T);
+
+total([]) -> 0.
+```
+
+
+
+运行代码
+
+```erlang
+c(shop).
+
+shop:total([{milk, 3}]).
+
+shop:total([{milk, 3}, {pear, 6}]).
+```
+
+
+
+## 3.2 函数重载
+
+同名不同参数数量的函数：Erlang支持函数重载
+
+```erlang
+sum(L) -> sum(L, 0).
+
+sum([], N) -> N;
+sum([ H|T], N) -> H + sum(T, N + H).
+```
+
+
+
+## 3.3 匿名函数
+
+函数可以作为函数的参数，也可以作为函数的返回值。
+
+### 定义
+
+```erlang
+Double = fun(X) -> 2 * X end.
+
+Double(100).
+```
+
+
+
+### 带有子句的匿名函数
+
+```erlang
+TempConvert = fun({c, C}) -> {f, 32 + C*9/5};
+                  ({f, F}) -> {c, (F - 32)*5/9}
+                  end.
+
+TempConvert({c, 100}).
+TempConvert({f, 212}).
+```
+
+
+
+### 以fun为参数的函数
+
+```erlang
+L = [1,2,3,4].
+Double = fun(X) -> 2 * X end.
+lists:map(Double, L).
+
+Even = fun(X) -> (X rem 2) =:= 0 end.
+lists:filter(Even, [1,2,3,4,5,6,7,8]).
+```
+
+
+
+### 返回fun的函数
+
+返回的函数内部带有状态了！
+
+```erlang
+Fruit = [apple, pear, orange].
+MakeTest = fun(L) -> (fun(X) -> lists:member(X,L) end) end.
+IsFruit = MakeTest(Fruit).
+IsFruit(pear).
+lists:filter(IsFruit, [dog,orange,cat,apple,bear]).
+```
+
+
+
+### 自定义for结构
+
+```erlang
+-module(my_for).
+-export([main/0]).
+for(Max, Max, F) ->
+    [F(Max)];
+
+for(I, Max, F) ->
+    [F(I) | for(I + 1, Max, F)].
+
+main() ->
+	Double = fun(X) -> 2 * X end,
+	for(1, 5, Double).
+```
+
+运行
+
+```shell
+my_for:main().
+```
+
+
+
+### 简单的列表处理
+
+```erlang
+-module(shop).
+-export([main/0]).
+
+cost(orange) ->5;
+cost(apple) -> 2;
+cost(pear) ->9;
+cost(milk) ->7.
+
+sum([H | T]) ->
+    H + sum(T);
+sum([]) ->
+    0.
+
+map(_, []) -> [];
+map(F, [H|T]) ->
+    [F(H) | map(F, T)].
+
+total(L) ->
+    Handler = fun({What, N}) -> cost(What) * N end,
+    sum(map(Handler, L)).
+
+main() ->
+    Buy = [{orange, 4}, {apple, 10}, {pear, 6}, {milk, 3}],
+    total(Buy).
+```
+
+
+
+### 列表解析
+
+```erlang
+%% 由F(X) 组成的列表, X 来源于L
+[F(X) || X <- L]
+```
+
+
+
+
+
+### 断言
+
+断言用于强化模式匹配功能，当满足条件的函数才能被匹配执行。可用于校验函数的参数类型。
+
+
+
+例子
+
+```erlang
+max(X, Y) when X > Y -> X;
+
+max(X, Y) -> Y.
+```
+
+
+
+断言序列
+
++ OR序列用分号(;)分隔
++ AND序列用逗号分隔
+
+
+
+例子
+
+```erlang
+fetch_money(CardNum, Count) when is_integer(CardNum), Count < 100 ->
+    {ok, Count};
+
+fetch_money(CardNum, Count) ->
+    {failed, CardNum, Count}.
+```
+
+
+
+
+
+true断言
+
+类似switch 里面的default
+
+
+
+### 记录
+
+类似C语言的结构体
+
+
+
+定义
+
+```erlang
+-record(person, {
+                 name = "nash",
+                 age  = 18,
+                 
+                 %% 默认值是undefined
+                 salary
+                })
+```
+
+
+
+
+
+创建记录
+
+```erlang
+P1 = #person{}
+
+P2 = #person{name = "sam", age = 69, salary = 2500}
+
+%% 创建一个副本,并将name字段改为trump
+P3 = P2#person{name = "trump"}
+```
+
+
+
+从记录里提取值
+
+```erlang
+P2 = #person{name = "sam", age = 69, salary = 2500}.
+
+#person{name = Name, age = Age, salary = Salary} = P2.
+```
+
+
+
+函数中对记录进行匹配
+
+```erlang
+clone_person(#person{name = Name, age = Age, salary = Salary} = R) ->
+    R#person{name = "god"}.
+```
+
+
+
+记录和元祖的关系
+
+记录就是元祖。
+
+
+
+
 
 
 
@@ -1426,6 +1852,16 @@ echo_loop(Connection) ->
 
 
 
+## 25.6 节点之间消息传递
+
+```erlang
+register(shell, self()).
+
+{shell, Node} ! {self(), "hello!"}
+```
+
+
+
 
 
 
@@ -1611,6 +2047,8 @@ start() ->
 ## 30.1 gen_server
 
 通用服务框架
+
+相关文章 = https://www.cnblogs.com/hzy1987/p/5441807.html
 
 简介
 

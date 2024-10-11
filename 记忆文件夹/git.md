@@ -389,6 +389,29 @@ git commit -m "${comment}"
     生产    = v3.0.0
     ```
 
+11. 将未提交代码迁移到新分支
+
+    ```shell
+    // 先将本地修改进行暂存
+    > git stash
+     
+    // 暂存完毕后执行 git status 会显示不出本地的修改
+    // 再拉取当前分支
+    > git pull 
+     
+    // 新建并切换到开发分支，如dev-2021-11
+    > git checkout -b dev-2021-11
+     
+    // 将暂存的本地修改取出
+    > git stash apply
+     
+    // 这时执行 git status 可以看到本地修改又显示出来了
+    // 正常提交即可
+    > git add .
+    > git commit -am "local code"
+    > git push origin dev-2021-11
+    ```
+
     
 
    
