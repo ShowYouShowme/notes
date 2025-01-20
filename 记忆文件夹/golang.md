@@ -7,6 +7,8 @@
 1. 下载安装包安装
 
    ```shell
+   mkdir doc local app tmp
+   
    wget https://go.dev/dl/go1.19.linux-amd64.tar.gz
    tar -zxvf go1.19.linux-amd64.tar.gz
    mv go $HOME/local
@@ -17,10 +19,8 @@
 2. 设置环境变量
 
    ```shell
-   mkdir doc local app tmp
-   ```
-
-   ```shell
+   vim ~/.bashrc
+   
    export GOROOT=$HOME/local/go              		#go安装目录。
    export GOPATH=$HOME/doc/go     				    #保持第三方依赖包,goland里面需要配置
    export GOBIN=$GOPATH/bin           				#可执行文件存放
@@ -29,12 +29,14 @@
    
    # windows 安装,使用goland或者vscode开发,需要配置环境变量GOROOT和GOPATH
    ```
-
-3. 开启go mod并配置代理
+   
+3. 开启go mod并配置代理，参考网站https://goproxy.io/zh/
 
    ```shell
    go env -w GO111MODULE=on
-   go env -w GOPROXY="https://goproxy.io,direct"
+   
+   # 配置环境变量
+   export GOPROXY=https://goproxy.io,direct
    ```
 
 4. 创建项目
@@ -127,6 +129,26 @@ func main()  {
 
 
 
+## 1.6 命名规范
+
++ 项目名：user-service
+
++ 文件名：stringutil_test.go
+
++ 变量名：apiClient、URLString
+
++ 常量
+
+  ```go
+  const (
+      Monday = 1
+      Tuesday = 2
+      Wednesday = 3
+  )
+  ```
+
+  
+
 # 第二章 程序基本结构
 
 
@@ -143,7 +165,26 @@ func main()  {
 
 2. 方法名以Test开头：func Testxxx()
 
-3. 代码示例
+3. api接口
+
+   ```GO
+   package try_test
+   
+   import (
+   	"testing"
+   )
+   
+   // go test -v first_test.go
+   func TestFirstTry(t *testing.T)  {
+   	t.Fatal("请在启动参数里面指定配置文件!") 			// 打印日志, 测试终止[失败]
+   	t.Errorf("读取手牌出错: %s\n", err.Error()) 	// 打印错误日志,测试继续进行
+   	t.Logf("%v 测试通过!", row.Cards) 			 // 打印Info日志
+   }
+   ```
+
+   
+
+4. 代码示例
 
    ```GO
    // go test -v first_test.go
@@ -154,9 +195,31 @@ func main()  {
    )
    
    func TestFirstTry(t *testing.T)  {
-   	var a int = 1
-   	var b int = 2
-   	t.Log("a = ", a, " b = " , b)
+   	rawConf, err := ioutil.ReadFile("handcard.json")
+   	if err != nil {
+   		t.Fatal("请在启动参数里面指定配置文件!")
+   	}
+   	e := new(CardConfig)
+   	err = json.Unmarshal([]byte(rawConf), e)
+   	if err != nil {
+   		t.Fatal(err)
+   	}
+   
+   	for _, row := range e.Cards {
+   		inputHandCards, err := ReadCards2(row.Cards)
+   		if err != nil {
+   			t.Errorf("读取手牌出错: %s\n", err.Error())
+   		}
+   		handCards := inputHandCards[1:]
+   		laizi := inputHandCards[0]
+   		bestResult := algorithm.FindBestResult(handCards, laizi, false)
+   		if bestResult.Score == row.Score && bestResult.CanDeclare == row.CanDeclare {
+   			t.Logf("%v 测试通过!", row.Cards)
+   		} else {
+   			t.Fatalf("测试失败! 失败用例: %v", row.Cards)
+   		}
+   	}
+   	t.Logf("全部测试用例成功!\n")
    }
    ```
 
@@ -345,6 +408,15 @@ const (
 	CMD_C_SYS_PING         CMD = 1001
 	CMD_S_SYS_PONG         CMD = 1002
 	 )
+
+
+type TrackEvent int32
+
+const (
+	TrackEvent_EventNil     TrackEvent = 0
+	TrackEvent_EventOnline  TrackEvent = 1
+	TrackEvent_EventOffline TrackEvent = 2
+)
 ```
 
 
@@ -569,7 +641,23 @@ func TestIfMultiSet(t *testing.T){
    	fmt.Println("finished...")
    ```
    
-   
+
+
+
+### 2.5 输入输出
+
+
+
+获取输入
+
+```go
+// 读取一行字符串
+reader := bufio.NewReader(os.Stdin)
+body, _ := reader.ReadString('\n')
+fmt.Printf("body : %s \n", body)
+```
+
+
 
 # 第三章  常用集合
 
@@ -662,7 +750,11 @@ func TestIfMultiSet(t *testing.T){
    
    	s1 := []int{1,2,3,4} // 定义方式二
    	t.Log(len(s1), cap(s1))
+       
+       // size 为0, 是empty数组; 用这个方式初始化即可
+       s2 := make([]int, 0)
    
+       // size 为3,每个元素都是0
    	s2 := make([]int, 3, 5) // size == 3 capacity == 5 定义方式三 
    	t.Log(len(s2), cap(s2))
    	// t.Log(s2[0], s2[1], s2[3], s2[4])
@@ -979,7 +1071,34 @@ map作为struct的成员，必须在构造函数里面构造，比如make(map[in
    }
    ```
 
-   
+
+
+
+## 3.4 注意事项
+
+map和channel作为struct的成员时，使用之前必须利用make初始化；切片不需要初始化！
+
+```go
+type Person struct {
+	children []int
+	work     map[string]string
+	ch       chan bool
+}
+
+func main() {
+	person := &Person{}
+	person.children = append(person.children, 123)
+	person.work = make(map[string]string)
+	person.work["111"] = "hello"
+	person.ch = make(chan bool)
+	go func() {
+		time.Sleep(time.Second * 5)
+		<-person.ch
+	}()
+	person.ch <- true
+	fmt.Printf(".........")
+}
+```
 
 
 
@@ -1215,6 +1334,14 @@ func main()  {
 
 
 ### 6.1.2 行为定义
+
+**receiver 为值**的时候，不管你定义对象时用指针还是对象，调用成员函数都**不能改变**对象值，因为传递的是副本。
+
+**receiver 为指针**的时候，不管你定义对象时用指针还是对象，调用成员函数**都会改变**对象本身。
+
+
+
+建议：定义对象时统一用指针，receiver统一用指针！
 
 ***
 
@@ -1565,13 +1692,13 @@ func main() {
 
 
 
-### 空接口与类型断言
+### 空接口与类型断言(类型转换)
 
 ***
 
 1. 空接口可以表示任何类型
 
-2. 通过断言将空接口转换为制定类型
+2. 通过断言将空接口转换为指定类型
 
 3. 示例代码
 
@@ -1678,6 +1805,7 @@ func main() {
 1. 没有异常机制
 2. error类型实现了error接口
 3. 用error.New快速创建错误实例
+4. **自定义类型，实现接口Error() string，推荐次方法**
 
 
 
@@ -1688,30 +1816,44 @@ func main() {
 1. 抛出指定错误
 
    ```go
-   var LessThanTwoError  = errors.New("n should be not less than 2")
-   var LargeThanHundredError = errors.New("n should be not large than 100")
-   func GetFibonacci(n int)  ([]int, error){
-   	if n < 2 {
-   		return nil, LessThanTwoError
-   	}
+   package main
    
-   	if n > 100{
-   		return nil, LargeThanHundredError
-   	}
-   	fibList := []int{1,1}
-   	for i := 2; i< n; i++{
-   		fibList = append(fibList, fibList[i -2] + fibList[i -1])
-   	}
-   	return fibList, nil
+   import (
+   	"errors"
+   	"fmt"
+   	"math/rand"
+   	"runtime/debug"
+   )
+   
+   // 自定义错误类型
+   type LogicError struct {
+   	Code int
+   	Msg  string
    }
-   func TestGetFibonacci(t *testing.T)  {
-   	if v,err := GetFibonacci(-10); err != nil{
-   		if err == LessThanTwoError{
-   			t.Log("It is less.")
+   
+   // 必须实现接口 Error() string
+   func (receiver *LogicError) Error() string {
+   	return receiver.Msg
+   }
+   
+   func main() {
+   	defer func() {
+   		rawError := recover()
+   		err, ok := rawError.(LogicError)
+   		if ok {
+   			fmt.Printf(err.Error()) // 实际开发用log.Error()
+   		} else {
+   			// 意料之外的错误,打印错误信息和堆栈
+   			fmt.Printf("error msg=%v \n", rawError)
+   			fmt.Printf("Stack trace:\n%s", string(debug.Stack()))
    		}
-   		t.Error(err)
-   	}else{
-   		t.Log(v)
+   	}()
+   
+   	num := rand.Int() % 100
+   	if num > 50 {
+   		panic(LogicError{Code: 200, Msg: "hello"})
+   	} else {
+   		panic(errors.New("unexpected error!"))
    	}
    }
    ```
@@ -1829,14 +1971,13 @@ os.Exit 与 panic
    }
    ```
 
-2. 从panic中恢复
+2. 从panic中恢复，并且打印堆栈信息
 
    ```go
    func main()  {
    	defer func() {
-           // 处理错误
-   		if err := recover(); err != nil{
-   			fmt.Println("recovered from ", err)
+   		if err := recover(); err != nil {
+   			log.Warnf("err=%v, stack=%s\n", err, string(debug.Stack()))
    		}
    	}()
    	fmt.Println("start")
@@ -1866,7 +2007,7 @@ os.Exit 与 panic
    func main() {
    	defer func() {
    		if err := recover(); err != nil {
-   			fmt.Println("recovered from ", err)
+   			log.Warnf("err=%v, stack=%s\n", err, string(debug.Stack()))
    		}
    	}()
    
@@ -2486,7 +2627,26 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
    }
    ```
 
-   
+
+
+
+## 8.7 使用本地包
+
+后端使用微服务架构时，可以将公共代码封装到一个单独的项目(自定义包)里面，然后引入本地包即可
+
+```python
+# go.mod 配置示范
+
+module moduledemo
+
+go 1.14
+
+
+require "mypackage" v0.0.0
+replace "mypackage" => "../mypackage"
+```
+
+
 
 
 
@@ -2650,6 +2810,34 @@ func TestGroutine(t *testing.T)  {
 
    > + 容量未满，可以直接写入，不阻塞；如果容量满了，必须等到接受消息的一方读取一个数据
    > + 读取数据时，如果channel有数据直接返回；否则阻塞到对方写入数据
+   
+   3. 只读和只写channel
+   
+      ```go
+      // 只读 channel
+      var readOnlyChan <-chan int  // channel 的类型为 int
+      
+      // 只写 channel
+      var writeOnlyChan chan<- int
+      
+      // 可读可写
+      var ch chan int
+      
+      // 或者使用 make 直接初始化
+      readOnlyChan1 := make(<-chan int, 2)  // 只读且带缓存区的 channel
+      readOnlyChan2 := make(<-chan int)   // 只读且不带缓存区 channel
+      
+      writeOnlyChan3 := make(chan<- int, 4) // 只写且带缓存区 channel
+      writeOnlyChan4 := make(chan<- int) // 只写且不带缓存区 channel
+      
+      ch := make(chan int, 10)  // 可读可写且带缓存区
+      
+      ch <- 20  // 写数据
+      i := <-ch  // 读数据
+      i, ok := <-ch  // 还可以判断读取的数据
+      ```
+   
+      
 
 
 
@@ -2870,7 +3058,12 @@ func TestCancel(t *testing.T)  {
 2. 子Context：context.WithCancel(parentContext)创建
 
    ```go
+   // 主协程调用cancel() 时, 子协程 <- ctx.Done() 立即返回
+   
    ctx, cancel := context.WithCancel(context.Background())
+   
+   // 主协程序10s后自动调用cancel,用于rpc请求设置超时
+   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
    ```
 
    
@@ -3605,7 +3798,7 @@ type BasicInfo struct {
 }
 
 type JobInfo struct {
-	Skills []string `json:skills`
+	Skills []string `json:"skills"`
 }
 
 type Employee struct {
@@ -4723,7 +4916,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                       
+   >                                                                                                                                                     
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -4834,6 +5027,278 @@ func BenchmarkStringAdd(b *testing.B) {
 	fmt.Println("t1 : ", time.Now())
 	time.Sleep(time.Second * 5)
 	fmt.Println("t2 : ", time.Now())
+```
+
+
+
+
+
+## 17.4 计时器封装
+
+```go
+// 计时器
+package main
+
+import (
+	log "github.com/sirupsen/logrus"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+)
+
+type Timer struct {
+	cb        func()
+	expiredAt int64 // 过期时间戳
+}
+
+const ScheduleInterval = 10 // 10ms调度一次
+
+type TimeManager struct {
+	Mu     sync.Mutex
+	count  int
+	timers map[int]*Timer
+}
+
+func NewTimeManager() *TimeManager {
+	tm := &TimeManager{
+		count:  1,
+		timers: make(map[int]*Timer),
+	}
+	go tm.schedule()
+	return tm
+}
+
+func GetFuncName(f func()) string {
+	fValue := reflect.ValueOf(f)
+	fName := runtime.FuncForPC(fValue.Pointer()).Name()
+	return fName
+}
+
+// 启动计时器
+func (t *TimeManager) SetTimeout(f func(), delay int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	timeId := t.count
+	log.Infof("msg = 注册计时器, fName = %v, timeId = %v, delay = %v", GetFuncName(f), timeId, delay)
+	t.count += 1
+	t.timers[timeId] = &Timer{cb: f, expiredAt: time.Now().UnixMilli() + int64(delay*1000)}
+	return timeId
+}
+
+// 停止计时器
+func (t *TimeManager) ClearTimeout(timerId int) {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if _, ok := t.timers[timerId]; ok {
+		delete(t.timers, timerId)
+	}
+}
+
+// 获取计时器剩余时间 单位是毫秒
+func (t *TimeManager) GetRemainingMilliseconds(timerId int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, ok := t.timers[timerId]; ok {
+		now := time.Now().UnixMilli()
+		return int(timer.expiredAt - now)
+	}
+	log.Warnf("msg = 计时器不存在! timerId = %v", timerId)
+	return -1
+}
+
+func (t *TimeManager) Clone() map[int]*Timer {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	m := make(map[int]*Timer)
+	for timerId, timer := range t.timers {
+		m[timerId] = timer
+	}
+	return m
+}
+
+func (t *TimeManager) updateTimer() {
+	timers := t.Clone()
+	var expireTimerId []int
+	expireTimerId = []int{}
+	for timerId, timer := range timers {
+		now := time.Now().UnixMilli()
+		if timer.expiredAt <= now {
+			log.Infof("msg = 计时器到期! timerId = %v, fName = %v, 过期时间戳 = %v, 执行时间戳 = %v, 超时时间 = %vms",
+				timerId, GetFuncName(timer.cb), timer.expiredAt, now, now-timer.expiredAt)
+			timer.cb() // cb里面调用TimeManager的成员函数会死锁,因此先clone一份
+			expireTimerId = append(expireTimerId, timerId)
+		}
+	}
+
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	for _, timerId := range expireTimerId {
+		delete(t.timers, timerId)
+		log.Infof("msg = 删除计时器! timerId = %v", timerId)
+	}
+}
+
+// 计时器调度
+func (t *TimeManager) schedule() {
+	timer := time.NewTimer(ScheduleInterval * time.Millisecond)
+	for {
+		select {
+		case <-timer.C:
+			t.updateTimer()
+			// 必须有这行,否则全部线程都阻塞,程序退出;
+			// 把timer.Reset放到t.updateTimer()可以确保 调度时间一致;
+			//但是当t.updateTimer()执行时间过长时,会让整个cpu时间全部被timer霸占
+			timer.Reset(ScheduleInterval * time.Millisecond)
+		}
+	}
+}
+
+func sayHello() {
+	log.Info("hello to everybody!")
+}
+
+func sayFuckYou() {
+	log.Info("fuck everybody!")
+}
+
+func main() {
+	tm := NewTimeManager()
+	forever := make(chan int)
+	t1 := tm.SetTimeout(sayHello, 5)
+
+	t2 := tm.SetTimeout(sayFuckYou, 10)
+
+	time.Sleep(time.Second * 5)
+
+	log.Infof("t1 = %v, t2 = %v", tm.GetRemainingMilliseconds(t1), tm.GetRemainingMilliseconds(t2))
+
+	//tm.ClearTimeout(t2)
+	<-forever
+}
+
+```
+
+
+
+高精度计时器
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+)
+
+type Timer struct {
+	cb        func()
+	expiredAt int64 // 过期时间戳
+	cancel    context.CancelFunc
+}
+
+type TimeManager struct {
+	Mu     sync.Mutex
+	count  int
+	timers map[int]*Timer
+	ch     chan int
+}
+
+func NewTimeManager() *TimeManager {
+	tm := &TimeManager{
+		count:  1,
+		timers: make(map[int]*Timer),
+		ch:     make(chan int, 1024), // 缓冲区长度为1024
+	}
+	go tm.schedule()
+	return tm
+}
+
+func GetFuncName(f func()) string {
+	fValue := reflect.ValueOf(f)
+	fName := runtime.FuncForPC(fValue.Pointer()).Name()
+	return fName
+}
+
+// 启动计时器
+func (t *TimeManager) SetTimeout(f func(), delay int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	timeId := t.count
+	fmt.Printf("注册计时器: fName : %v, timeId : %v, delay : %v \n", GetFuncName(f), timeId, delay)
+	t.count += 1
+	t.timers[timeId] = &Timer{cb: f, expiredAt: time.Now().UnixMilli() + int64(delay*1000)}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.timers[timeId].cancel = cancel
+	timer := time.NewTimer(time.Duration(delay*1000) * time.Millisecond)
+	go func() {
+		for {
+			select {
+			case <-timer.C:
+				t.ch <- timeId
+				fmt.Printf("计时器到期,timeId=%v \n", timeId)
+				return
+			case <-ctx.Done():
+				// 计时器取消
+				fmt.Printf("取消计时器,timeId=%v 当前计时器数量=%v\n", timeId, len(t.timers))
+				return
+			}
+		}
+	}()
+	return timeId
+}
+
+// 停止计时器
+func (t *TimeManager) ClearTimeout(timerId int) {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, ok := t.timers[timerId]; ok {
+		delete(t.timers, timerId)
+		timer.cancel()
+	}
+}
+
+// 获取计时器剩余时间 单位是毫秒
+func (t *TimeManager) GetRemainingMilliseconds(timerId int) int {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, ok := t.timers[timerId]; ok {
+		now := time.Now().UnixMilli()
+		remaining := int(timer.expiredAt - now)
+		if remaining < 0 {
+			remaining = 0
+		}
+		return remaining
+	}
+	fmt.Println(fmt.Sprintf("计时器: %v 不存在!", timerId))
+	return -1
+}
+
+func (t *TimeManager) runTask(timerId int) {
+	t.Mu.Lock()
+	defer t.Mu.Unlock()
+	if timer, exist := t.timers[timerId]; exist {
+		delete(t.timers, timerId)
+		now := time.Now().UnixMilli()
+		fmt.Printf("计时器执行: %v fName : %v, 过期时间戳: %v, 执行时间戳: %v, 超时时间: %vms \n", GetFuncName(timer.cb), timerId, timer.expiredAt, now, now-timer.expiredAt)
+		timer.cb()
+	}
+}
+
+// 计时器调度
+func (t *TimeManager) schedule() {
+	for {
+		select {
+		case timerId := <-t.ch:
+			t.runTask(timerId)
+		}
+	}
+}
 ```
 
 
@@ -5556,8 +6021,29 @@ fmt.Fprintf(os.Stderr, "an %s\n", "error")
 
 
 
+## 22.3 protobuf转json
+
+url = [google.golang.org/protobuf/encoding/protojson](http://google.golang.org/protobuf/encoding/protojson)
+
+
+
 
 # 第二十三章 http客户端
+
+
+
+## 23.0 设置超时，默认阻塞
+
+```go
+client := http.Client{
+    Timeout: 3 * time.Second,
+}
+resp, err := client.Get("http://192.168.2.110:8100")
+```
+
+
+
+
 
 
 
@@ -5580,7 +6066,10 @@ type Result struct {
 }
 
 func main() {
-	resp, err := http.Get("http://192.168.2.110:8100")
+    client := http.Client{
+        Timeout: 3 * time.Second,
+    }
+	resp, err := client.Get("http://192.168.2.110:8100")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -5736,7 +6225,104 @@ func main() {
    }
    ```
 
-   
+
+
+
+### 23.2.3 上传文件
+
+参考资料 = https://hayageek.com/golang-send-file-upload-with-post-request/
+
+上传单个文件
+
+```go
+func UploadFile(url string, paramName string, filePath string) error {
+  file, err := os.Open(filePath)
+  if err != nil {
+    return err
+  }
+  defer file.Close()
+
+  body := &bytes.Buffer{}
+  writer := multipart.NewWriter(body)
+  part, err := writer.CreateFormFile(paramName, filepath.Base(filePath))
+  if err != nil {
+    return err
+  }  
+  _, err = io.Copy(part, file)
+    
+  err = writer.WriteField("token", "bdVkODcJVzBWPqr8MpoL6InTyGeUTbex")
+  if err != nil {
+      panic(err)
+  }    
+
+  err = writer.Close()
+  if err != nil {
+    return err
+  }
+
+  request, err := http.NewRequest("POST", url, body)
+  request.Header.Add("Content-Type", writer.FormDataContentType())
+  client := &http.Client{}
+  response, err := client.Do(request)
+
+  if err != nil {
+    return err
+  }
+  defer response.Body.Close()
+
+  // Handle the server response...
+  return nil
+}
+```
+
+
+
+上传多个文件
+
+```go
+func UploadMultipleFiles(url string, paramName string, filePaths []string) error {
+  body := &bytes.Buffer{}
+  writer := multipart.NewWriter(body)
+
+  for _, filePath := range filePaths {
+    file, err := os.Open(filePath)
+    if err != nil {
+      return err
+    }
+    defer file.Close()
+
+    part, err := writer.CreateFormFile(paramName, filepath.Base(filePath))
+    if err != nil {
+      return err
+    }
+    _, err = io.Copy(part, file)
+
+    if err != nil {
+      return err
+    }
+  }
+
+  err := writer.Close()
+  if err != nil {
+    return err
+  }
+
+  request, err := http.NewRequest("POST", url, body)
+  request.Header.Add("Content-Type", writer.FormDataContentType())
+  client := &http.Client{}
+  response, err := client.Do(request)
+
+  if err != nil {
+    return err
+  }
+  defer response.Body.Close()
+
+  // Handle the server response...
+  return nil
+}
+```
+
+
 
 
 
@@ -6212,9 +6798,11 @@ xshell 、chrome、火狐浏览器可以配置socks5代理来加速。
 
 # 第二十九章  日志
 
- 常用的日志库logrus
+ 常用的日志库logrus、zap
 
 
+
+## 29.1 logrus
 
 用法
 
@@ -6248,19 +6836,114 @@ func main() {
 }
 ```
 
+设置日志格式
+
+```go
+    log.SetFormatter(&log.TextFormatter{
+		ForceQuote:      true,                  //键值对加引号
+		TimestampFormat: "2006-01-02 15:04:05", //时间格式
+		FullTimestamp:   true,
+	})
+```
+
+日志显示函数名和文件名
+
+```go
+log.SetReportCaller(true)
+```
+
+自定义日志格式
+
+```go
+type CustomizeFormatter struct {
+}
+
+func (m *CustomizeFormatter) Format(entry *log.Entry) ([]byte, error) {
+	var b *bytes.Buffer
+	if entry.Buffer != nil {
+		b = entry.Buffer
+	} else {
+		b = &bytes.Buffer{}
+	}
+
+	timestamp := entry.Time.Format("2006-01-02 15:04:05")
+	var newLog string
+	newLog = fmt.Sprintf("[%s] [%s] %s\n", timestamp, entry.Level, entry.Message)
+
+	b.WriteString(newLog)
+	return b.Bytes(), nil
+}
+
+log.SetFormatter(&utils.CustomizeFormatter{})
+```
+
+
+
+
+
+## 29.2 zap
+
+创建logger
+
++ zap.NewProduction()：用于生产环境
++ zap.NewDevelopment()：用于开发环境
++ zap.NewExample()：用于测试代码
+
+
+
+示例1
+
+```go
+logger, _ := zap.NewDevelopment()
+defer logger.Sync() // flushes buffer, if any
+sugar := logger.Sugar()
+
+// key-value 的风格
+sugar.Infow("failed to fetch URL",
+  // Structured context as loosely typed key-value pairs.
+  "url", url,
+  "attempt", 3,
+  "backoff", time.Second,
+)
+
+// printf 的风格
+sugar.Infof("Failed to fetch URL: %s", url)
+```
+
+
+
+示例2
+
+```go
+logger, _ := zap.NewProduction()
+defer logger.Sync()
+logger.Info("failed to fetch URL",
+  // Structured context as strongly typed Field values.
+  zap.String("url", url),
+  zap.Int("attempt", 3),
+  zap.Duration("backoff", time.Second),
+)
+```
+
+
+
 
 
 
 
 # 第三十章  Mongodb
 
-
+游戏开发推荐用mongo替代mysql，操作更加简单。表结构定义放在公共文件给多个服务使用。统计相关接入sdk，比如数数科技，这样就不需要mysql了。
 
 使用MongoDB的版本 4.2.24
 
 
 
 驱动版本：go.mongodb.org/mongo-driver v1.11.7
+
+
+
+开发过程中，新增了字段，下次读取行的时候，会赋予默认值（golang版本可以，ts版本不行）
 
 
 
@@ -6786,7 +7469,7 @@ time.Now().UnixNano() / 1e9 	//时间戳（纳秒转换为秒）
 ## 32.2 时间格式化
 
 ```go
-nowtime:=time.Now().Format("2006-01-02 15:04:05")  //要显示的时间格式，2006-01-02 15:04:05，这几个值是固定写法,golang的诞生时间.
+nowtime:=time.Now().Format(time.DateTime)  //要显示的时间格式，2006-01-02 15:04:05，这几个值是固定写法,golang的诞生时间.
  
 fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 ```
@@ -6800,7 +7483,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
   ```go
   timeUnix:=time.Now().Unix() //时间戳
   
-  formatTimeStr:=time.Unix(timeUnix,0).Format("2006-01-02 15:04:05")
+  formatTimeStr:=time.Unix(timeUnix,0).Format(time.DateTime)
   
   fmt.Println(formatTimeStr) //打印结果：2021-02-02 13:22:04
   ```
@@ -6812,7 +7495,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
   ```go
   formatTimeStr := "2021-02-02 13:22:04" 
   
-  formatTime, err := time.Parse("2006-01-02 15:04:05", formatTimeStr)
+  formatTime, err := time.Parse(time.DateTime, formatTimeStr)
   
   fmt.Println(formatTime) //打印结果：2021-02-02 13:22:04 +0000 UTC
   ```
@@ -6830,7 +7513,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 1. 游戏框架模拟网易的pomelo和skynet，利用单进程多线程的方式，方便开发、部署、git仓库管理。
 
 2. 传统的web 的微服务的开发模式，每一个服务是一个项目，项目的管理上就显得非常麻烦！
-3. 还有一种更简单的设计方案是，长连接用websocket，短连接用http，token时间设置为一个月，token过期后发起http请求时提示用户重新登录。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
+3. 还有一种更简单的设计方案是，长连接用websocket（只能用token建立一次ws链接），短连接用http，token过期时间设置为一分钟，之后客户端每间隔10s请求Token延期，服务器收到请求后将token过期时间设置为当前时间戳 + 60s。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
 4. 如果微服务用http通信，那么可以写一个Rpc类，里面有多个成员，每个成员是一个service，然后就可以像调用函数一样rpc了，比如Rpc.login.getUserInfo()
 
 
@@ -7802,5 +8485,965 @@ go install github.com/zeromicro/go-zero/tools/goctl@latest
    4、[可选]internal\logic\  删除对应的struct  xxxLogic  NewxxxLogic 和一个成员函数
    ```
 
+
+
+
+
+
+# 第三十六章  rabbitmq
+
+
+
+## 36.1 安装
+
+常见命令
+
+1. 列出交换机
+
+   ```shell
+   rabbitmqctl list_exchanges
+   ```
+
+2. 列出bindings
+
+   ```shell
+   rabbitmqctl list_bindings
+   ```
+
    
+
+
+
+## 36.2 模式介绍
+
+
+
+### 36.2.1 简单模式
+
+注意：该模式下，生产者 和 消费者都可以设置为多个
+
+
+
+
+
+生产者
+
+```go
+package main
+
+import (
+	"context"
+	"github.com/rabbitmq/amqp091-go"
+	"log"
+	"time"
+)
+
+func main() {
+	conn, err := amqp091.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to Rabbitmq")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"hello",
+		false,
+		false,
+		false,
+		false,
+		nil)
+	failOnError(err, "Failed to declare a queue")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	body := []byte{0xA1, 0xA2, 0xF1, 0xF2, 0xFF}
+	err = ch.PublishWithContext(ctx,
+		"",
+		q.Name,
+		false,
+		false,
+		amqp091.Publishing{
+			ContentType: "application/octet-stream",
+			Body:        body,
+		})
+	failOnError(err, "Failed to publish a message")
+	log.Printf(" [x] Sent %s\n", body)
+}
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+```
+
+
+
+消费者
+
+```go
+package main
+
+import (
+	"github.com/rabbitmq/amqp091-go"
+	"log"
+)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+
+func main() {
+	conn, err := amqp091.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"hello",
+		false,
+		false,
+		false,
+		false,
+		nil)
+
+	failOnError(err, "Failed to declare a queue")
+
+	msgs, err := ch.Consume(q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil)
+	failOnError(err, "Failed to register a consumer")
+
+	var forever chan struct{}
+
+	go func() {
+		for d := range msgs {
+			log.Printf("contentType:%s Receved a message : %s", d.ContentType, d.Body)
+		}
+	}()
+
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
+}
+```
+
+
+
+
+
+### 36.2.2 发布订阅
+
++ 发布者可以有一个或者多个
+
++ 订阅者可以有一个或者多个
+
+
+
+发布者
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+	"os"
+	"strings"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+
+const EXCHANGE_NAME = "routing_exchange"
+
+func main() {
+	conn, err := amqp.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		EXCHANGE_NAME, // name
+		"direct",      // type
+		true,          // durable
+		false,         // auto-deleted
+		false,         // internal
+		false,         // no-wait
+		nil,           // arguments
+	)
+	failOnError(err, "Failed to declare an exchange")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	for {
+		body := bodyFrom(os.Args)
+		var routingKey = "game"
+		err = ch.PublishWithContext(ctx,
+			EXCHANGE_NAME, // exchange
+			routingKey,    // routing key
+			false,         // mandatory
+			false,         // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(body),
+			})
+		failOnError(err, "Failed to publish a message")
+
+		log.Printf(" [x] Sent %s", body)
+		time.Sleep(time.Second * 5)
+	}
+}
+
+func bodyFrom(args []string) string {
+	var s string
+	if (len(args) < 2) || os.Args[1] == "" {
+		s = "hello"
+	} else {
+		s = strings.Join(args[1:], " ")
+	}
+	return s
+}
+
+```
+
+
+
+订阅者
+
+```go
+package main
+
+import (
+	"log"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
+}
+
+func main() {
+	conn, err := amqp.Dial("amqp://test:123456@192.168.135.128:5672/gateway")
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	const EXCHANGE_NAME = "routing_exchange"
+	err = ch.ExchangeDeclare(
+		EXCHANGE_NAME, // name
+		"direct",      // type
+		true,          // durable
+		false,         // auto-deleted
+		false,         // internal
+		false,         // no-wait
+		nil,           // arguments
+	)
+	failOnError(err, "Failed to declare an exchange")
+
+	q, err := ch.QueueDeclare(
+		"",    // name
+		false, // durable
+		false, // delete when unused
+		true,  // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+
+	var routingKey = "game"
+	err = ch.QueueBind(
+		q.Name,        // queue name
+		routingKey,    // routing key
+		EXCHANGE_NAME, // exchange
+		false,
+		nil,
+	)
+	failOnError(err, "Failed to bind a queue")
+
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	failOnError(err, "Failed to register a consumer")
+
+	var forever chan struct{}
+
+	go func() {
+		for d := range msgs {
+			log.Printf(" [x] %s", d.Body)
+		}
+	}()
+
+	log.Printf(" [*] Waiting for logs. To exit press CTRL+C")
+	<-forever
+}
+
+```
+
+
+
+## 36.3 消息持久化
+
+需要将queue和message都设置为持久化，严重影响性能，不推荐使用！
+
+设置步骤
+
+1. 设置queue为持久化
+
+   ```go
+   q, err := ch.QueueDeclare(
+     "hello",      // name
+     true,         // durable
+     false,        // delete when unused
+     false,        // exclusive
+     false,        // no-wait
+     nil,          // arguments
+   )
+   failOnError(err, "Failed to declare a queue")
+   ```
+
+2. 设置message为持久化
+
+   ```go
+   err = ch.PublishWithContext(ctx,
+     "",           // exchange
+     q.Name,       // routing key
+     false,        // mandatory
+     false,
+     amqp.Publishing {
+       DeliveryMode: amqp.Persistent,
+       ContentType:  "text/plain",
+       Body:         []byte(body),
+   })
+   ```
+
+   
+
+
+
+## 36.4 临时队列
+
+临时队列只获取最新消息，并且断开连接后自动删除。非常适合游戏设计。
+
+```go
+// 创建的时候不需要指定队列名
+q, err := ch.QueueDeclare(
+  "",    // name
+  false, // durable
+  false, // delete when unused
+  true,  // exclusive
+  false, // no-wait
+  nil,   // arguments
+)
+```
+
+
+
+
+
+## 36.5 注意事项
+
+1. 对于生产者，生产消息出错需要重连，比如超时、RabbitMQ服务挂掉了
+
+   ```go
+   func (receiver *ProducerImpl) Publish(routingKey string, message []byte) {
+   	// 当超时的时候,channel会关闭,此时需要重连
+   	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+   	defer cancel()
+   
+   	err := receiver.ch.PublishWithContext(ctx,
+   		receiver.eName, // exchange
+   		routingKey,     // routing key
+   		false,          // mandatory
+   		false,          // immediate
+   		amqp.Publishing{
+   			ContentType: "application/octet-stream",
+   			Body:        []byte(message),
+   		})
+       // RabbitMQ 服务挂掉或者超时 需要重连
+   	if err != nil {
+   		log.Printf("Failed to publish a message : %v \n", err)
+   		log.Printf("开始重连RabbitMQ!\n")
+   		receiver.ReConnect()
+   	} else {
+   		log.Printf("publish message : %v \n", message)
+   	}
+   }
+   ```
+
+2. 对于消费者，可以选择多种方式处理
+
+   + 方式一：NotifyClose
+
+     ```go
+     for {  //reconnection loop
+         conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/") //setup
+         notify := conn.NotifyClose(make(chan *amqp.Error)) //error channel
+     ...
+         ch, err := conn.Channel()
+         msgs, err := ch.Consume(
+     ...
+         for{  //receive loop
+             select {  //check connection
+                 case err = <-notify:
+                 //work with error
+                 break //reconnect
+             case d = <- msgs:
+                 //work with message
+             ...
+             }
+         }
+             }
+     ```
+
+   + 方式二：检查delivery channel是否已经关闭
+
+     ```go
+     conn, _ := amqp.Dial(url)
+     ch, _ := conn.Channel()
+     
+     delivery, _ := ch.Consume(
+             queueName,
+             consumerName,
+             true,  // auto ack
+             false, // exclusive
+             false, // no local
+             true,  // no wait,
+             nil,   // table
+         )
+     
+     for {
+         payload, ok := <- delivery
+         if !ok {
+             // ... channel closed
+             return
+         }
+     }
+     ```
+
+
+
+
+# 第三十七章 命令行参数
+
+golang自带包flag可以解决该问题
+
+```go
+package main
+
+import (
+    "flag"
+    "fmt"
+)
+
+func main() {
+
+    wordPtr := flag.String("word", "foo", "a string")
+
+    numbPtr := flag.Int("numb", 42, "an int")
+    forkPtr := flag.Bool("fork", false, "a bool")
+
+    var svar string
+    flag.StringVar(&svar, "svar", "bar", "a string var")
+
+    flag.Parse()
+
+    fmt.Println("word:", *wordPtr)
+    fmt.Println("numb:", *numbPtr)
+    fmt.Println("fork:", *forkPtr)
+    fmt.Println("svar:", svar)
+    fmt.Println("tail:", flag.Args())
+}
+
+
+$ ./command-line-flags -word=opt -numb=7 -fork -svar=flag
+word: opt
+numb: 7
+fork: true
+svar: flag
+tail: []
+```
+
+
+
+
+
+# 第三十八章 gorm
+
+小白文档：https://www.tizi365.com/archives/6.html
+
+
+
+官方文档：https://gorm.io/zh_CN/docs/delete.html
+
+
+
+
+
+## 38.1 日志
+
+1. 打印单个日志
+
+   ```go
+   db.Debug().Where("name = ?", "jinzhu").First(&User{})
+   ```
+
+2. 打印全部日志
+
+   ```go
+   // 启用Logger，显示详细日志
+   db.LogMode(true)
+   ```
+
+3. 关闭日志
+
+   ```go
+   // 禁用日志记录器，不显示任何日志
+   db.LogMode(false)
+   ```
+
+   
+
+
+
+# 第三十九章 Makefile构建
+
+使用makefile构建和发布项目
+
+```makefile
+deploy:build
+	pm2 stop gateway && pm2 start gateway
+updateCode:
+	git pull && git submodule update --recursive --remote
+
+genNetMsg:updateCode
+	protoc --go_out=. --go-grpc_out=. common/netmsg.proto
+
+genApiMsg:updateCode
+	protoc --go_out=. --go-grpc_out=. common/apimsg.proto
+
+genErrMsg:updateCode
+	protoc --go_out=. --go-grpc_out=. common/errcode.proto
+
+build:genNetMsg genApiMsg genErrMsg
+	go build
+```
+
+
+
+
+
+# 第四十章 etcd
+
+etcd主要功能是服务注册与发现、配置中心（配置更改后可以通知到watch的服务）
+
+
+
+## 40.1 常见命令
+
+```ini
+[put]
+; 添加键值
+syntax = etcdctl put [options] <key> <value> [flags]
+sample = etcdctl put name Surpass
+
+[get]
+; 获取键值
+syntax = etcdctl get [options] <key> [range_end] [flags]
+sample = etcdctl get name
+
+[del]
+; 删除键值
+syntax = etcdctl del [options] <key> [range_end] [flags]
+sample = etcdctl del name
+
+[租约]
+; 和redis的过期时间一样
+
+[添加租约]
+syntax = etcdctl lease grant <ttl> [flags]
+sample = etcdctl lease grant 600
+
+[列出租约]
+syntax = etcdctl lease list [flags]
+sample = etcdctl lease list
+
+[删除租约]
+syntax = etcdctl lease revoke <leaseID> [flags]
+sample = etcdctl lease revoke 694d81417acd4754
+
+```
+
+
+
+# 第四十一章 统计
+
+统计需求建议采用数数科技sdk，尽量不要自己实现
+
+
+
+统计需求自己实现，使用group by  + 各种MySQL聚合函数(SUM、COUNT、MAX、MIN、AVG)
+
+```proto
+service Game {
+  // 事件上报
+  rpc Track (TrackReq) returns (TrackResp);
+}
+
+message TrackReq {
+	string event      = 1;
+    bytes properties = 2; // GRPC Message
+}
+
+message TrackResp{
+
+}
+```
+
+
+
+
+
+示例代码
+
+```go
+// 创建 LogConfig 配置文件
+config := thinkingdata.TDLogConsumerConfig {
+    Directory: "./log_directory", // 事件采集的文件路径
+}
+// 初始化 logConsumer
+consumer, _ := thinkingdata.NewLogConsumerWithConfig(config)
+// 创建 te 对象
+te := thinkingdata.New(consumer)
+
+accountId := "te_account_id"
+distinctId := "te_distinct_id"//accountId和distinctId不能全部为空
+properties := map[string]interface{}{
+    //设置用户的ip地址，TE系统会根据IP地址解析用户的地理位置信息
+    "#ip":       "123.123.123.123",
+    "channel":   "te",       // 字符串
+    "age":       1,          // 数字
+    "isSuccess": true,       // 布尔
+    "birthday":  time.Now(), // 时间
+    // 对象
+    "object": map[string]interface{}{
+       "key": "value",
+    },
+    //对象组
+    "objectArr": []interface{}{
+       map[string]interface{}{
+          "key": "value",
+       },
+    },
+    "arr":     []string{"value"}, // 数组
+}
+// 上传事件 ---- 重点
+err := te.Track(accountId, distinctId, "payment", properties)
+if err != nil {
+    fmt.Println(err)
+}
+//设置用户属性
+err = te.UserSet("accountId", "distinctId", map[string]interface{}{
+    "user_name": "TE",
+})
+if err != nil {
+    fmt.Println(err)
+}
+//调用flush接口数据会立即写入文件，生产环境注意避免频繁调用flush引发IO或网络开销问题
+te.Flush()
+
+```
+
+
+
+# 第四十二章 数值计算
+
+小数计算不丢失精度，https://github.com/shopspring/decimal；
+
+也可以自己实现一个Fraction（分数），需要实现Add，Mul，div，Sub四个方法即可
+
+
+
+
+
+# 第四十三章 gin-vue-admin
+
+
+
+## 1  web项目
+
+```shell
+cd web
+# 安装依赖
+npm install --force
+
+# 启动web项目
+npm run serve
+
+# 构建,产生静态资源文件在dist目录,用nginx代理到此目录下
+npm run build
+```
+
+
+
+配置文件：.env.development
+
+```shell
+VITE_CLI_PORT = 8080 				# 管理后台页面端口
+VITE_SERVER_PORT = 8891  			# api服务的端口
+VITE_BASE_PATH = http://127.0.0.1 	# api服务地址
+```
+
+
+
+## 2 server项目
+
+```shell
+
+# 克隆项目
+git clone https://github.com/flipped-aurora/gin-vue-admin.git
+# 进入server文件夹
+cd server
+
+# 使用 go mod 并安装go依赖包
+go generate
+
+# 运行
+go run . 
+```
+
+
+
+# 第四十四章 飞书报警
+
+1. 创建--创建群组
+
+2. 设置--群机器人--添加机器人--自定义机器人（保存webhook地址）；安全配置可以先不配置，也可以增加IP白名单或者关键词
+
+3. 发送消息
+
+   + 请求方法：POST
+
+   + 请求头：Content-Type: application/json
+
+   + 请求体：{"msg_type":"text","content":{"text":"request example"}}
+
+   + 例子
+
+     ```shell
+     curl.exe -X POST -H "Content-Type: application/json" -d '{\"msg_type\":\"text\",\"content\":{\"text\":\"requestexample\"}}' https://open.feishu.cn/open-apis/bot/v2/hook/****
+     ```
+
+     
+
+
+
+
+
+
+# 第四十五章 websocket
+
+
+
+官网 = https://github.com/gorilla/websocket
+
+
+
+## 45.1 nginx配置
+
+```nginx
+map $http_upgrade $connection_upgrade {
+    default upgrade;      
+    '' close;
+}   
+upstream websocket {
+    server 192.168.1.115:7000; # appserver_ip:ws_port
+    #server 127.0.0.1:7000; # appserver_ip:ws_port
+}   
+    
+server {
+     listen 5000;
+     location / { 
+         proxy_pass http://websocket;
+
+         # 超时配置
+         proxy_read_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
+         proxy_send_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
+     
+         proxy_http_version 1.1;
+         proxy_set_header Upgrade $http_upgrade;
+         proxy_set_header Connection $connection_upgrade;
+     }
+}
+```
+
+
+
+## 45.2 客户端
+
+客户端需要每间隔3s或者5s向服务器发送心跳请求，否则会被nginx断开
+
+
+
+## 45.3 服务端
+
+
+
+方案一[推荐的方案]：
+
+服务端收到客户端Ping时，立刻返回Pong(应用层协议)
+
+
+
+方案二：
+
+服务端每隔3s或者5秒向客户端（或者nginx）发送PING，这样就不会被nginx断开
+
+```go
+// 发送PING的协程
+func pingWorker(conn *websocket.Conn) {
+	for {
+		log.Printf("msg = START PING, remote_addr = %v", conn.RemoteAddr())
+		err := conn.WriteMessage(websocket.PingMessage, []byte("hello from gateway"))
+		if err != nil {
+			log.Errorf("msg = 发送Ping小时失败! error = %v", err.Error())
+			return
+		}
+		time.Sleep(1 * time.Second)
+	}
+}
+
+// 注册Pong的回调
+conn.SetPongHandler(func(appData string) error {
+    log.Warnf("msg = receive pong ! data = %v", appData)
+    return nil
+})
+```
+
+
+
+
+
+# 第四十六章 异步
+
+异步io的demo
+
+```erlang
+package main
+
+import (
+	log "github.com/sirupsen/logrus"
+	"time"
+)
+
+//************************************************
+// 异步rpc请求的示例
+//************************************************
+
+// 假设这是一个获取用户信息的RPC 请求，耗时5s
+func RetrieveUserInfo(uid int, correlationId int) (string, int) {
+	time.Sleep(5 * time.Second)
+	log.Printf("msg = 从DB读取用户信息, uid = %v , correlationId = %v", uid, correlationId)
+	var name string = "Sam"
+	if correlationId%2 == 0 {
+		name = "Taylor"
+	}
+	return name, correlationId
+}
+
+var correlationId = 0
+
+type App struct {
+	taskQueue chan func()
+}
+
+func (receiver *App) Start() {
+	receiver.taskQueue = make(chan func(), 1024)
+	go receiver.schedule()
+}
+
+func (receiver *App) schedule() {
+	for {
+		select {
+		case task := <-receiver.taskQueue:
+			task()
+		}
+	}
+}
+
+func (receiver *App) scheduleOnce(task func()) {
+	receiver.taskQueue <- task
+}
+
+// 每个RPC 请求对应的关联ID,将请求和响应关联起来;可选
+func (receiver *App) getCorrelationId() int {
+	correlationId += 1
+	return correlationId
+}
+
+func (receiver *App) NotifyUserEnterTable(uid int) {
+	log.Warnf("msg = 收到用户入桌消息, uid = %v", uid)
+	go func() {
+		reqId := receiver.getCorrelationId()
+		log.Printf("msg = 开始RPC请求用户信息, uid = %v , correlationId = %v", uid, reqId)
+		name, cID := RetrieveUserInfo(uid, reqId)
+		// 收到响应后将cb 放入队列
+
+		task := func() {
+			log.Printf("msg = RPC成功获取用户信息,开始执行入桌逻辑, name = %v, cID = %v", name, cID)
+			//... your code
+		}
+		receiver.scheduleOnce(task)
+	}()
+}
+
+func (receiver *App) NotifyUserDiscard(uid int) {
+	log.Infof("msg = 收到用户出牌消息, uid = %v", uid)
+	log.Infof("msg = 执行出牌逻辑")
+}
+
+func main() {
+	var app = &App{}
+	app.Start()
+	app.NotifyUserEnterTable(100) // 入桌rpc请求用户信息耗时5s
+	app.NotifyUserEnterTable(101)
+	time.Sleep(1 * time.Second) // 请求用户信息过程中,收到出牌消息，可以直接处理
+	app.NotifyUserDiscard(102)
+
+	time.Sleep(12345678 * time.Second)
+}
+```
 

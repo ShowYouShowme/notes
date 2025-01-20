@@ -312,7 +312,18 @@ ssh dev "cd /data/hmyxz_code/v220228/server && source ./restart_server.sh"
 
 # sudo
 
-作用：以root身份执行命令，主要在Debian的发行版上。
+作用：
+
+1. 以root身份执行命令，主要在Debian的发行版上。
+
+2. 以特定用户启动服务，常用于部署线上服务
+
+   ```shell
+   # 先创建一个nologin 用户,然后用该用户启动服务即可
+   sudo -u ${user} bash -c 'pm2 restart server'
+   ```
+
+   
 
 
 
@@ -353,6 +364,10 @@ $username  ALL=(ALL) NOPASSWD:ALL
 
 
 ## centos7
+
+注意：sudo 执行命令时，会重置PATH，通过配置文件里的选项Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin 去查找可执行文件，因此当需要sudo pm2 之类的命令时，需要将pm2、node的软连接放到目录/usr/bin/
+
+步骤1、2执行完即可
 
 1. 修改配置文件
 
@@ -1211,7 +1226,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >
   >       ```shell
   >       nc ${dst_host} ${port} < ${file}
-  >                                                                                                                
+  >                                                                                                                                              
   >       # 示例
   >       nc 10.10.10.190 9900 < anaconda-ks.cfg
   >       ```
@@ -1235,7 +1250,7 @@ tcp的客户端，测试端口是否处于监听状态。
   >       ```shell
   >       # 安装
   >       yum install -y dstat
-  >                                                                                                                
+  >                                                                                                                                              
   >       # 注意recv 和 send 两列
   >       dstat
   >       ```
@@ -1464,55 +1479,114 @@ tcp的客户端，测试端口是否处于监听状态。
 
 firewall是iptables的封装，推荐使用它替代iptables
 
+命令加了参数 --permanent，需要reload才生效，并且永久；不加--permanent立即生效，reload后会丢失
+
 1. 查看全部放行的端口
 
    ```shell
    firewall-cmd --list-all
    ```
 
-2. 放行指定的端口，tcp协议
+2. 重新加载配置；加了--permanent后reload才生效
 
    ```shell
-   firewall-cmd --permanent --add-port=${port}/tcp
-   
-   firewall-cmd --permanent --add-port=3000/tcp
-   
    firewall-cmd --reload
    ```
 
-3. 删除端口
+3. 打开端口
 
-   ```shell
-   firewall-cmd  --permanent --remove-port=80/tcp 
-   ```
+   + 打开单个端口
 
-4. 关闭防火墙
+     ```shell
+     # 开放某个端口，立即生效。本次运行
+     firewall-cmd --add-port=80/tcp
+     
+     # 开放某个端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=3306/tcp --permanent
+     ```
+
+   + 打开多个端口
+
+     ```shell
+     # 开放多个不连续端口，立即生效。本次运行
+     firewall-cmd --add-port=80/tcp --add-port=8080/tcp
+     
+     
+     # 开放多个不连续端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=80/tcp --add-port=8080/tcp --permanent
+     ```
+
+   + 打开多个连续端口
+
+     ```shell
+     # 开放多个连续端口，立即生效。本次运行
+     firewall-cmd --add-port=8080-8090/tcp
+     
+     # 开放多个连续端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=8080-8090/tcp --permanent
+     ```
+     
+   + 开放所有端口号，和没开防火墙一样
+
+     ```shell
+     # 开放多个连续端口，立即生效。本次运行
+     firewall-cmd --add-port=1-65535/tcp
+     
+     # 开放多个连续端口，重新加载配置后生效。持久
+     firewall-cmd --add-port=1-65535/tcp --permanent
+     ```
+
+     
+
+4. 关闭端口
+
+   + 关闭单个端口
+
+     ```shell
+     # 关闭某个端口，立即生效。本次运行
+     firewall-cmd --remove-port=80/tcp
+     
+     # 关闭某个端口，重新加载配置后生效。持久
+     firewall-cmd --remove-port=3306/tcp --permanent
+     ```
+
+   + 关闭多个端口
+
+     ```shell
+     # 关闭多个不连续端口，立即生效。本次运行
+     firewall-cmd --remove-port=80/tcp --remove-port=8080/tcp
+     
+     
+     # 关闭多个不连续端口，重新加载配置后生效。持久
+     firewall-cmd --remove-port=80/tcp --remove-port=8080/tcp --permanent
+     ```
+
+   + 关闭多个连续窗口
+
+     ```shell
+     # 关闭多个连续端口，立即生效。本次运行
+     firewall-cmd --remove-port=8080-8090/tcp 
+     
+     # 关闭多个连续端口，重新加载配置后生效。持久
+     firewall-cmd --remove-port=8080-8090/tcp --permanent
+     ```
+
+5. 服务管理
 
    ```shell
    systemctl stop firewalld.service # 停止防火墙
    systemctl disable firewalld.service  # 禁止防火墙开机启动
+   systemctl start firewalld  # 启动服务
+   systemctl status firewalld # 查看服务状态
    ```
 
-5. 查看防火墙状态
+6. 查看防火墙状态
 
    ```shell
    firewall-cmd --state
    ```
 
-6. 开启防火墙
-
-   ```shell
-   systemctl start firewalld
-   ```
-
-7. 查看防火墙的状态
-
-   ```shell
-   # dead 是未开启
-   systemctl status firewalld
-   ```
-
-8. 端口转发
+7. 端口转发：不需要修改文件/etc/sysctl.conf
 
    + 本机内部转发
 
@@ -1520,25 +1594,43 @@ firewall是iptables的封装，推荐使用它替代iptables
      firewall-cmd --add-forward-port=port=7777:proto=tcp:toport=8888
      ```
 
-   + 转发到其他机器
+   + 转发到其他机器，必须要先开启ip伪装
 
      ```shell
      firewall-cmd --add-forward-port=port=9000:proto=tcp:toport=8000:toaddr=192.168.1.102
      ```
+     
+   + 列出转发的端口
 
-9. 允许指定ip的全部流量
+     ```shell
+     firewall-cmd --list-forward-ports
+     ```
+
+   + 删除转发
+
+     ```shell
+     firewall-cmd --remove-forward-port=port=7000:proto=tcp:toport=7000:toaddr=192.168.1.115
+     ```
+
+8. 允许指定ip的全部流量
 
    ```shell
    firewall-cmd --zone=public --add-source=192.168.172.32 
    ```
 
-10. 开启nat
+9. 开启ip伪装
 
-    ```shell
-    firewall-cmd --permanent --zone=public --add-masquerade
-    ```
+   ```shell
+   firewall-cmd --zone=public --add-masquerade --permanent
+   
+   # 查询伪装
+   --query-masquerade
+   
+   # 删除伪装
+   --remove-masquerade
+   ```
 
-11. 安装防火墙
+10. 安装防火墙
 
     ```shell
     #aws的centos7默认未安装
@@ -1663,7 +1755,18 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
 ## 2 密钥登陆
 
-1. 配置服务器权限
+1. 最简单的方法
+
+   ```shell
+   su - ${user}
+   ssh-keygen
+   cd .ssh
+   mv id_rsa.pub authorized_keys
+   
+   # 把id_rsa 分发给别人用就可以了
+   ```
+
+2. 配置服务器权限
 
    ```ini
    [.ssh]
@@ -1679,11 +1782,24 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    
    [秘钥文件]
    ;公钥和私钥的权限都必须是600,否则会出错
+   
+   
+   ; 配置示范
+   su - peter
+   mkdir .ssh
+   chmod 700 .ssh
+   cd .ssh
+   ; 产生公私钥
+   ssh-keygen -t rsa -b 2048 -f peter
+   cp peter.pub authorized_keys
+   chmod 600 authorized_keys
+   
+   ;私钥peter转发给对应的开发人员
    ```
 
    
 
-2. 生成密钥
+3. 生成密钥
 
    ```shell
    # 指定加密类型和注释，rsa长度默认为2048位
@@ -1693,7 +1809,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    ssh-keygen
    ```
 
-3. ssh-keygen 用法
+4. ssh-keygen 用法
 
    ```ini
    [参数]
@@ -1716,7 +1832,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
 
    
 
-4. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
+5. 放置公钥(Public Key)到服务器~/.ssh/authorized_key文件中
 
    ```shell
    ssh-copy-id -i ~/.ssh/id_rsa.pub slzg@192.168.0.10
@@ -1726,7 +1842,7 @@ ssh -p ${局域网映射的端口} 127.0.0.1
    # 推荐先在服务器生成公私钥,然后再将私钥copy到客户端使用
    ```
 
-5. 登陆
+6. 登陆
 
    ```shell
    # 登陆命令
@@ -2714,7 +2830,7 @@ vim /etc/fstab
 3. 再次查看时间
 
    ```shell
-   data -R
+   date -R
    ```
    
 4. 文件备份
@@ -2942,6 +3058,7 @@ cat /proc/{pid}/status
 
 1. 建议安装在/usr目录，这样可以直接搜索到include和so和bin文件（比如protobuf，openssl，libevent之类）
 2. 安装在自定义路径,可以直接删除整个软件，方便删除
+3. 如果安装的软件包仅仅使用bin文件,不需要头文件和so,可以统一放在/usr/local目录,将路径/usr/local/bin加入PATH；每个软件包的bin文件创建软连接到/urs/local/bin里面即可
 
 
 
@@ -3696,6 +3813,16 @@ sudo apt install virtualbox  -y -o Acquire::http::proxy="http://127.0.0.1:8090/"
    ; 删除到行首 d^
    
    ; dtc  删除当前行直到下一个字符“c”所出现位置之间的内容
+   ```
+
+8. 查找
+
+   ```ini
+   [正向查找]
+   cmd = /keyword
+   
+   [逆向查找]
+   cmd = ?keyword
    ```
 
    

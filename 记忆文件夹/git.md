@@ -144,6 +144,12 @@ git commit -m "${comment}"
   
   # 连tags 一起推送
   git push --tags
+  
+  
+  # 推送到指定提交,默认推送到HEAD
+  git push <remotename> <commit SHA>:<remotebranchname>
+  
+  git push origin 2708954182ee43e6aa5151f0441a3d35c04bd746:main
   ```
 
 + 上载失败
@@ -186,7 +192,7 @@ git commit -m "${comment}"
 
    ```shell
    # 命令
-   git pull
+   git pull --all
    
    # 可能会失败，提示"error: Your local changes to the following files would be overwritten by merge:"
    # 失败原因:其它开发者的提交中修改了文件a，而你本地的文件a也被修改了
@@ -342,7 +348,7 @@ git commit -m "${comment}"
      step-2 = git push --delete origin old_branch_name
      
      ;上传新命名的本地分支
-     step-3 = git push origin new_branch_name
+     step-3 = git push -u origin new_branch_name
      
      ;本地分支和远程分支关联
      step-4 = git branch --set-upstream-to origin/new_branch_name
@@ -381,6 +387,29 @@ git commit -m "${comment}"
     测试    = 打tag并加上beta后缀,比如 v3.0.0-beta
     
     生产    = v3.0.0
+    ```
+
+11. 将未提交代码迁移到新分支
+
+    ```shell
+    // 先将本地修改进行暂存
+    > git stash
+     
+    // 暂存完毕后执行 git status 会显示不出本地的修改
+    // 再拉取当前分支
+    > git pull 
+     
+    // 新建并切换到开发分支，如dev-2021-11
+    > git checkout -b dev-2021-11
+     
+    // 将暂存的本地修改取出
+    > git stash apply
+     
+    // 这时执行 git status 可以看到本地修改又显示出来了
+    // 正常提交即可
+    > git add .
+    > git commit -am "local code"
+    > git push origin dev-2021-11
     ```
 
     
@@ -559,11 +588,44 @@ git checkout -- main.cpp
 ## 2.16 子模块
 
 ```shell
+# 文档网页
+url = https://geek-docs.com/git/git-questions/248_git_git_submodule_commitpushpull.html
+
 # 初始化本地配置文件
 git submodule init
 
 # 检出父仓库列出的commit
 git submodule update
+
+# 添加子模块, 提交的时候需要提交.gitmodules 和 子模块文件夹(common)
+git submodule add <repository> [<submodule-path>]
+git submodule add https://gitdepot.gplay.in/rm_game/common.git common
+
+# 更新子模块, 在根目录执行
+git submodule update --recursive --remote
+## 旧版本执行如下命令
+git submodule update --init --recursive
+
+# 删除子模块
+rm -rf 子模块目录 删除子模块目录及源码
+vi .gitmodules 删除项目目录下.gitmodules文件中子模块相关条目
+vi .git/config 删除配置项中子模块相关条目
+rm .git/module/* 删除模块下的子模块目录，每个子模块对应一个目录，注意只删除对应的子模块目录即可
+git rm --cached 子模块名称
+
+
+# clone 带有子模块的项目
+1、初始化子模块(此操作会将文件夹于子模块url绑定到一起)
+git submodule init
+2、更新子模块
+git submodule update --recursive --remote
+3、切换分支, 初始化和更新子模块后,此时子模块处于Detached状态，需要切换到某个分支才能提交更改
+git checkout main
+
+
+# 使用小乌龟操作git时，可以进入子模块目录，然后右键就可以像操作主项目一样git pull 、git commit、push的操作了!
+
+# 当修改了子模块，提交的时候，需要在父模块里面提交子模块的目录，这样会更改项目依赖的子模块的版本
 ```
 
 
@@ -682,6 +744,12 @@ git config --global user.name "wzc"
 
 
 
+## 3.4 github配置
+
+1. 配置access token
+2. 使用用户名+ token(替代密码)登录
+3. token 把 repo 权限勾上即可
+
 
 
 # 第四章 多分支开发模式
@@ -730,14 +798,54 @@ git push -u origin dev
 
 
 
+## 5.3 更改origin
+
+开发到一半，项目迁移到另外的节点，此时需要更改origin
+
+1. 查看当前origin地址
+
+   ```shell
+   git remote -v
+   ```
+
+2. 使用命令修改
+
+   ```shell
+   git remote set-url origin ${新的URL地址}
+   ```
+
+3. 验证修改是否成功
+
+   ```shell
+   git remote -v
+   ```
+
+   
+
+
+
+
+
 # 第六章 安装
 
+1. 包管理器安装
 
+   ```shell
+   wget http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-1.noarch.rpm
+   
+   yum localinstall wandisco-git-release-7-1.noarch.rpm -y
+   
+   yum install -y git
+   ```
+
+   
+
+2. 源码安装
 
 ```shell
- sudo yum -y install expat-devel
+ sudo yum -y install expat-devel openssl-devel libcurl-devel
  #下载源码
- wget https://github.com/git/git/archive/refs/tags/v2.39.1.tar.gz
+ wget https://github.com/git/git/archive/refs/tags/v2.40.0.tar.gz
  #解压
  tar -zxvf v2.39.1.tar.gz
  #进入目录
@@ -748,6 +856,9 @@ git push -u origin dev
  make prefix=$HOME/local/git install -j8
  #配置环境变量
  export PATH=$PATH:$HOME/local/git/bin
+ 
+ # 创建软连接
+ ln -s /usr/local/git/bin/git /usr/local/bin/git
 ```
 
 
@@ -760,21 +871,13 @@ git push -u origin dev
 
    + 在win上开启letsvpn
 
-   + 在win上开启squid，默认配置即可
-
-   + 关闭win的防火墙
-
-   + 配置linux上的git的代理
-
-     ```shell
-     # ~/.gitconfig
-     [http]
-     proxy = http://192.168.110.231:3128
-     [https]
-     proxy = https://192.168.110.231:3128
-     ```
+   + 虚拟机采用nat网络，共用宿主机的网络
 
      
 
+     
+
+     
+   
    
 

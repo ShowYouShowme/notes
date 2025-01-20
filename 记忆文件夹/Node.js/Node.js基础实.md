@@ -162,7 +162,7 @@ npm install @types/node --save
 2. 切换阿里源
 
    ```shell
-   npm config set registry https://registry.npm.taobao.org/
+   npm config set registry https://registry.npmmirror.com
    
    # 查看切换是否成功
    npm config get registry
@@ -2168,6 +2168,7 @@ cmd-2 = ./node_modules/protobufjs-cli/bin/pbts -o compiled.d.ts compiled.js
 ```shell
 #website:https://github.com/request/request
 npm install request
+npm install --save @types/request
 ```
 
 
@@ -2236,7 +2237,8 @@ request.post({
 import request from 'request';
 class HttpClient {
   static async Post(url: string, body: Object) {
-    return new Promise(function (resolve, reject) {
+    // 箭头函数可以捕获this
+    return new Promise((resolve, reject)=> {
       request({
         url: url,
         method: "POST",
@@ -2886,6 +2888,10 @@ if(php_port == undefined){
 ```shell
 #目前项目使用的是5.2.2 非常稳定,没有内存泄露
 npm install pm2 -g
+
+## sudo 执行pm2
+suo ln -s /usr/local/bin/pm2 /usr/bin/
+sudo ln -s /usr/local/bin/node /usr/bin/node
 ```
 
 
@@ -2966,6 +2972,9 @@ pm2 restart app_name|app_id
 
 ```shell
 pm2 delete app_name|app_id
+
+# 删除全部服务
+pm2 delete all 
 ```
 
 
@@ -3008,6 +3017,41 @@ cmd = pm2 init 或者 pm2 ecosystem
 pm2 start ecosystem.config.js
 ```
 
+配置文件的常见配置项
+
+|       选项       |                        功能                         |
+| :--------------: | :-------------------------------------------------: |
+|       name       |                       服务名                        |
+|      script      |               脚本或者可执行文件路径                |
+| exec_interpreter |                    使用的解释器                     |
+|    exec_mode     |                      启动模式                       |
+|       cwd        |                    服务工作目录                     |
+|       args       |                      启动参数                       |
+|     out_file     |                标准输出保存文件路径                 |
+|    error_file    |                标准错误保存文件路径                 |
+|      watch       | 指定文件或者目录变更时服务重启，用于jenkins自动发布 |
+|   ignore_watch   |                 指定忽略监控的文件                  |
+
+
+
+```javascript
+module.exports = {
+  apps : [{
+    "name"       : "gateway",
+    "script"     : "/data/rm/gateway/gateway",
+    "exec_interpreter": "none",
+    "exec_mode"  : "fork_mode",
+    "cwd"        : "/data/rm/gateway",
+    "args"       : "-conf=gateway.conf",
+    "out_file" : "/data/rm/log/gateway-out.log",
+    "error_file" : "/data/rm/log/gateway-error.log",
+    "watch" : ["gateway"]
+  }]
+};
+```
+
+
+
 
 
 ### 19.1.12 运行二进制文件
@@ -3018,15 +3062,31 @@ pm2 init
 
 #配置文件内容
 #NGINX需要加上配置daemon off;让服务在前台运行
-module.exports = { 
+module.exports = {
   apps : [{
-    "name"       : "nginx",
-    "script"     : "/home/li/local/nginx/sbin/nginx",
+    "name"       : "gateway",
+    "script"     : "/data/rummy-game/gateway/gateway",
     "exec_interpreter": "none",
     "exec_mode"  : "fork_mode",
-    "cwd"        : "/home/li/local/nginx/sbin"
-  }]  
+    "cwd"        : "/data/rummy-game/gateway",
+    "args"       : "-conf=gateway.conf",
+    "out_file" : "/data/rummy-game/log/gateway-out.log",
+    "error_file" : "/data/rummy-game/log/gateway-error.log"
+  }]
 };
+
+# WINDOWS 配置
+module.exports = {
+  apps : [{
+	name  : "gateway",  
+    script: 'C:\\Users\\Frank\\Documents\\project\\gateway\\gateway.exe',
+    exec_interpreter: "none",
+    exec_mode  : "fork_mode",
+    cwd        : "C:\\Users\\Frank\\Documents\\project\\gateway\\",
+     args       : "-a 13 -b 12"
+  }]
+};
+
 
 #运行
 pm2 start ecosystem.config.js
@@ -3077,9 +3137,9 @@ pm2 start ecosystem.config.js --env production
 ```shell
 #非常方便
 pm2 serve <path> <port>
+
+pm2 serve /var/www/html --port 3000
 ```
-
-
 
 
 
@@ -3111,6 +3171,30 @@ pm2 flush
 
 ```shell
 pm2 report
+```
+
+
+
+### 19.1.20 JavaScript Api
+
+```typescript
+const pm2 = require('pm2')
+
+// 用此程序定时把服务数据写入DB,实现监控的功能
+pm2.connect(function (err: Error) {
+    if (err) {
+        console.error(err)
+        process.exit(2)
+    }
+    pm2.list((err: Error, list: any) => {
+        for(let process of list){
+            console.log(`server : ${process.name}, pid : ${process.pid}, cpu : ${process.monit.cpu}, memory : ${process.monit.memory}`);
+        }
+
+        // 断开链接
+        pm2.disconnect()
+    })
+})
 ```
 
 
@@ -3387,6 +3471,51 @@ class MysqlClient {
     })
   }
 }
+```
+
+
+
+## 21.3 Sequelize
+
+Sequelize是nodejs和typescript的orm包，是操作数据库(mysql和sqlite)的首选
+
+
+
+安装
+
+```shell
+npm install --save sequelize
+```
+
+
+
+官网 = https://sequelize.org/
+
+
+
+模型定义
+
+```typescript
+import { Sequelize, DataTypes } from 'sequelize';
+
+const sequelize = new Sequelize('sqlite::memory:');
+const User = sequelize.define('User', {
+  username: DataTypes.STRING,
+  birthday: DataTypes.DATE,
+});
+```
+
+
+
+查询
+
+```typescript
+const jane = await User.create({
+  username: 'janedoe',
+  birthday: new Date(1980, 6, 20),
+});
+
+const users = await User.findAll();
 ```
 
 
@@ -3880,4 +4009,18 @@ const bufferDecompressed = zlib.brotliDecompress(bufferCompressed);
 ```
 
 
+
+
+
+# 第二十九章 内存限制
+
+64位系统nodejs最大可使用内存大约1.4G，可以在服务启动时用参数显式修改！
+
+```shell
+# 命令行启动
+node --max-old-space-size=8192 index.js #increase to 8GB
+
+# pm2 启动命令
+pm2 start app.js --node-args="--max-old-space-size=8192"
+```
 

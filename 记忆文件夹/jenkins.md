@@ -32,14 +32,31 @@ Jenkins的功能是自动化构建（类似C++的build，比如打安卓包、io
 
 ## 1.1 官方安装方式[推荐]
 
-```shell
-wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --no-check-certificate
+1. 删除旧版的jdk
 
-rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-yum install fontconfig java-11-openjdk jenkins -y
-systemctl start jenkins
-systemctl enable jenkins
-```
+   ```shell
+   查看
+   rpm -qa | grep java
+   rpm -qa | grep jdk
+   批量卸载
+   rpm -qa | grep jdk | xargs rpm -e --nodeps
+   rpm -qa | grep java | xargs rpm -e --nodeps
+   
+   ```
+
+2. 安装jenkins
+
+   ```shell
+   wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --no-check-certificate
+   
+   rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+   yum install fontconfig java-11-openjdk jenkins -y
+   yum install -y java-11-openjdk java-11-openjdk-devel
+   systemctl start jenkins
+   systemctl enable jenkins
+   ```
+
+   
 
 
 
@@ -171,7 +188,7 @@ useradd jenkins
 
 # 第三章 配置git
 
-
+第一次进入管理后台时，安装推荐的全部插件即可。
 
 1. 源码安装git
 
@@ -190,19 +207,35 @@ useradd jenkins
 
 # 第四章 构建配置
 
-1. General
+1. General：大部分项目不需要配置，最多只需要配置参数化构建
 
-   ```shell
-   # 必须先安装插件 Git Parameter
-   1. 勾选参数化构建过程
-   2. 选择Git参数
-   3. 名称 = tag
-   4. 描述 = 选择线上tag
-   5. 参数类型 = 标签
-   6. 默认值 = v1.0.0
-   ```
+   + 选项
 
-   
+     ```ini
+     [GitHub 项目]
+     ; 如果项目是github项目,可以填入url
+     
+     [Throttle builds]
+     ; 限制构建速度
+     
+     [丢弃旧版的构建]
+     
+     [参数化构建过程]
+     
+     [在必要的时候并发构建]
+     ```
+
+   + 常用选项：参数化构建
+
+     ```shell
+     # 必须先安装插件 Git Parameter
+     1. 勾选参数化构建过程
+     2. 选择Git参数
+     3. 名称 = tag
+     4. 描述 = 选择线上tag
+     5. 参数类型 = 标签
+     6. 默认值 = v1.0.0
+     ```
 
 2. 源码管理：配置git的仓库地址和证书
 
@@ -214,9 +247,23 @@ useradd jenkins
 
    
 
-3. 构建环境：Add timestamps to the Console Output
+3. 构建触发器
 
-4. 构建：执行shell
+   ```ini
+   定时构建 = 不管SVN或Git中数据有无变化，均执行定时化的构建任务
+   ; 每天12点构建
+   example1 = 0 12 * * *
+   ; 每天00:00 构建
+   example2 =0 0 * * *
+   
+   轮询SCM = 只要SVN或Git中数据有更新，则执行构建任务；
+   ```
+
+   
+
+4. 构建环境：Add timestamps to the Console Output
+
+5. 构建：执行shell
 
    ```shell
    # 执行$HOME/.bashrc 更新PATH
@@ -233,6 +280,153 @@ useradd jenkins
    echo $PWD
    pm2 delete jenkins_demo
    pm2 start bin/index.js --name jenkins_demo
+   ```
+
+
+
+
+# 第五章 使用Root启动服务
+
+构建完成后，需要把可执行文件copy到指定目录，并且重启服务，这时往往需要root权限
+
+1. 修改服务文件
+
+   ```shell
+   vim /lib/systemd/system/jenkins.service
+   
+   User=root
+   Group=root
+   ```
+
+2. 修改jenkins home相关文件夹权限
+
+   ```shell
+   chown -R root:root /var/lib/jenkins
+   chown -R root:root /var/cache/jenkins
+   chown -R root:root /var/log/jenkins
+   ```
+
+3. 重启服务
+
+   ```shell
+   systemctl daemon-reload
+   systemctl restart jenkins
+   ```
+
+
+
+
+
+
+# 第六章 常用插件
+
+```ini
+[中文语言包]
+name = Locale plugin
+
+[Git参数化构建]
+name = Git Parameter
+
+[SSH远程发布]
+name = Publish Over SSH
+
+[用户权限管理]
+; 安装后需要进入  全局安全配置 --修改授权策略 为 Role-Based Strategy
+name = Role-based Authorization
+
+; 权限配置，先设置用户角色，然后再授予具体的权限
+; Manager Roles 里面Global roles 下，填入Role 名称并点击Add
+; 权限勾选 全部-Read 任务-[Build、Cancel、Read]即可
+; Assign Roles 里面Global roles 下， 勾选特定用户为Authenticated Users
+```
+
+
+
+# 第七章 构建脚本示范
+
+1. 不使用插件git，cd到指定目录执行命令[推荐的做法]
+
+   + 执行具体命令
+
+     ```shell
+     source /etc/profile
+     cd /data/wwwroot/rummy-web
+     git pull
+     npm run build
+     ```
+
+   + 执行make
+
+     ```shell
+     source /etc/profile
+     cd /data/rm/gateway
+     make
+     ```
+     
+   + 远程构建
+
+     ```shell
+     ssh stage 'source /etc/profile && \
+               cd /data/rummy-game/cron && \
+               make'
+     ```
+
+2. 使用git插件，构建后cp -f src dest 配置 pm2的watch[不推荐的做法，除非是用docker、k8s]
+
+   ```shell
+   source /etc/profile
+   git submodule init
+   git submodule update --recursive --remote
+   protoc --go_out=. --go-grpc_out=. common/netmsg.proto
+   protoc --go_out=. --go-grpc_out=. common/apimsg.proto
+   protoc --go_out=. --go-grpc_out=. common/errcode.proto
+   go mod tidy
+   go build
+   cp -f gateway /data/rm/gateway/
+   # 重启服务
+   pm2 stop gateway && pm2 start gateway
+   ```
+
+
+
+
+# 第八章 权限配置
+
+1. 安装插件
+
+   ```shell
+   Role-based Authorization
+   ```
+
+2. 创建角色
+
+   每种角色具备不同的权限，先创建角色，然后把角色赋予用户，就可以配置指定用户权限了
+
+   ```ini
+   Manager Roles
+   
+   ; 全局角色
+   + Global Roles
+   ; 创建一个角色命名为"开发人员", 赋予全部--Read权限即可
+   
+   ; 项目角色
+   + Item roles
+   ;创建一个角色命名为"开发环境", dev.*  拥有该角色的用户即可访问全部dev开头的job
+   ```
+
+3. 给账号赋予角色
+
+   ```ini
+   Global roles
+   
+   ;Anonymous 和 Authenticated Users 不给任何角色
+   ; peter(管理员) 给 admin角色
+   ; 其它账号给开发人员角色
+   
+   
+   Item roles
+   ;Anonymous 和 Authenticated Users 不给任何角色
+   ;普通账号给开发环境角色，这样普通账号可以访问dev开头的job
    ```
 
    

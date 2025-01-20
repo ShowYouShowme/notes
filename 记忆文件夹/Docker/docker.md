@@ -9,6 +9,10 @@
 # 参考官方文档
 # https://docs.docker.com/engine/install/centos/
 
+# 配置yum的代理
+vim /etc/yum.conf
+proxy=http://192.168.1.115:3128
+
 # centos7 安装docker
 sudo yum remove docker \
                   docker-client \
@@ -27,6 +31,9 @@ sudo yum-config-manager \
 # 安装最新版本
 sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
 
+# 安装指定版本k8s需要
+yum install -y docker-ce-20.10.0
+
 # 启动docker
 sudo systemctl enable docker
 sudo systemctl start docker
@@ -35,6 +42,32 @@ sudo systemctl start docker
 # 测试docker是否可用
 sudo docker run hello-world
 ```
+
+
+
+安装方法二：自己配置Docker.repo
+
+```shell
+cd /etc/yum.repos.d
+
+cat > Docker.repo << EOF
+[Docker-CE]
+name=Docker Release
+baseurl=https://download.docker.com/linux/centos/7/x86_64/stable/
+enabled=1
+gpgcheck=0
+EOF
+
+yum makecache
+# 安装最新版本
+sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
+
+# 启动docker
+sudo systemctl enable docker
+sudo systemctl start docker
+```
+
+
 
 
 
@@ -57,6 +90,25 @@ vim /etc/docker/daemon.json
 "registry-mirrors": ["http://hub-mirror.c.163.com"],
 "dns" : [ "223.5.5.5","223.6.6.6" ]
 }
+```
+
+
+
+### 1.2.3 代理配置
+
+docker于20204年封杀国内，因此配置网易源的方式失效，需要配置代理
+
+```shell
+vim /usr/lib/systemd/system/docker.service
+
+[Service]
+Type=notify
+Environment="HTTP_PROXY=http://192.168.1.115:3128"
+Environment="HTTPS_PROXY=http://192.168.1.115:3128"
+
+
+systemctl daemon-reload
+systemctl restart docker
 ```
 
 
@@ -296,7 +348,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                   
+   >                                                                                     
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -551,7 +603,7 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
 1. 下载镜像
 
    ```shell
-   docker pull mysql:5.6.47
+   docker pull mysql:5.7.44
    ```
 
 2. 启动镜像
@@ -559,19 +611,19 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
    > + 从宿主机挂载数据目录
    >
    >   ```shell
-   >   docker run --name mysql -e MYSQL_ROOT_PASSWORD=tars2015 -d -p 3306:3306 -v /home/wzc/mysql-data:/var/lib/mysql mysql:5.6.47
+   >   docker run --name mysql5.7.44 -e MYSQL_ROOT_PASSWORD=tars2015 -d -p 3306:3306 -v /home/wzc/mysql-data:/var/lib/mysql mysql:5.7.44
    >   ```
    >
    > + 使用自定义配置文件
    >
    >   ```shell
-   >   docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+   >   docker run --name mysql5.7.44 -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
    >   ```
 
 3. 链接mysql
 
    ```ini
-   docker run -it --rm mysql:5.7 mysql -h192.168.2.110 -uroot -ptars2015
+   docker run -it --rm mysql:5.7.44 mysql -h192.168.1.49 -uroot -ptars2015
    ```
 
    
@@ -1578,5 +1630,20 @@ docker network create --subnet=172.11.0.0/20 mynetwork
 
 [创建容器]
 docker run -itd --name network_test --net mynetwork --ip 172.11.0.3 centos:latest /bin/bash
+```
+
+
+
+## 10.2 端口映射不生效
+
+docker容器非正常关闭后（比如操作系统关闭）；使用docker start ${containerID}启动容器后，在别的主机上无法访问docker里面的mysql（3306端口已经映射到了宿主机）
+
+
+
+解决方法：重启docker服务，再启动mysql镜像
+
+```shell
+systemctl restart docker
+docker start ${mysql-containerID}
 ```
 

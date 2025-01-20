@@ -172,6 +172,7 @@ worker_processes  1;
 [配置最大连接数]
 ;生产服务一般配置为65536,同时得修改ulimit
 worker_connections  1024;
+
 ```
 
 
@@ -244,6 +245,50 @@ server {
    
 
 ## 2.2 基本http服务配置
+
+root与alias的区别
+
+```nginx
+        # 请求 127.0.0.1:80/dev 时 nginx去 /usr/share/nginx/html 查找
+		location /dev{
+                alias         /usr/share/nginx/html;
+                index index.html index.htm;
+        }
+
+        # 请求 127.0.0.1:80/dev 时 nginx去 /usr/share/nginx/html/dev 查找
+        location /dev{
+                root         /usr/share/nginx/html;
+                index index.html index.htm;
+        }
+```
+
+示范1：一个端口部署多个网站
+
+```nginx
+    server {
+        listen       80; 
+        listen       [::]:80;
+        server_name  _;  
+        include /etc/nginx/default.d/*.conf;
+    
+        location / { 
+                root /opt/htdoc;
+        }   
+        location /dev{
+                alias         /usr/share/nginx/html;
+                index index.html index.htm;
+        }   
+
+        location /prod{
+                alias        /usr/share/nginx/html-prod;
+                index index.html index.htm;
+        }   
+    } 
+```
+
+
+
+示范2
 
 ```nginx
 # 如果是非root用户编译安装Nginx,打算监听80端口,必须用sudo 启动,同时配置 user 为 该用户而不是nobody
@@ -328,6 +373,9 @@ daemon off;
 ## 2.6 ws反向代理 + wss配置
 
 ```nginx
+# websocket 协商时,请求头必须包含两个key-value
+# Connection: Upgrade
+# Upgrade: websocket
 http{
     
 map $http_upgrade $connection_upgrade {
@@ -343,15 +391,10 @@ server {
      server_name dev.icashflow.cc;
      listen 8283 ssl;
      location / { 
-         proxy_pass http://websocket:8000;
+         proxy_pass http://websocket;
          # 超时配置
-         proxy_read_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
-         proxy_send_timeout 300s; # 默认60s,游戏开发的话,使用默认值即可
-
-         proxy_set_header Host $host;
-         proxy_set_header X-Real-IP $remote_addr;
-         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
+         proxy_read_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
+         proxy_send_timeout 30s; # 默认60s,游戏开发的话,使用默认值即可
          proxy_http_version 1.1;
          proxy_set_header Upgrade $http_upgrade;
          proxy_set_header Connection $connection_upgrade;
@@ -1177,7 +1220,7 @@ location ^~ /your-service/ {
 
      
 
-1. concat模块
+2. concat模块
 
    ```ini
    ; 页面需要访问多个小文件时,把他们的内容合并到一次http响应中返回
@@ -1244,9 +1287,9 @@ location ^~ /your-service/ {
 
    
 
-2. random_index模块
+3. random_index模块
 
-3. index模块
+4. index模块
 
    ```ini
    ; 优先于auto_index模块
@@ -1271,7 +1314,7 @@ location ^~ /your-service/ {
 
    
 
-4. auto_index模块
+5. auto_index模块
 
    ```ini
    [autoindex]
@@ -1383,7 +1426,7 @@ cmd2 = nginx -s quit
 
 
 
-# 附录
+# 常见问题
 
 1. 非root测试nginx配置时不能绑定端口
 
@@ -1394,6 +1437,11 @@ cmd2 = nginx -s quit
    
    solution=将配置文件中的80端口改为1024以上
    ```
+
+2. 权限：配置静态资源服务器时，目标**文件夹**和**文件**必须具备特定权限
+
+   + 目录必须有执行权限和读权限
+   + 文件有可读权限
 
    
 
@@ -1456,7 +1504,7 @@ CUSTOM_CONFIG_PATH = /etc/nginx/conf.d/
 ```ini
 location / {
       root   html;
-      autoindex on;   ## 加上这条即可显示文件夹
+      autoindex on;   ## 加上这条即可显示文件夹,把index.html 改名为 index.html_bak
       index  index.html index.htm;
 }
 ```

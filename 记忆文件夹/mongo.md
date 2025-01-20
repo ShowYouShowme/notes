@@ -33,7 +33,11 @@
 4. 启动服务
 
    ```shell
+   # 使用systemd 启动
    sudo systemctl start mongod
+   
+   # 前端启动,配合pm2管理,推荐的方式
+   ./mongod --dbpath=/path/mongodb -f /path/mongod.conf
    ```
 
 5. 使用命令行客户端连接mongod

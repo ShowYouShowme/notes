@@ -31,7 +31,7 @@
    mysql -uroot -p   直接回车,没有密码
    ```
 
-2. mysql
+2. mysql：版本是5.7.44，注意docker安装的要和这个版本一样
 
    ```shell
    #下载yum源
@@ -95,6 +95,61 @@
 ```shell
 docker pull mysql:5.7
 ```
+
+
+
+## 1.3 启动命令
+
+1. 使用systemctl
+
+   ```shell
+   systemctl start mysqld
+   ```
+
+2. 使用mysqld启动，可以配合pm2进行管理
+
+   ```shell
+   # 精灵模式
+   mysqld --defaults-file=/etc/my.cnf --daemonize --user=mysql
+   
+   # 前台启动, 配合PM2管理即可,方便监控
+   mysqld --defaults-file=/etc/my.cnf --user=mysql
+   
+   #PM2的配置文件
+   module.exports = {
+     apps : [{
+       "name"       : "mysqld",
+       "script"     : "/usr/sbin/mysqld",
+       "exec_interpreter": "none",
+       "exec_mode"  : "fork_mode",
+       "args"       : "--defaults-file=/etc/my.cnf --user=mysql"
+     }]
+   };
+   ```
+
+
+
+## 1.4 关闭Mysql
+
+1. 使用systemctl
+
+   ```shell
+   systemctl stop mysqld
+   ```
+
+2. 使用mysql客户端关闭
+
+   ```shell
+   mysql客户端连上后; 执行shutdown 命令
+   ```
+
+3. kill命令：不推荐
+
+   ```shell
+   kill -9 ${pid}
+   ```
+
+   
 
 
 
@@ -244,12 +299,14 @@ docker pull mysql:5.7
    mysql > flush privileges;
    
    
+   # 允许从任何机器登录
+   grant all on *.* to 'tars'@'%' identified by 'tars2015';
+   
    ## 限定账号tars只能在10.10.10.23上面登录
    grant all on *.* to 'tars'@'10.10.10.23' identified by 'tars2015';
    
    # 授予局域网172.31.31 里面的任何机器
    grant all on db_tars.* to 'tars'@'172.31.31.%' identified by 'tars2015';
-   
    
    grant all on ${数据库}.${表} to "${用户名}"@"${IP}" identified by "${密码}";
    ```
@@ -568,10 +625,28 @@ docker pull mysql:5.7
 
    + 数据类型为TINYINT、SMALLINT、MEDIUMINT、INT和BIGINT时，Length指**显示宽度**，不用填写！
 
+   + DATETIME：默认显示长度为19个字符，设置为0即可
+
+     ```
+     Length = 8
+     8个字符显示,精确到秒
+     
+     Length = 14
+     14个字符显示,精确到秒
+     
+     Length = 17
+     17个字符显示,精确到毫秒
+     
+     Length = 19
+     19个字符显示,精确到秒
+     ```
+   
+     
+   
    + 小数
-
+   
      + 浮点数
-
+   
        ```shell
        #FLOAT 4 字节
        
@@ -579,9 +654,9 @@ docker pull mysql:5.7
        
        #定义浮点数时不用指定Length和decimals,否则无法迁移到其它数据库
        ```
-
+   
      + 定点数
-
+   
        ```shell
        #DECIMAL 用于存放精确的小数,定义时必须填写Length和decimals
        
@@ -595,7 +670,7 @@ docker pull mysql:5.7
        
        #amount的范围是-9999.99到9999.99
        ```
-
+   
    + 数据库里使用小数的情况很少，只有字段为CHAR和VARCHAR时需要关注Length，decimals不用管！
 
 
@@ -620,6 +695,88 @@ select * from plot_statistics where date(log_time) = date_sub(CURDATE()  ,interv
 
 
 select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # 统计昨天和今天的
+
+# 获取当前时间戳,秒为单位
+SELECT UNIX_TIMESTAMP();
+
+
+# 日期格式转换
+
+## 日期 时间
+select DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s');
+## 日期
+select DATE_FORMAT(NOW(), '%Y-%m-%d');
+## 时间
+select DATE_FORMAT(NOW(), '%H:%i:%s');
+
+
+# 时间转化为秒数
+select TIME_TO_SEC(NOW());
+select TIME_TO_SEC('2024-03-07 23:45:20');
+select SEC_TO_TIME(85520);
+
+
+# 日期加减法 --统计必备
+
+## 日期时间戳加减
+select NOW();    -- 2024-03-07 23:41:47
+select DATE_SUB(NOW(),interval 1 year); -- 2023-03-07 23:41:47
+select DATE_SUB(NOW(),interval 1 quarter); -- 2023-12-07 23:41:47
+select DATE_SUB(NOW(),interval 1 month); -- 2024-02-07 23:41:47
+select DATE_SUB(NOW(),interval 1 week); -- 2024-02-29 23:41:47
+select DATE_SUB(NOW(),interval 1 day); -- 2024-03-06 23:41:47
+select DATE_SUB(NOW(),interval 1 hour); -- 2024-03-07 22:41:47
+select DATE_SUB(NOW(),interval 1 minute); -- 2024-03-07 23:40:47
+select DATE_SUB(NOW(),interval 1 second); -- 2024-03-07 23:41:46
+select DATE_SUB(NOW(),interval -1 day); -- 2024-03-08 23:41:47
+
+
+select NOW();  -- 2024-03-07 23:39:14
+select DATE_ADD(NOW(),interval 1 year); -- 2025-03-07 23:39:14
+select DATE_ADD(NOW(),interval 1 quarter); -- 2024-06-07 23:39:14
+select DATE_ADD(NOW(),interval 1 month); -- 2024-04-07 23:39:14
+select DATE_ADD(NOW(),interval 1 week); -- 2024-03-14 23:39:14
+select DATE_ADD(NOW(),interval 1 day); -- 2024-03-08 23:39:14
+select DATE_ADD(NOW(),interval 1 hour); -- 2024-03-08 00:39:14
+select DATE_ADD(NOW(),interval 1 minute); -- 2024-03-07 23:40:14
+select DATE_ADD(NOW(),interval 1 second); -- 2024-03-07 23:39:15
+select DATE_ADD(NOW(),interval -1 day); -- 2024-03-06 23:39:14
+
+
+## 日期加减
+select CURDATE();    -- 2024-08-27
+select DATE_SUB(CURDATE(),interval 1 year); -- 2023-08-27
+select DATE_SUB(CURDATE(),interval 1 quarter); -- 
+select DATE_SUB(CURDATE(),interval 1 month); -- 
+select DATE_SUB(CURDATE(),interval 1 week); -- 
+select DATE_SUB(CURDATE(),interval 1 day); -- 2024-08-26
+select DATE_SUB(CURDATE(),interval 1 hour); -- 
+select DATE_SUB(CURDATE(),interval 1 minute); -- 
+select DATE_SUB(CURDATE(),interval 1 second); --
+select DATE_SUB(CURDATE(),interval -1 day); -- 
+
+select CURDATE();  -- 
+select DATE_ADD(CURDATE(),interval 1 year); -- 
+select DATE_ADD(CURDATE(),interval 1 quarter); -- 
+select DATE_ADD(CURDATE(),interval 1 month); -- 
+select DATE_ADD(CURDATE(),interval 1 week); -- 
+select DATE_ADD(CURDATE(),interval 1 day); -- 
+select DATE_ADD(CURDATE(),interval 1 hour); -- 
+select DATE_ADD(CURDATE(),interval 1 minute); -- 
+select DATE_ADD(CURDATE(),interval 1 second); -- 
+select DATE_ADD(CURDATE(),interval -1 day); -- 
+
+
+# 统计入库时,一般会记录create_at(时间戳),create_date(日期)管理后台请求接口时传入日期;利用MySQL将日期转换为时间戳;
+# 利用条件WHERE from > t1 ADN to < t2 即可查出全部记录
+# 日期时间戳转换
+-- 将日期转为时间戳
+select UNIX_TIMESTAMP(); -- 1709827653(获取当前时间戳)
+select UNIX_TIMESTAMP('2024-03-08'); -- 1709827200(具体日期转为时间戳)
+select UNIX_TIMESTAMP('2022-03-08 00:26:30'); -- 1646670390(具体时间日期转为时间戳)
+-- 将时间戳转为具体时间
+select FROM_UNIXTIME(1646670390); -- 2022-03-08 00:26:30(时间戳转化成日期)
+select FROM_UNIXTIME(1646670390, '%y-%m-%d %H:%i:%s'); -- 22-03-08 00:26:30(时间戳转化成指定格式日期)
 ```
 
 
@@ -632,6 +789,17 @@ select * from plot_statistics where TO_DAYS(NOW()) - TO_DAYS(log_time) <= 1; # �
 
 ```shell
 show variables like "%time_zone%";
+
+// 查看当前时间
+select now();
+
+mysql> select now();
++---------------------+
+| now()               |
++---------------------+
+| 2024-08-23 09:07:43 |
++---------------------+
+1 row in set (0.00 sec)
 ```
 
 
@@ -741,7 +909,9 @@ CONVERT_TZ
    CREATE DATABASE test_db;
    
    #创建数据库时指定编码
-    CREATE DATABASE `test2` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+   #utf8最多只能支持3bytes长度的字符编码，对于一些需要占据4bytes的文字，mysql的utf8就不支持了，要使用utf8mb4才行
+   #utf8mb4_general_ci:排序规则,来用排序VARCHAR,CHAR,TEXT类型
+    CREATE DATABASE `test2` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
    ```
 
 ### 2.11.8 查看数据库
@@ -779,6 +949,12 @@ from information_schema.columns where table_schema='库名' and table_name='表�
 ```
 
 ### 2.11.13 普通索引
+
+索引字段是varchar时，必须要指定长度(navicat子部分填长度)
+
+date 为varchar，最大长度255
+
+KEY `date` (`date`(32)) USING BTREE
 
 ```mysql
 mysql> CREATE TABLE tb_stu_info
@@ -966,6 +1142,27 @@ Using index = 直接访问索引就足够获取到所需要的数据，不需要
 Using index condition = 索引下压,部分where条件在Innodb引擎层判断,满足的记录才发送到server层,等价于 using index + 回表 + where 过滤
 Using where = 优化器需要通过索引回表查询数据
 ```
+
+
+
+### 2.11.22 SQL_MODE
+
+查看
+
+```shell
+select @@GLOBAL.sql_mode
+```
+
+
+
+设置[关闭ONLY_FULL_GROUP，方便写统计业务]
+
+```shell
+[mysqld]
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+```
+
+
 
 
 
@@ -1295,7 +1492,151 @@ DROP PROCEDURE [ IF EXISTS ] <过程名>
 
 
 
-# 第三章 附录
+# 第三章  差异对比
+
+使用mysqldbcompare来对比两个数据库的差异
+
+
+
+## 3.1 安装
+
+url = https://dev.mysql.com/doc/connector-python/en/connector-python-versions.html
+
+数据库版本：5.7, 5.6, 5.5
+
+python版本： 3.5, 3.4, 2.7, 2.6
+
+```shell
+wget https://cdn.mysql.com/archives/mysql-connector-python-2.0/mysql-connector-python-2.0.5-1.el7.noarch.rpm
+
+wget https://cdn.mysql.com/archives/mysql-utilities/mysql-utilities-1.6.5-1.el7.noarch.rpm
+
+yum localinstall -y mysql-connector-python-2.0.5-1.el7.noarch.rpm
+yum localinstall mysql-utilities-1.6.5-1.el7.noarch.rpm -y
+```
+
+
+
+## 3.2 对比差异
+
+1. 创建数据库
+
+   ```shell
+   # 查看线上环境创建库的命令
+   show create database rummy;
+   
+   # 在本地创建库
+   CREATE DATABASE `rummy` DEFAULT CHARACTER SET utf8mb4
+   
+   # 用navicat 导入sql文件创建表; navicat 只需要导出线上数据库的表结构,不需要数据
+   ```
+
+2. 对比
+
+   ```shell
+   # test 是线上数据库, rummy是开发环境;这样可以得到线上数据库 变成 rummy需要的sql语句
+   mysqldbcompare --server1=root:tars2015@192.168.1.49 --skip-row-count --skip-data-check --skip-table-options --server2=root:tars2015@192.168.1.49 test:rummy --changes-for=server1 --run-all-test --difftype=sql >> diff.txt
+   
+   --skip-data-check：跳过数据一致性验证
+   --skip-row-count：跳过行数检查
+   --skip-table-options：跳过CREATE语句() 外面的部分, 比如ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 ROW_FORMAT=COMPACT
+   -run-all-tests：运行完整比较，遇到第一次差异时不停止
+   --changes-for=: 比较的基准,值为server1 或者 server2 默认是server1
+   --difftype=DIFFTYPE：差异的信息显示的方式，有[unified|context|differ|sql]，默认是unified。如果使用sql，那么就直接生成差异的SQL，这样非常方便
+   ```
+
+3. 查找差异
+
+   ```shell
+   用notepad++ 查找 字符 ALTER 即可
+   ```
+
+4. 对比结果
+
+   ```ini
+   [有差异]
+   desc = Database consistency check failed
+   
+   [相同]
+   desc = Databases are consistent given skip options specified
+   
+   ; 表rm_player_career 在 test1 但不在test2
+   WARNING: Objects in server1.test1 but not in server1.test2
+   	TABLE: rm_player_career
+   	
+   ; 字段不一样
+   ALTER TABLE `test1`.`rm_player_flow` 
+     CHANGE COLUMN scene scene bigint(11) unsigned NOT NULL DEFAULT '0' COMMENT '场景类型', 
+     CHANGE COLUMN channel channel float(11,0) unsigned NOT NULL DEFAULT '0' COMMENT '最新渠道id';
+   ```
+
+   
+
+5. 对比的Makefile
+
+   ```makefile
+   prod:exportProd compare
+   stage:exportStage compare
+   exportProd:
+   	rm -f backup.sql;
+   	mysqldump -P 2000 -h192.168.1.115 -u root -p"yourPassword" --opt -d rummy > backup.sql
+   
+   exportStage:
+   	rm -f backup.sql;
+   	mysqldump -P 2500 -h192.168.1.115 -u tars -p"yourPassword"  --opt -d rummy > backup.sql
+   deleteTest:
+   	mysql -h 192.168.1.49 -uroot -p"tars2015" -e "drop database test"
+   
+   createTest:
+   	mysql -h 192.168.1.49 -uroot -p"tars2015" -e "CREATE DATABASE test DEFAULT CHARACTER SET utf8mb4"
+   
+   import:
+   	mysql -h 192.168.1.49 -uroot -p"tars2015" test < backup.sql
+   
+   compare:deleteTest createTest import
+   	mysqldbcompare --server1=root:tars2015@192.168.1.49 --skip-row-count --skip-data-check --skip-table-options --server2=root:tars2015@192.168.1.49 test:rummy --changes-for=server1 --run-all-test --difftype=sql
+   ```
+
+   
+
+
+
+## 3.3 使用navicat对比
+
+点击工具--结构同步，源选择开发环境数据库，目标选择测试环境或者正式环境数据库，然后对比就可以了
+
+
+
+# 第四章 慢查询
+
+开启慢查询日志来进行性能优化
+
+```ini
+[配置项]
+slow_query_log = 是否开启慢查询日志，1表示开启，0表示关闭
+
+slow-query-log-file = MySQL数据库慢查询日志存储路径。可以不设置该参数，系统则会默认给一个缺省的文件host_name-slow.log
+
+long_query_time = 慢查询阈值，当查询时间多于设定的阈值时，记录日志,单位是秒
+
+min_examined_row_limit = 查询扫描过的最少记录数。这个变量和查询执行时间，共同组成了判别一个查询是否是慢查询的条件
+
+log_queries_not_using_indexes = 未使用索引的查询也被记录到慢查询日志中
+
+log_output = 日志存储方式。log_output='FILE'表示将日志存入文件，默认值是'FILE'。log_output='TABLE'表示将日志存入数据库
+
+log_throttle_queries_not_using_indexes = 限制每分钟写入慢日志中的不走索引的SQL语句个数，该参数默认为 0，表示不开启，也就是说不对写入SQL语句条数进行控制
+
+log_slow_admin_statements = 是否将慢管理语句记录到慢查询的日志中
+
+[命令]
+
+查看慢查询记录数 = SHOW GLOBAL STATUS LIKE '%Slow_queries%'
+
+查看慢查询相关配置 = show variables like '%slow_query_log%'
+```
+
+# 第五章 附录
 
 
 1. Waiting for table metadata lock：后续对该表任何操作都会阻塞
@@ -1375,5 +1716,40 @@ DROP PROCEDURE [ IF EXISTS ] <过程名>
    cmd = mysqldbcompare --server1=user:pass@host:port:socket --server2=user:pass@host:port:socket db1:db2
    ```
 
+
+
+
+# 第五章 navicat 用法
+
+1. 创建连接时，可以设置ssh通道(服务器的3306端口不暴露于公网)
+
+2. 工具--> 结构同步：用于对比开发环境和正式环境的数据库差异
+
+3. 工具--->命令列：和mysql的客户端一样
+
+4. 新建查询：打开一个查询标签页面
+
+5. 清空表 vs 截断表
+
+   ```ini
+   [清空表]
+   sql   	  	  = DELETE FROM table_name
+   返回值 		= 返回删除行数
+   自增字段处理    = 不会重置自增字段
+   效率           = 扫描全表，表数据越多越慢
+   日志           = 会记录日志，可恢复
    
+   [截断表]
+   sql   	  	  = TRUNCATE [TABLE] table_name
+   返回值 		= 返回0
+   自增字段处理    = 自增字段重置为初始值
+   效率           = 不扫描全表，效率高
+   日志           = 不会记录日志，无法恢复
+   ```
+
+6. 运行sql文件：常用于导入某个表或者某个数据库
+
+7. 转储sql文件：常用于备份某个表或者某个数据库
+
+8. 删除表：drop Table table_name
 
