@@ -4831,15 +4831,98 @@ nnoDB 内部维护了一个 max_trx_id 全局变量，每次需要申请一个�
    
    
 
+# 第四十六章 性能优化
 
 
 
+## 46.1 内存相关配置
 
-# 第四十六章 附录
+| 配置项                                   | 作用                                      | 建议                                     |
+| ---------------------------------------- | ----------------------------------------- | ---------------------------------------- |
+| **innodb_buffer_pool_size**              | 缓存数据页和索引页                        | 占系统可用内存 70%-80%                   |
+| **innodb_buffer_pool_instances**         | 将 Buffer Pool 分成多个实例，提高并发访问 | 对大内存（>8GB）建议分多实例             |
+| **innodb_log_buffer_size**               | 写事务日志前的缓存大小                    | 大事务时可增大，减少频繁刷盘             |
+| **tmp_table_size / max_heap_table_size** | 内存临时表大小                            | 大临时表可直接在内存创建，减少磁盘临时表 |
 
 
 
-## 45.1 术语
+## 46.2 日志和刷盘相关配置
+
+| 配置项                                          | 作用                 | 建议                                              |
+| ----------------------------------------------- | -------------------- | ------------------------------------------------- |
+| **innodb_flush_log_at_trx_commit**              | redo log 刷盘策略    | 1：最安全；2：性能好且安全性高；0：最快，但风险大 |
+| **innodb_flush_method**                         | 文件刷盘方式         | O_DIRECT 可避免操作系统页缓存双重占用             |
+| **innodb_io_capacity / innodb_io_capacity_max** | 控制后台刷盘线程速率 | 根据磁盘性能调整，避免 checkpoint 高峰            |
+
+
+
+## 46.3 表和索引相关优化
+
+**主键选择自增或顺序 UID** → 减少页分裂和空洞
+
+**固定长度字段适当使用 CHAR** → 提高页利用率
+
+**避免过多二级索引** → 每个索引增加写操作成本
+
+**分表或分区表** → 大表分片，减少 B+Tree 树高和 I/O 压力
+
+**索引覆盖查询（Covering Index）** → 减少回表查询
+
+
+
+## 46.4 查询与缓存优化
+
+**Query Cache（MySQL 5.7 以下）** → 对高重复查询有效（新版本已废弃）
+
+**慢查询优化**：
+
+- 开启 `slow_query_log`
+- 分析执行计划（`EXPLAIN`）
+- 添加索引或调整 SQL
+
+**预计算/物化表** → 高频统计或复杂查询可提前计算
+
+
+
+## 46.5 并发与连接
+
+| 配置项                        | 作用                   | 建议                         |
+| ----------------------------- | ---------------------- | ---------------------------- |
+| **innodb_thread_concurrency** | 控制 InnoDB 并发线程数 | 根据 CPU 核数调节            |
+| **max_connections**           | 最大连接数             | 避免过多连接导致内存占用激增 |
+| **table_open_cache**          | 表句柄缓存             | 避免频繁打开关闭表           |
+
+
+
+## 46.6 IO 和存储优化
+
+- **使用 SSD** → 顺序和随机访问都快
+- **分离 redo log、数据文件、Undo log 到不同磁盘** → 提升写性能
+- **innodb_read_io_threads / innodb_write_io_threads** → 提高多线程 IO 并发
+
+
+
+## 46.7 事务与锁优化
+
+尽量使用 **短事务** → 减少 Undo/Redo 压力
+
+合理设计 **隔离级别**：
+
+- 默认 **REPEATABLE READ** → 保持 MVCC 并发
+- 长事务可能导致 Undo 表膨胀 → 占用 Buffer Pool
+
+**减少锁争用**：
+
+- 批量写入分批
+- 避免热点行更新
+
+
+
+# 第四十七章 附录
+
+
+
+## 47.1 术语
 
 1. DDL（Data Definition Languages）语句：数据定义语言，这些语句定义了不同的数据段，[数据库](https://cloud.tencent.com/solution/database?from=10680)，表，列，索引等数据库对象。常用的语句关键字主要包括create,drop,alter等
 2. DML（Data Manipulation Language）语句：数据操纵语句，用于添加，删除，更新和查询数据库记录，并检查数据完整性。常用的语句关键字主要包括insert，delete,update,select等
@@ -4849,7 +4932,7 @@ nnoDB 内部维护了一个 max_trx_id 全局变量，每次需要申请一个�
 
 
 
-## 45.2 临时表
+## 47.2 临时表
 
 
 
@@ -4863,7 +4946,7 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
 
 
 
-## 45.3 常见配置
+## 47.3 常见配置
 
 1. 修改mysql绑定的网卡
 
@@ -4905,11 +4988,11 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
 
 
 
-## 45.4 权限配置
+## 47.4 权限配置
 
 
 
-### 45.4.1 普通用户权限
+### 47.4.1 普通用户权限
 
 ```sql
 #授予增删改查权限
@@ -4927,7 +5010,7 @@ grant select, insert, update, delete on testdb.* to common_user@'%'
 
 
 
-### 45.4.2 开发人员权限
+### 47.4.2 开发人员权限
 
 1.  创建、修改、删除 MySQL 数据表结构权限
 
@@ -4972,7 +5055,7 @@ grant select, insert, update, delete on testdb.* to common_user@'%'
 
    
 
-### 45.4.3 DBA权限
+### 47.4.3 DBA权限
 
 1. grant 普通 DBA 管理某个 MySQL 数据库的权限
 
@@ -4988,7 +5071,7 @@ grant select, insert, update, delete on testdb.* to common_user@'%'
 
 
 
-### 45.4.4 查看MySQL用户权限
+### 47.4.4 查看MySQL用户权限
 
 1. 查看当前用户（自己）权限
 
@@ -5004,7 +5087,7 @@ grant select, insert, update, delete on testdb.* to common_user@'%'
 
 
 
-### 45.4.5 撤销权限
+### 47.4.5 撤销权限
 
 ```sql
 grant all on *.* to dba@localhost;
@@ -5015,7 +5098,7 @@ revoke all on *.* from dba@localhost;
 
 
 
-### 45.4.6 授权注意事项
+### 47.4.6 授权注意事项
 
 1. grant, revoke 用户权限后，该用户只有重新连接 MySQL 数据库，权限才能生效
 
