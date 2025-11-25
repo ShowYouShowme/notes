@@ -2652,7 +2652,7 @@ replace "mypackage" => "../mypackage"
 
 # 第九章 并发编程
 
-
+sync.Mutex：作为结构体成员时，不需要初始化，直接使用。
 
 ## 9.1 协程机制
 
@@ -2714,6 +2714,10 @@ func TestGroutine(t *testing.T)  {
 
 3. 线程同步，等待其它线程完成WaitGroup
 
+   + Add(int)：计数器+1
+   + Done(int)：计数器-1
+   + wait()：阻塞调用的 goroutine，直到计数器为 0。
+
    ```go
    func TestCounterWaitGroup(t *testing.T) {
    	counter := 0
@@ -2738,6 +2742,22 @@ func TestGroutine(t *testing.T)  {
    
 
 ## 9.3 CSP并发机制
+
+在 CSP 模式中：
+
+1. 并发任务（goroutine）**独立运行**，相互之间不共享内存。
+2. 通过 **channel** 进行通信和同步。
+3. **通信代替共享内存**，避免锁的复杂性。
+
+
+
+CSP的组成
+
+| 组件          | 说明                                                |
+| ------------- | --------------------------------------------------- |
+| **goroutine** | 轻量级线程，独立执行任务                            |
+| **channel**   | goroutine 间通信和同步的管道                        |
+| `select`      | 同时等待多个 channel 的操作，可做超时、监听多路通信 |
 
 1. 顺序执行
 
@@ -2767,6 +2787,7 @@ func TestGroutine(t *testing.T)  {
    	return "Done"
    }
    
+   // 重点是这里,函数里面产生线程并返回channel
    func AsyncService() chan string {
    	retCh := make(chan string)
    	
@@ -2792,7 +2813,7 @@ func TestGroutine(t *testing.T)  {
    	time.Sleep(time.Second * 1)
    }
    ```
-
+   
    
 
 
@@ -4916,7 +4937,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                       
+   >                                                                                                                                                           
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7330,7 +7351,7 @@ service Greeter {
 ## 31.4 生成代码
 
 ```shell
-protoc --go_out=.  --go-grpc_out=. .\hello.proto
+protoc --go_out=. --go-grpc_out=. .\hello.proto
 ```
 
 
@@ -7449,7 +7470,201 @@ func main() {
 
 
 
+## 31.7 四种通信方式
 
++ Unary：一次请求一次响应
+
++ Client Streaming：客户端发送多条消息，服务端最后返回一次响应
+
+  使用场景：实时数据推送、分页返回大数据集
+
++ Server Streaming：客户端发一次请求，服务端返回多条消息流
+
+  使用场景：批量上传数据、统计分析（客户端发送数据，服务端汇总结果）
+
++ Bidirectional Streaming：客户端和服务端可以同时发送多条消息（全双工）
+
+  使用场景：实时聊天、多人游戏状态同步、实时交易数据流、IoT 设备数据
+
+  | 模式                    | 客户端发送 | 服务端发送 | 典型场景                   |
+  | ----------------------- | ---------- | ---------- | -------------------------- |
+  | Unary                   | 1          | 1          | 查询、命令执行             |
+  | Server Streaming        | 1          | 多         | 日志推送、排行榜           |
+  | Client Streaming        | 多         | 1          | 批量上传、汇总计算         |
+  | Bidirectional Streaming | 多         | 多         | 实时聊天、游戏、IoT 数据流 |
+
+除了Unary，其它通信方式出错后都需要手动重连。
+
+## 32.8 双向流代码
+
+1. chat.proto
+
+   ```protobuf
+   syntax = "proto3";
+   
+   package chat_demo;
+   
+   option go_package = "/chat_demo";
+   
+   service ChatService {
+     // 双向流 RPC
+     rpc Chat(stream ChatReq) returns (stream ChatResp);
+   }
+   
+   message ChatReq {
+     string User = 1;     // 用户名
+     string Message = 2;  // 消息内容
+   }
+   
+   message ChatResp {
+     string User = 1;     // 用户名
+     string  Message = 2;    //  金币
+   }
+   ```
+
+2. cli.go
+
+   ```go
+   package main
+   
+   import (
+   	"bufio"
+   	"context"
+   	"fmt"
+   	"io"
+   	"log"
+   	"os"
+   	"time"
+   
+   	pb "bio-cli/chat_demo" //
+   
+   	"google.golang.org/grpc"
+   	"google.golang.org/grpc/credentials/insecure"
+   )
+   
+   func main() {
+   	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+   	if err != nil {
+   		log.Fatalf("Failed to connect: %v", err)
+   	}
+   	defer conn.Close()
+   
+   	client := pb.NewChatServiceClient(conn)
+   
+   	ctx, cancel := context.WithCancel(context.Background())
+   	defer cancel()
+   
+   	stream, err := client.Chat(ctx)
+   	if err != nil {
+   		log.Fatalf("Error creating stream: %v", err)
+   	}
+   
+   	// 1. 接收服务端消息
+   	go func() {
+   		for {
+   			msg, err := stream.Recv()
+   			if err == io.EOF {
+   				log.Println("Stream closed by server")
+   				return
+   			}
+   			if err != nil {
+   				log.Printf("Error receiving: %v", err)
+   				return
+   			}
+   			fmt.Printf("[Server] %s\n", msg.Message)
+   		}
+   	}()
+   
+   	// 2. 发送消息到服务端
+   	scanner := bufio.NewScanner(os.Stdin)
+   	fmt.Println("Enter messages, type 'exit' to quit:")
+   	for scanner.Scan() {
+   		text := scanner.Text()
+   		if text == "exit" {
+   			break
+   		}
+   
+   		msg := &pb.ChatReq{
+   			User:    "Client",
+   			Message: text,
+   		}
+   		if err := stream.Send(msg); err != nil {
+   			log.Printf("Error sending: %v", err)
+   			break
+   		}
+   		time.Sleep(100 * time.Millisecond) // 模拟发送间隔
+   	}
+   
+   	stream.CloseSend()
+   }
+   
+   ```
+
+3. srv.go
+
+   ```go
+   package main
+   
+   import (
+   	pb "bio-srv/chat_demo" // 修改为实际 module 路径
+   	"fmt"
+   	"io"
+   	"log"
+   	"net"
+   
+   	"google.golang.org/grpc"
+   )
+   
+   type server struct {
+   	pb.UnimplementedChatServiceServer
+   }
+   
+   // 双向流实现
+   func (s *server) Chat(stream pb.ChatService_ChatServer) error {
+   	fmt.Println("client connected.....")
+   	for {
+   		msg, err := stream.Recv()
+   		if err == io.EOF {
+   			log.Println("Client closed the stream")
+   			return nil
+   		}
+   		if err != nil {
+   			log.Printf("Error receiving: %v", err)
+   			return err
+   		}
+   
+   		log.Printf("Received from %s: %s", msg.User, msg.Message)
+   
+   		// 回复客户端
+   		reply := &pb.ChatResp{
+   			User:    "Server",
+   			Message: "Echo: " + msg.Message,
+   		}
+   		if err := stream.Send(reply); err != nil {
+   			log.Printf("Error sending: %v", err)
+   			return err
+   		}
+   	}
+   }
+   
+   func main() {
+   	lis, err := net.Listen("tcp", ":50051")
+   	if err != nil {
+   		log.Fatalf("Failed to listen: %v", err)
+   	}
+   
+   	grpcServer := grpc.NewServer()
+   	pb.RegisterChatServiceServer(grpcServer, &server{})
+   
+   	log.Println("gRPC server listening on :50051")
+   	if err := grpcServer.Serve(lis); err != nil {
+   		log.Fatalf("Failed to serve: %v", err)
+   	}
+   }
+   
+   ```
+
+   
 
 # 第三十二章 时间戳和时间操作
 
