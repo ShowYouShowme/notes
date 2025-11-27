@@ -348,7 +348,7 @@ docker attach 44fc0f0582d9
    >    ```shell
    >    # 命令格式
    >    nsenter --target ${PID} --mount --uts --ipc --net --pid
-   >                                                                                     
+   >                                                                                        
    >    # 示例
    >    nsenter --target 3326 --mount --uts --ipc --net --pid
    >    ```
@@ -635,13 +635,13 @@ sudo docker run --name biden --hostname biden -d -v /home/nash/tmp:/data main-ne
 1. 下载镜像
 
    ```shell
-   docker pull redis
+   docker pull redis8.0
    ```
 
 2. 启动容器
 
    ```shell
-   docker run --name some-redis -d redis
+   docker run --name some-redis -d redis8.0
    ```
 
 3. 连接

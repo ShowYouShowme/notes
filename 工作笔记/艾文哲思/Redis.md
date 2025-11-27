@@ -12,7 +12,7 @@ docker run -d -p 6379:6379 redis:6.2.3
 
 
 
-## 1.2 yum安装
+## 1.2 yum安装，版本太旧建议用新版本
 
 ```shell
 yum install -y epel-release
@@ -29,16 +29,33 @@ systemctl enable redis
 ## 1.3 源码安装
 
 ```shell
-wget https://github.com/redis/redis/archive/refs/tags/3.2.12.tar.gz
-tar -zxvf 3.2.12.tar.gz
-cd redis-3.2.12/
-make -j20
-cd src/
+# 对应golang的客户端是 "github.com/go-redis/redis/v8", v9连接会有错误信息
+wget https://github.com/redis/redis/archive/refs/tags/7.0.0.tar.gz
+tar -zxvf 7.0.0.tar.gz
+yum install gcc gcc-c++
+cd redis-7.0.0/
+make 
 # 安装,默认将可执行文件安装到/usr/local/bin; 需要自己copy配置文件到指定路径
-make install
+mkdir -p /home/nash/app/redis
+make PREFIX=/home/nash/app/redis/ install
 
-# 启动服务,前台启动;可以使用pm2来管理
-./redis-server /path/to/redis.conf
+cp redis.conf /home/nash/app/redis/
+# 修改配置项
+pidfile /var/run/redis_6379.pid
+logfile "redis.log"
+dir /home/nash/app/redis/data
+
+save 900 1
+save 300 10
+save 60 10000
+daemonize yes
+bind 0.0.0.0
+protected-mode no
+
+# 启动服务
+/home/nash/app/redis/bin/redis-server /home/nash/app/redis/redis.conf 
+
+# 执行命令BGSAVE 可以在日志中看到信息
 ```
 
 
@@ -72,6 +89,77 @@ ldconfig -v | grep hiredis # 不知道是否需要ldconfig,可以用此命令测
 
 
 # 第三章 Redis操作
+
+## 3.0 配置项介绍
+
+涉及到路径的配置
+
+| 配置项             | 作用                    | 是否必须                | 是否包含路径   |
+| ------------------ | ----------------------- | ----------------------- | -------------- |
+| **dir**            | RDB/AOF 的目录          | 必须                    | 是（目录）     |
+| **dbfilename**     | RDB 文件名              | 必须                    | 否（仅文件名） |
+| **appendfilename** | AOF 文件名              | 可选（开启 AOF 时使用） | 否             |
+| **logfile**        | 日志文件路径            | 可选                    | 是             |
+| **pidfile**        | 守护模式下 PID 文件路径 | 可选                    | 是             |
+
+### **1. dir**（最重要）
+
+指定 **RDB / AOF 文件保存的目录**。
+
+```
+dir /var/lib/redis/
+```
+
+所有以下文件都会放在这里：
+
+- dump.rdb（RDB）
+- appendonly.aof（AOF）
+- Temp fork 文件
+- 日志文件（如果是相对路径）
+
+### **2. dbfilename**
+
+指定 **RDB 文件名**（仅文件名，不含路径）。
+
+```
+dbfilename dump.rdb
+```
+
+### **3. appendfilename**
+
+指定 **AOF 文件名**（仅文件名）。
+
+```
+appendfilename "appendonly.aof"
+```
+
+### **4. logfile**（可选）
+
+Redis 的日志文件路径。
+
+```
+logfile /var/log/redis/redis.log
+```
+
+如果配置为 **相对路径**，则相对 `dir`：
+
+```
+logfile redis.log   # 会写入 dir 目录
+```
+
+如果输出到 stdout，则使用：
+
+```
+logfile ""
+```
+
+### **5. pidfile**（Daemon 模式需要）
+
+Redis 以守护进程方式运行时的 PID 文件路径。
+
+```
+pidfile /var/run/redis_6379.pid
+```
 
 
 
