@@ -4937,7 +4937,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                           
+   >                                                                                                                                                             
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6721,6 +6721,17 @@ func main() {
 
 
 网站：https://github.com/go-redis/redis
+
+1. redis服务端版本 7.0.0（centos源码编译安装）
+
+2. redis客户端版本
+
+   ```shell
+   # 用v9的话，连接时会出现错误信息,但是不影响使用
+   "github.com/go-redis/redis/v8"
+   ```
+
+   
 
 
 
