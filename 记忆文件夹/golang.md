@@ -419,9 +419,16 @@ const (
 )
 ```
 
+### 2.2.6 新类型和别名
 
+| 特性             | 新类型 `type MyInt int` | 类型别名 `type MyInt = int` |
+| ---------------- | ----------------------- | --------------------------- |
+| 是否为新类型     | ✅ 是新类型              | ❌ 不是                      |
+| 与原类型赋值兼容 | ❌ 不兼容，需要显式转换  | ✅ 完全兼容                  |
+| 能否定义方法     | ✅ 可以                  | ❌ 不可以                    |
+| 函数参数类型匹配 | 需要相同类型            | 与原类型完全一样            |
 
-
+”type MyInt int“ 会定义一个新的类型，而”type MyInt = int“ 只是别名
 
 ## 2.3 运算符
 
@@ -639,6 +646,18 @@ func TestIfMultiSet(t *testing.T){
    		fmt.Println("age = 127")
    	}
    	fmt.Println("finished...")
+   
+   
+   // 多个case一个处理方式
+   switch v {
+   case 1, 2, 3:
+       fmt.Println("v 是 1 或 2 或 3")
+   case 4, 5:
+       fmt.Println("v 是 4 或 5")
+   default:
+       fmt.Println("其他情况")
+   }
+   
    ```
    
 
@@ -4937,7 +4956,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                             
+   >                                                                                                                                                                 
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -6727,7 +6746,7 @@ func main() {
 2. redis客户端版本
 
    ```shell
-   # 用v9的话，连接时会出现错误信息,但是不影响使用
+   # 用v9的话，连接时会出现错误信息,但是不影响使用,推荐用v8
    "github.com/go-redis/redis/v8"
    ```
 
@@ -6971,7 +6990,7 @@ logger.Info("failed to fetch URL",
 
 
 
-驱动版本：go.mongodb.org/mongo-driver v1.11.7
+驱动版本：go.mongodb.org/mongo-driver v1.17.6
 
 
 
@@ -6984,6 +7003,12 @@ logger.Info("failed to fetch URL",
 ## 30.1 连接
 
 ```go
+import (
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+uri := "mongodb://user:pass@sample.host:27017/?timeoutMS=5000"
 func testMongoConnect() {
 
 	// The Stable API feature requires MongoDB Server 5.0 or later.
