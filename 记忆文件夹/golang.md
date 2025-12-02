@@ -7761,489 +7761,167 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 
 # 第三十三章 游戏服务框架
 
-1. 游戏框架模拟网易的pomelo和skynet，利用单进程多线程的方式，方便开发、部署、git仓库管理。
-
-2. 传统的web 的微服务的开发模式，每一个服务是一个项目，项目的管理上就显得非常麻烦！
-3. 还有一种更简单的设计方案是，长连接用websocket（只能用token建立一次ws链接），短连接用http，token过期时间设置为一分钟，之后客户端每间隔10s请求Token延期，服务器收到请求后将token过期时间设置为当前时间戳 + 60s。短连接全部用express或gin写到一个服务即可。这样整个后端服务就两个项目：长连接的一个，短连接的一个(包括login)！
-4. 如果微服务用http通信，那么可以写一个Rpc类，里面有多个成员，每个成员是一个service，然后就可以像调用函数一样rpc了，比如Rpc.login.getUserInfo()
-
 
 
 ## 32.1 服务种类介绍
 
-1. login：使用gin编写，主要是通过账号密码返回token，协议是http协议，也可以使用express框架。token的时间可以设置为永久或者一个月。
+1. auth：使用gin编写，主要是通过账号密码返回token，协议是http协议，token写入redis，并且设置过期时间。
 
-2. game：集成各种服务到几个进程里面
-
-   ```ini
-   ; 服务分为框架服务和上游业务服务
-   
-   ; 框架服务
-   ; client 连结connector, 使用websocket协议
-   ; 只能对socket 执行read 操作
-   [connector]
-   
-   ; session,主要进行会话管理
-   ; 只能对socket执行write操作 或者close 操作
-   ; 单实例,非grpc
-   [session]
-   ; 有一个消息队列,收到OnMessage时把消息放到队列里
-   ; select 主循环里,每次调度都会处理全部的消息[调用上游服务的Send]
-   OnConnect = 有新链接 
-   OnMessage = 收到消息
-   OnError   = 链接出错
-   OnClose   = 链接关闭
-   Inform    = 给某个玩家推送消息,上游服务调用
-   Broadcast = 广播
-   
-   ; 服务注册和发现
-   ; 单实例,非grpc
-   [Register]
-   getAllServer = 获取全部服务地址 
-   getServer    = 获取特定服务地址
-   register     = 注册服务
-   
-   
-   ; 上游服务, 上游服务读取配置文件, 可以开启一个或者多个,参考pomelo
-   ; 排行榜, grpc
-   [Rank]
-   
-   
-   ; game, grpc
-   [game]
-   
-   
-   ; 任务, grpc
-   [Task]
-   
-   ; admin, 处理管理后台和运营的需求,可以按情况采用grpc或者http
-   [admin]
-   ```
-
-3. 项目文档结构
-
-   ```ini
-   |-----app
-   |      |
-   |      |------servers
-   |      |        |-----------connector
-   |      |        |-----------session
-   |      |        |-----------register
-   |      |        |-----------rank
-   |      |        |-----------game
-   |      |        |-----------task
-   |      |        |-----------admin
-   |      |
-   |      |
-   |      |
-   |      |------util  --- 工具函数
-   |
-   |
-   |-----config     ----->存放配置文件
-   |
-   |
-   |-----logs        ---->存放日志
-   |
-   |-----app.go     ----> 里面负责创建全部的服务
-   ```
-
-4. 服务代码结构
-
-   rank.go，每个grpc服务都有一个Send接口，参数是[]byte, 返回值是空。主要作用是将消息push到Schedule的buffer，然后立即返回！
+2. gate：网关，和客户端建立ws长连接，和上游服务建立grpc 双向流 长连接。
 
    ```go
-   package main
-   
-   // Rank 用微服务的方式开发游戏,可以参考pomelo,把全部的服务写到一个项目里
-   type Rank struct {
-   }
-   
-   // 模拟skynet
-   func (receiver *Rank) Send(api string, param []byte) {
-       
-   }
-   
-   // 模拟skynet
-   func (receiver *Rank) Call(api string, param []byte, accept chan []byte) {
-       
-   }
-   
-   // Init 初始化,类似C++的构造函数
-   func (receiver *Rank) init() {
-       Rpc.Register("Rank", receiver)
-   }
-   
-   // Run 类似微服务的main函数,这种解决方案把全部服务都写到一个进程里面
-   func (receiver *Rank) run() {
-   
-   }
-   
-   func CreateRank() *Rank{
-       r := &Rank{}
-       r.init()
-       r.run()
-   }
-   
-   // 启动Rank服务,main里面调用
-   func launchRank()  {
-   	r := &Rank{}
-   	r.Init()
-   	r.Run()
-   }
+   // gate里面将服务类型转换为字符串
+   // 在redis里面配置ServerAddress:task 192.168.0.5:8001
+   // gate收到client消息，就可以根据serverType连接上游服务,然后传输消息了
+   // 也可以在上游服务启动时，自己注册到etcd里面，然后gate watch住etcd
+   str1 := netMessage.ServerType.String(netMessage.ServerType_ST_GAME)
    ```
-   
-   app.go
-   
-   ```go
-   package main
-   
-   func launchAll()  {
-       launchRank()
-       // .... 启动其它服务
-   }
-   
-   func main(){
-       launchAll()
-   }
-   ```
-   
-   session.go
-   
-   ```go
-   package main
-   
-   // Rank 用微服务的方式开发游戏,可以参考pomelo,把全部的服务写到一个项目里
-   type SessionCmd struct{
-       cmd  string   // 定义成枚举
-       data any
-   }
-   
-   type Session struct {
-       ch  chan SessionCmd
-   }
-   
-   func (receiver *Session) init() {
-       receiver.ch = make(SessionCmd, 1024)
-   }
-   
-   
-   // 这四个API 由connector来调用
-   func (receiver *Session) OnConnect(data any) {
-       cmd := &SessionCmd{}
-       cmd.cmd = "connect"
-       cmd.data = data
-       receiver.ch  <- cmd
-   }
-   
-   func (receiver *Session) OnMessage(data any) {
-       cmd := &SessionCmd{}
-       cmd.cmd = "message"
-       cmd.data = data
-       receiver.ch  <- cmd
-   }
-   
-   func (receiver *Session) OnClose(data any) {
-       cmd := &SessionCmd{}
-       cmd.cmd = "close"
-       cmd.data = data
-       receiver.ch  <- cmd
-   }
-   
-   func (receiver *Session) OnError(data any) {
-       cmd := &SessionCmd{}
-       cmd.cmd = "error"
-       cmd.data = data
-       receiver.ch  <- cmd
-   }
-   
-   
-   // PushToMany 和 PushToAll 类似, 上游服务推送消息时调用
-   func PushToOne(uid int64, data any){
-       cmd := &SessionCmd{}
-       cmd.cmd = 'pushToOne'
-       cmd.data = data
-       receiver.ch  <- cmd
-   }
-   
-   func (receiver *Session) run() {
-       for{
-           select{
-               case msg := <- receiver.ch:
-               switch msg.cmd{
-                   case 'message':
-                   onMessage()
-                   
-                   case 'connect':
-                   onConnect()
-                   
-                   case 'close':
-                   onClose()
-                   
-                   case 'error':
-                   onError()
-                   
-                   case 'pushToOne':
-                   onPushToOne()
-                   
-                   case 'pushToMany':
-                   onPushToMany()
-                   
-                   case 'pushToAll':
-                   onPushToAll()
-               }
-           }
-       }
-   }
-   
-   ```
-   
-   rpc.go
-   
-   ```go
-   package main
-   
-   import (
-   	"math/rand"
-   	"sync"
-   )
-   
-   // Rpc TODO 建议每个服务只启动一个,会更简单,只要服务拆分合理,完全可以充分利用CPU的资源
-   type Rpc struct {
-   	mut     sync.Mutex
-   	servers map[string][]*any
-   }
-   
-   // Init main里调用一次
-   func (receiver *Rpc) init() {
-   	receiver.servers = make(map[string][]*any)
-   }
-   
-   // 启动服务
-   func (receiver *Rpc) run() {
-   
-   }
-   
-   func (receiver *Rpc) Register(serverName string, server *any) {
-   	defer receiver.mut.Unlock()
-   	receiver.mut.Lock()
-   
-   	_, ok := receiver.servers[serverName]
-   	if ok == false {
-   		receiver.servers[serverName] = make([]*any, 0)
-   	}
-   	receiver.servers[serverName] = append(receiver.servers[serverName], server)
-   }
-   
-   // Rank 获取指定的服务
-   func (receiver *Rpc) Rank() *any {
-   	defer receiver.mut.Unlock()
-   	receiver.mut.Lock()
-   	randNum := rand.Int() // 不需要设置随机种子了
-   
-   	servers := receiver.servers["Rank"]
-   	index := randNum % len(servers)
-   	return servers[index]
-   }
-   
-   func CreateRpc() {
-   	r := &Rpc{}
-   	r.init()
-   	r.run()
-   }
-   ```
-   
-   
 
+3. login：当gate开启多个时，需要login来仲裁，把重复登录的连接踢下线。登录用户uid存在redis的onlie_user:1001里。客户端登录时，login往redis里写入记录，离线时，将对应记录删除。login可能会开启多个，所以访问redis对应表的数据时，需要用etcd加上行锁（互斥锁）。
 
+4. event：事件服务，用户登录、离线、充值、游戏结算等都会往nsq写入事件，event服务消费后，批量写入clickhouse。
 
-## 32.2 调度器
+5. 核心玩法：实现核心玩法的服务
 
-每一个上游服务都有一个成员变量是调度器，Send收到消息时，将消息放到队列，立即返回。
+6. mongdb：存放业务数据，根据uid的hash进行分库分表，性能就可以非常高了。
 
-```go
-// 业务服传入cb,cb里面决定每个消息应该如何处理
+7. redis：存放缓存数据
 
-type Schedule struct {
-	tasks [][]byte
-	mc    chan []byte
-	cb    func([]byte)
-}
+8. clickhouse：存放统计数据
 
-func (receiver *Schedule) Init(cb func([]byte)) {
-	receiver.tasks = make([][]byte, 0)
-	receiver.mc = make(chan []byte, 1024) // buffer len = 1024
-	receiver.cb = cb
-}
+9. etcd：服务注册与发现、配置动态更新、配置中心、分布式锁
 
-func (receiver *Schedule) AddTask(task []byte) {
-	receiver.mc <- task
-}
+10. nsq：消息队列，上游服务需要主动推送消息/广播时，也可以往里面写数据；每一个gate都消费主题”gate“里面一个不同的channel
 
-func (receiver *Schedule) ExecCallback() {
-	for _, task := range receiver.tasks {
-		receiver.cb(task)
-	}
-}
+11. 管理后台：gin-vue-admin
 
-func (receiver *Schedule) Run() {
-	for {
-		select {
-		case newTask := <-receiver.mc:
-			receiver.tasks = append(receiver.tasks, newTask)
-		default:
-			receiver.ExecCallback()
-		}
-	}
-}
-```
+12. 项目文档结构
 
+    ```ini
+    |-----app
+    |      |
+    |      |------servers
+    |      |        |-----------connector
+    |      |        |-----------session
+    |      |        |-----------register
+    |      |        |-----------rank
+    |      |        |-----------game
+    |      |        |-----------task
+    |      |        |-----------admin
+    |      |
+    |      |
+    |      |
+    |      |------util  --- 工具函数
+    |
+    |
+    |-----config     ----->存放配置文件
+    |
+    |
+    |-----logs        ---->存放日志
+    |
+    |-----app.go     ----> 里面负责创建全部的服务
+    ```
 
+13. 每一个上游服务都提供一个grpc stream的接口
 
-## 32.3 优化
-
-既然每个业务服都有Send的接口了，其实不用grpc也可以。可以直接写成一个class，服务之间的rpc调用就变成了函数调用。传统多进程微服务架构变成了单进程多协程的架构。因为每个业务服务都是一个class Instance，因此不需要配置ip 和 port。可以配置每个服务启动多少个实例。这时候就和skynet一样了。
-
-
-
-```go
-// rpc调用时,调用方要传入一个channle来接受结果
-// rpc调用方式：app.rpc.Rank.Call("enterRoom", param, acceptChannel)
-type Rpc struct{
-    
-}
-
-// 返回一个服务实例地址
-// 请求Register 来返回一个实例
-func (receiver *Rpc) Rank() *Rank{
-    
-}
-```
-
-
-
-服务配置：配置每个服务启动的数量，有状态服务只能配置一个，比如session、game，无状态服务可以配置多个；最简单的是全部服务都只配置一个，此时可以忽略配置。
-
-```json
-{
-	serverNum : {
-        connector : 1,
-        session   : 1,
-        game      : 1,
-        task      : 5,
-        login     : 10,
-        admin     : 1
+    ```protobuf
+    service FishService {
+      // 双向流 RPC
+      rpc WriteMessage(stream Packet) returns (stream Packet);
     }
-}
-```
+    ```
 
-有时间自己开一个github项目仓库，然后实现自己的想法
+14. event批量处理nsq消息的思路：比如牌局结算、下注等
 
+    + 有一个消费者线程，把nsq消息写入ch，ch长度可以设置为102400
 
+    + 有一个处理线程，每5s将ch里面的数据一次性读取处理，处理完后再写入clickhouse
 
+    + 示例代码
 
+      ```golang
+      func DrainChannel[T any](ch chan T) []T {
+      	var results []T
+      	for {
+      		select {
+      		case v := <-ch:
+      			results = append(results, v)
+      		default:
+      			return results
+      		}
+      	}
+      }
+      
+      func run(){
+          ticker := time.NewTicker(time.Second * 5)
+      	for i := range ticker.C{
+      		result := DrainChannel(ch)
+              handler(result)
+      	}
+      }
+      ```
 
-## 32.4 连接服务器的设计
-
-我们把处理外部连接和处理游戏逻辑分摊到两个服务器上处理，为了后文容易表述，暂时不太严谨的把前者称为连接服务器，后者叫做逻辑服务器。
-
-连接服务器做的事情可以非常简单，只是把多个连接上的数据汇集到一起。假设同时连接总数不超过 65536 个，我们只需要把每个连接上的数据包加上一个两字节的数据头就可以表识出来。这个连接服务器再通过单个连接和逻辑服务器通讯就够了。
-
-
-
-连接服务器和client 用 websocket协议
-
-连接服务器和逻辑服务器用websocket协议
-
-数据类型定义
-
-```protobuf
-// 连接服务器发送给 逻辑服务器的数据
-message Package
-{
-	int32   connectorID;  // 网关每个链接都有一个链接ID
-	int32   cmd;          // connect、message、close、error,定义一个枚举
-	bytes   data;         // 传输给后端的数据,也是客户端发送的数据
-}
-```
-
-这样设计，连用户认证都不需要写在连接器里面了。连接器里面什么逻辑也没有。
-
+      
 
 
-## 32.5 游戏流程
 
-1. 客户端http请求login server 得到token
+## 32.3 游戏流程
 
-2. 客户端用ws连接到连接服务器，带上token信息。之前是单独设计一个pb的协议，现在不需要
+1. 客户端发起http请求，方法是post，请求路径是/token，传入user和passwd，校验通过后得到token
+
+2. 客户端用ws连接到gate，带上token信息。
 
    ```shell
-   url = ws://191.168.100.2/?token=HEgzCVbSRkccQGunqcLkXG1MEo12B9Uz
+   url = ws://191.168.100.2/
+   
+   message Packet{
+     ServerType ServerType  = 1;
+     CMD Cmd                = 2;
+     bytes Payload          = 3;
+     int32 Uid              = 4;   // 客户端不需要填
+     ErrorCode Code         = 5;  // 错误码,0表示成功
+     int32 CorrelationId    = 6;  // 客户用于关联请求的字段,主动推送时传-1
+   }
+   message LoginReq{
+     string Token = 1;
+   }
+   message  LoginResp{
+     int32   UserID      = 1;
+     string  NickName    = 2;
+     int64   Coin        = 3;
+     int32   Avatar      = 4;  //头像图标ID
+   }
    ```
 
-3. 连接服务转发数据给逻辑服务器时，带上token参数。
+3. gate用token查询redis得到uid；然后利用uid发起rpc请求login服务，该服务会将同一个uid登录的连接踢掉，并且返回用户信息，gate再把用户信息发送给客户端，长连接连接建立成功（OnConnect）
+
+4. 此后，客户端通过ws连接传输数据到gate，gate再与上游服务建立grpc 双向流，通过此连接传输数据。
+
+5. 上游服务需要主动推送消息时，比如admin推送活动开启消息，可以往nsq写入消息，每个gate都从Topic为gate 的主题里面，一个独立的channle（gate + gateID）接受消息。
 
 
 
 
 
-常规设计：login server 返回token时，会将token：uid 对应关系写入redis，ws-gate 收到连接请求时，拿token到redis查出uid，然后完成认证的过程，放行请求。
+## 32.3 服务架构
 
-
-
-
-
-## 32.6 服务架构
-
-我们把处理外部连接和处理游戏逻辑分摊到两个服务器上处理，为了后文容易表述，暂时不太严谨的把前者称为连接服务器，后者叫做逻辑服务器。
-
-连接服务器做的事情可以非常简单，只是把多个连接上的数据汇集到一起。假设同时连接总数不超过 65536 个，我们只需要把每个连接上的数据包加上一个两字节的数据头就可以表识出来。这个连接服务器再通过单个连接和逻辑服务器通讯就够了。
-
-
-
-游戏服务架构的设计
+游戏服务架构图
 
 ```
-                               ----> game
-
-connector   -------> session   ----> task
-
-                               ----> shop
-                               
-                               ----> fina
+       ----> Auth
+       |                  Redis    MongDB
+       |
+Nginx  ----> Gate -------> Login   ----> task
+                  -------> Fish
+                  nsq  -------> Event ---->clickHouse
 ```
 
+思路：
 
++ 客户端与gate建立ws长连接；gate与游戏、登录、任务等服务建立grpc双向流长连接；后端服务之间rpc调用采用grpc unary；admin等需要主动向客户端推送消息，可以写入nsq，每一个gate都消费nsq的消息！（建立一个名为gate的topic，每一个gate实例都消费一个单独的channel）；登录、离线、牌局信息等，写入nsq，由一个event服务来处理，每5s处理一次，批量写入ClickHouse！服务注册发现、配置热更新采用etcd；缓存用redis、数据库用mysql或者mongo
 
-连接服务的设计，只是转发数据，没有任何逻辑
-
-```protobuf
-message Segment
-{
-	int32   connectorID;  // 网关每个链接都有一个链接ID
-	int32   cmd;          // connect、message、close、error,定义一个枚举
-	bytes   data;         // 传输给后端的数据,也是客户端发送的数据
-}
-```
-
-
-
-session的设计，每个业务服务启动时要注册到router里面。这样的架构，connector和router服务代码就不需要改动了。
-
-session 主要实现路由、用户认证（客户端拿token连接时需要请求login认证）、推送消息的功能
-
-```go
-message Package{
-    ServerId server = 1;
-    Cmd    cmd    = 2;
-    bytes  data   = 3;
-}
-
-if server, exist := receive.servers[package.server]; exist{
-    server.send(p.encode())
-}
-```
-
-
++ 处理grpc 双向流的类叫做Network；Network收到消息后发送到App类，App类里面增加计时器的功能；App类可以增加一个成员类型为Logic，在里面实现业务逻辑（可选的）
++ mongodb根据uid的hansh进行分库分表，再加上etcd的分布式锁（类似mysql行锁、表锁），即可拥有非常高的qps
 
 
 
