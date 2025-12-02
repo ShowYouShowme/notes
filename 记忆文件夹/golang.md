@@ -8997,7 +8997,11 @@ build:genNetMsg genApiMsg genErrMsg
 
 # 第四十章 etcd
 
-etcd主要功能是服务注册与发现、配置中心（配置更改后可以通知到watch的服务）
+etcd主要功能是
+
++ 服务注册与发现
++ 配置中心（配置更改后可以通知到watch的服务）
++ 分布式锁
 
 
 
@@ -9286,7 +9290,13 @@ conn.SetPongHandler(func(appData string) error {
 
 
 
-# 第四十六章 异步
+# 第四十六章 NSQ
+
+
+
+
+
+# 第四十七章 异步
 
 异步io的demo
 
