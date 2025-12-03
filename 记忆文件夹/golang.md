@@ -7871,9 +7871,33 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 
 2. 客户端用ws连接到gate，带上token信息。
 
-   ```shell
-   url = ws://191.168.100.2/
+   ```
+   url = ws://127.0.0.1:7000/?token=UaZWyzxljio3bPhLV7ZTvpmg08v3iVoS
    
+   func onUpgrade(writer http.ResponseWriter, r *http.Request) {
+   	conn, err := upgrader.Upgrade(writer, r, nil)
+   	if err != nil {
+   		log.Errorf("http协议升级为ws时出错, error = %v", err)
+   		return
+   	}
+   	var token string = r.URL.Query().Get("token")
+   	log.Infof("token = %v", token)
+   	// 利用{Token, from[自己的grpc地址及]}grpc请求Login服务 --> Token-->uid,再踢掉已登录的连接,最后返回用户信息(Packet类型,里面包含uid)
+   	// 收到响应后登录成功，创建session,往nsq里写入用户登录的消息 --> 上游服务收到用户登录消息时,可以主动推送消息
+   }
+   
+   service Auth {
+       rpc Login () returns (Packet) {}
+     } 
+     message LoginReq{
+     string Token = 1;
+     string From  = 2；
+   }
+   ```
+
+   
+
+   ```shell
    message Packet{
      ServerType ServerType  = 1;
      CMD Cmd                = 2;
@@ -7881,15 +7905,6 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
      int32 Uid              = 4;   // 客户端不需要填
      ErrorCode Code         = 5;  // 错误码,0表示成功
      int32 CorrelationId    = 6;  // 客户用于关联请求的字段,主动推送时传-1
-   }
-   message LoginReq{
-     string Token = 1;
-   }
-   message  LoginResp{
-     int32   UserID      = 1;
-     string  NickName    = 2;
-     int64   Coin        = 3;
-     int32   Avatar      = 4;  //头像图标ID
    }
    ```
 
