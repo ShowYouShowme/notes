@@ -7884,6 +7884,9 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
    	log.Infof("token = %v", token)
    	// 利用{Token, from[自己的grpc地址及]}grpc请求Login服务 --> Token-->uid,再踢掉已登录的连接,最后返回用户信息(Packet类型,里面包含uid)
    	// 收到响应后登录成功，创建session,往nsq里写入用户登录的消息 --> 上游服务收到用户登录消息时,可以主动推送消息
+   	// 用户登录/离线时,gate会往redis 插入/删除记录 online_user:uid from
+   	// Login 服务只是从redis里读取用户来自哪个网关
+   	// gate 一开始就开启3或者5个，配置自动重启，异常重启/人为关闭时，会删掉redis的相关记录
    }
    
    service Auth {
