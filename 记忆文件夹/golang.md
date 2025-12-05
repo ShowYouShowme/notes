@@ -4956,7 +4956,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                                 
+   >                                                                                                                                                                   
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -5024,7 +5024,9 @@ func BenchmarkStringAdd(b *testing.B) {
 1. 示例一
 
    ```go
-   	ticker := time.NewTicker(time.Second * 3)
+   	// NewTicker 周期触发
+       ticker := time.NewTicker(time.Second * 3)
+   	defer ticker.Stop()
    	for i := range ticker.C{
    		fmt.Println(i)
    	}
@@ -5035,11 +5037,12 @@ func BenchmarkStringAdd(b *testing.B) {
 2. 示例二
 
    ```go
-   	t := time.NewTimer(time.Second * 3)
+   	// NewTimer 只触发一次
+       t := time.NewTimer(time.Second * 3)
    	for{
    		v := <- t.C
    		fmt.Println("timer running...",v)
-   		t.Reset(time.Second * 3)
+   		t.Reset(time.Second * 3) // 重置周期
    	}
    ```
 
@@ -7763,7 +7766,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 
 
 
-## 32.1 服务种类介绍
+## 33.1 服务种类介绍
 
 1. auth：使用gin编写，主要是通过账号密码返回token，协议是http协议，token写入redis，并且设置过期时间。
 
@@ -7865,7 +7868,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 
 
 
-## 32.3 游戏流程
+## 33.2 游戏流程
 
 1. 客户端发起http请求，方法是post，请求路径是/token，传入user和passwd，校验通过后得到token
 
@@ -7921,7 +7924,7 @@ fmt.Println(nowtime)    //打印结果：2021-02-02 13:22:04
 
 
 
-## 32.3 服务架构
+## 33.3 服务架构
 
 游戏服务架构图
 
@@ -7940,6 +7943,35 @@ Nginx  ----> Gate -------> Login   ----> task
 
 + 处理grpc 双向流的类叫做Network；Network收到消息后发送到App类，App类里面增加计时器的功能；App类可以增加一个成员类型为Logic，在里面实现业务逻辑（可选的）
 + mongodb根据uid的hansh进行分库分表，再加上etcd的分布式锁（类似mysql行锁、表锁），即可拥有非常高的qps
+
+
+
+## 33.4 项目代码结构
+
+代码调试和运行
+
++ goland里面配置运行种类是**目录**
++ 目录 选择服务的目录，比如**D:\sandbox\test\app\game**
++ 这样就可以运行、断点了
++ 经过上面的配置可以把多个服务的代码整合到一个代码仓库，并且实现代码复用
+
+```
+|---app----|------ gate    -----main.go
+|          |------ login   -----main.go 
+|          |-------game    -----main.go
+|
+|---internal|------ gate(具体实现代码)
+|           |------ login
+|           |------- game
+|
+|---pkg(公共代码、pb生成的文件等)
+|
+|---conf(配置文件)
+|
+|---go.mod
+```
+
+
 
 
 
