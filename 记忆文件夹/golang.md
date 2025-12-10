@@ -4956,7 +4956,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                                     
+   >                                                                                                                                                                       
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7349,7 +7349,7 @@ func testDelete() {
 
 
 
-## 31.2 安装protoc的Golang gRPC插件
+## 31.2 安装gRPC插件
 
 ```shell
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -7534,7 +7534,7 @@ func main() {
 
 除了Unary，其它通信方式出错后都需要手动重连。
 
-## 32.8 双向流代码
+## 31.8 双向流代码
 
 1. chat.proto
 
@@ -7703,7 +7703,246 @@ func main() {
    
    ```
 
-   
+
+
+
+## 31.9 grpc网关
+
+项目地址：https://github.com/ShowYouShowme/grpc-gateway
+
+浏览器使用http协议请求grpc网关，grpc网关再用grpc请求上游的grpc服务，来获取数据。
+
+服务端只需要编写grpc代码，网关的代码自动生成。
+
+### 31.9.0 安装依赖工具
+
+需要Go 1.24+
+
++ 在go.mod里面加入如下代码
+
+  ```
+  module tools
+  
+  go 1.24
+  
+  tool (
+  	github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+  	github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+  	google.golang.org/grpc/cmd/protoc-gen-go-grpc
+  	google.golang.org/protobuf/cmd/protoc-gen-go
+  )
+  ```
+
++ 执行命令
+
+  ```
+  go get -tool github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+  go get -tool github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+  go get -tool google.golang.org/protobuf/cmd/protoc-gen-go
+  go get -tool google.golang.org/grpc/cmd/protoc-gen-go-grpc
+  ```
+
++ 安装工具
+
+  ```
+  go install tool
+  ```
+
+
+
+### 31.9.1 定义proto文件
+
+user.proto
+
+```proto
+syntax = "proto3";
+
+package user;
+option go_package = "/pkg/pb";
+import "google/api/annotations.proto";
+
+service UserService {
+  // 定义 gRPC 方法
+  rpc GetUser(GetUserRequest) returns (UserInfoResponse) {
+    // HTTP 映射
+    option (google.api.http) = {
+      get: "/v1/users/{user_id}"  // REST 路径
+    };
+  }
+
+  rpc CreateUser(CreateUserRequest) returns (UserInfoResponse) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"   // POST 请求把整个消息体映射为 JSON
+    };
+  }
+}
+
+// 请求/响应消息
+message GetUserRequest {
+  int32 user_id = 1;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message UserInfoResponse {
+  int32 user_id = 1;
+  string name = 2;
+  int32 age = 3;
+}
+
+```
+
+
+
+### 31.9.2 下载必要依赖文件
+
+url = https://github.com/googleapis/googleapis
+
+依赖的文件：
+
+```shell
+google/api/annotations.proto
+google/api/field_behavior.proto
+google/api/http.proto
+google/api/httpbody.proto
+```
+
+
+
+### 31.9.3 生成代码
+
+#### 1. 生成grpc服务的pb文件
+
+```
+protoc --go_out=. --go-grpc_out=. user.proto
+```
+
+#### 2. 生成反向代理文件
+
+```
+ protoc -I . --grpc-gateway_out ./pkg/pb --grpc-gateway_opt paths=source_relative user.proto
+```
+
+#### 3. 生成的文件列表
+
++ user.pb.go：消息文件
++ user.pb.gw.go：网关
++ user_grpc.pb.go：grpc服务
+
+### 31.9.4 编写代码
+
++ 网关代码
+
+  ```go
+  package main
+  
+  import (
+  	"context"
+  	"flag"
+  	"fmt"
+  	"net/http"
+  
+  	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+  	"google.golang.org/grpc"
+  	"google.golang.org/grpc/credentials/insecure"
+  	"google.golang.org/grpc/grpclog"
+  
+  	gw "grpc-gateway/pkg/pb" // Update
+  )
+  
+  func run() error {
+  	ctx := context.Background()
+  	ctx, cancel := context.WithCancel(ctx)
+  	defer cancel()
+  
+  	// Register gRPC server endpoint
+  	// Note: Make sure the gRPC server is running properly and accessible
+  	mux := runtime.NewServeMux()
+  	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+  	err := gw.RegisterUserServiceHandlerFromEndpoint(ctx, mux, "127.0.0.1:9090", opts)
+  	if err != nil {
+  		return err
+  	}
+  	fmt.Printf("gw Listening on port 8081\n")
+  	// Start HTTP server (and proxy calls to gRPC server endpoint)
+  	return http.ListenAndServe(":8081", mux)
+  }
+  
+  func main() {
+  	flag.Parse()
+  
+  	if err := run(); err != nil {
+  		grpclog.Fatal(err)
+  	}
+  }
+  
+  ```
+
++ grpc服务代码
+
+  ```
+  package main
+  
+  import (
+  	"context"
+  	"log"
+  	"net"
+  
+  	"google.golang.org/grpc"
+  
+  	pb "grpc-gateway/pkg/pb"
+  )
+  
+  // 实现 gRPC 服务
+  type server struct {
+  	pb.UnimplementedUserServiceServer
+  }
+  
+  func (s *server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.UserInfoResponse, error) {
+  	return &pb.UserInfoResponse{
+  		UserId: req.UserId,
+  		Name:   "Alice",
+  		Age:    25,
+  	}, nil
+  }
+  
+  func (s *server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserInfoResponse, error) {
+  	return &pb.UserInfoResponse{
+  		UserId: 1, // 模拟自增ID
+  		Name:   req.Name,
+  		Age:    req.Age,
+  	}, nil
+  }
+  
+  func main() {
+  	// 1️⃣ 启动 gRPC 服务
+  	grpcPort := ":9090"
+  	lis, err := net.Listen("tcp", grpcPort)
+  	if err != nil {
+  		log.Fatalf("failed to listen: %v", err)
+  	}
+  
+  	s := grpc.NewServer()
+  	pb.RegisterUserServiceServer(s, &server{})
+  
+  	log.Printf("gRPC server listening on %s", grpcPort)
+  	if err := s.Serve(lis); err != nil {
+  		log.Fatalf("failed to serve: %v", err)
+  	}
+  
+  }
+  
+  ```
+
+  
+
+
+
+
 
 # 第三十二章 时间戳和时间操作
 
