@@ -60,37 +60,11 @@ protected-mode no
 
 
 
-# 第二章 安装C++开发库
+# 
 
-## 2.1 下载文件
+# 第二章 Redis操作
 
-***
-
-```shell
-wget https://github.com/redis/hiredis/archive/v0.14.0.tar.gz
-```
-
-## 2.2 安装
-
-***
-
-```shell
-tar -zxvf v0.14.0.tar.gz
-cd ./hiredis-0.14.0/
-make -j4
-make PREFIX=/usr install   # 安装到指定目录,开发时直接能找到
-ldconfig
-ldconfig -v | grep hiredis # 不知道是否需要ldconfig,可以用此命令测试一下
-
-# 如果第三方SDK 安装到/usr目录下依然找不到so(编译或者运行时),可以用命令
-# ldconfig -v | grep hiredis 查看一下,或者试试 ldconfig 即可
-```
-
-
-
-# 第三章 Redis操作
-
-## 3.0 配置项介绍
+## 3.0 重要配置项介绍
 
 涉及到路径的配置
 
@@ -102,7 +76,7 @@ ldconfig -v | grep hiredis # 不知道是否需要ldconfig,可以用此命令测
 | **logfile**        | 日志文件路径            | 可选                    | 是             |
 | **pidfile**        | 守护模式下 PID 文件路径 | 可选                    | 是             |
 
-### **1. dir**（最重要）
+### 3.0.1 dir（最重要）
 
 指定 **RDB / AOF 文件保存的目录**。
 
@@ -117,7 +91,7 @@ dir /var/lib/redis/
 - Temp fork 文件
 - 日志文件（如果是相对路径）
 
-### **2. dbfilename**
+### 3.0.2 dbfilename
 
 指定 **RDB 文件名**（仅文件名，不含路径）。
 
@@ -125,7 +99,7 @@ dir /var/lib/redis/
 dbfilename dump.rdb
 ```
 
-### **3. appendfilename**
+### 3.03 appendfilename
 
 指定 **AOF 文件名**（仅文件名）。
 
@@ -133,7 +107,7 @@ dbfilename dump.rdb
 appendfilename "appendonly.aof"
 ```
 
-### **4. logfile**（可选）
+### 3.0.4 logfile（可选）
 
 Redis 的日志文件路径。
 
@@ -153,7 +127,7 @@ logfile redis.log   # 会写入 dir 目录
 logfile ""
 ```
 
-### **5. pidfile**（Daemon 模式需要）
+### 3.0.5 pidfile（Daemon 模式需要）
 
 Redis 以守护进程方式运行时的 PID 文件路径。
 
@@ -163,57 +137,7 @@ pidfile /var/run/redis_6379.pid
 
 
 
-## 3.1 关闭保护模式
-
-当启用保护模式，而且没有密码时，服务器只接受来自IPv4地址(127.0.0.1)、IPv6地址(::1)或Unix套接字本地连接
-
-***
-
-```shell
-> config set protected-mode "no"
-```
-
-
-
-## 3.2 设置密码
-
-***
-
-```shell
-
-# 临时修改
-CONFIG SET requirepass ${passwd}
-
-# 示例
-CONFIG SET requirepass tars2015
-
-
-# 永久修改, 改配置文件redis.conf
-requirepass jNu2yHNjMINN8cgH
-```
-
-
-
-## 3.3 配置文件
-
-***
-
-1. 关闭保护模式
-
-   > + protected-mode yes改为protected-mode no
-   > + 注释bind 127.0.0.1
-   
-2. 指定配置文件启动redis
-
-   ```shell
-   redis-server /opt/redis/ect/redis.conf
-   ```
-
-   
-
-
-
-## 3.4 连接服务器
+## 3.1 客户端
 
 ***
 
@@ -225,29 +149,11 @@ redis-cli -h 127.0.0.1 -p 6666 -a 123456
 
 
 
-##  3.5 清空数据
+## 3.2 持久化配置
 
 ***
 
-1. FLUSHDB
-
-   ```
-   删除当前库中全部key
-   ```
-
-2. FLUSHALL
-
-   ```
-   删除全部库中的key
-   ```
-
-
-
-## 3.6 持久化配置
-
-***
-
-### 3.6.1 RDB配置
+### 3.2.1 RDB配置
 
 ```shell
 # 数据保存在文件dump.rdb里,把这几行注释掉关闭RDB持久化
@@ -262,7 +168,7 @@ save 300 10
 save 60 10000
 ```
 
-### 3.6.2 AOF配置
+### 3.2.2 AOF配置
 
 ```shell
 # 开启AOF持久化,默认为no,开启后会产生一个appendonly.aof文件
@@ -271,7 +177,7 @@ appendonly yes
 
 
 
-### 3.6.3 混合持久化
+### 3.2.3 混合持久化
 
 ```shell
 #配置项  redis 4 以后才支持
@@ -283,67 +189,103 @@ bgwriteaof
 
 
 
-## 3.7 非交互式执行命令
-
-***
-
-1. 列出键
-
-   ```shell
-   # 命令
-   redis-cli -h ${host} -p ${port} -a ${passwd} ${cmd} 
-   # 例子
-   redis-cli -p 7111 KEYS '*'
-   ```
-
-2. 清空全部键
-
-   ```shell
-   redis-cli -p 7111 FLUSHALL
-   ```
-
-3. 订阅全部频道
-
-   ```shell
-   PSUBSCRIBE *
-   ```
-
-4. 发布消息：利用发布订阅，可以将redis作为配置中心，实时通知服务去更新配置！
-
-   ```shell
-   PUBLISH runoobChat "Redis PUBLISH test"
-   ```
-
-5. 退订全部频道
-
-   ```shell
-   PUNSUBSCRIBE *
-   ```
-
-6. 订阅给定的一个或多个频道
-
-   ```shell
-   SUBSCRIBE channel [channel ...]
-   ```
-
-7. 退订给定的一个或多个频道
-
-   ```shell
-   UNSUBSCRIBE channel [channel ...]
-   ```
-
-8. 查看帮助信息
-
-   ```shell
-   redis -h
-   ```
+## 3.3 配置项汇总
 
 
 
+### 3.3.1 网络相关
 
-## 3.8 关闭TCP监听,只用unix socket
+| 配置项           | 默认值      | 说明                               |
+| ---------------- | ----------- | ---------------------------------- |
+| `bind`           | `127.0.0.1` | 监听的 IP 地址，可设置多个 IP      |
+| `port`           | `6379`      | TCP 端口，客户端连接使用           |
+| `tcp-backlog`    | `511`       | TCP 连接等待队列大小               |
+| `timeout`        | `0`         | 客户端空闲超时秒数（0 表示不关闭） |
+| `tcp-keepalive`  | `300`       | TCP keepalive 秒数，检测死连接     |
+| `protected-mode` | `yes`       | 启动保护模式，只允许本地访问       |
 
-```ini
-port 0 
-```
 
+
+### 3.3.2 持久化相关
+
+RDB（快照持久化）
+
+| 配置项       |   默认值   | 说明                              |
+| ------------ | :--------: | --------------------------------- |
+| `save`       |   900 1    | 触发快照的条件（秒数 + 变更次数） |
+|              |   300 10   |                                   |
+|              |  60 10000  |                                   |
+| `dbfilename` | `dump.rdb` | RDB 文件名                        |
+| `dir`        |    `./`    | RDB 文件保存路径                  |
+
+AOF(追加文件持久化)
+
+| 配置项                      | 默认值           | 说明                                     |
+| --------------------------- | ---------------- | ---------------------------------------- |
+| `appendonly`                | `no`             | 是否开启 AOF 持久化                      |
+| `appendfilename`            | `appendonly.aof` | AOF 文件名                               |
+| `appendfsync`               | `everysec`       | 写磁盘策略：`always` / `everysec` / `no` |
+| `no-appendfsync-on-rewrite` | `yes`            | AOF 重写期间是否暂停 fsync               |
+
+
+
+### 3.3.3 内存管理
+
+| 配置项              | 默认值       | 说明                                                         |
+| ------------------- | ------------ | ------------------------------------------------------------ |
+| `maxmemory`         | `0`          | 最大内存，0 表示不限制                                       |
+| `maxmemory-policy`  | `noeviction` | 内存达到上限时的淘汰策略（allkeys-lru、volatile-lru、allkeys-random 等） |
+| `maxmemory-samples` | `5`          | LRU 策略采样数量，影响性能和精确度                           |
+
+
+
+### 3.3.4 复制/集群相关
+
+| 配置项                 | 默认值       | 说明                           |
+| ---------------------- | ------------ | ------------------------------ |
+| `slaveof`              | -            | 指定主节点 IP:端口，开启从节点 |
+| `masterauth`           | -            | 从节点连接主节点的密码         |
+| `cluster-enabled`      | `no`         | 是否开启 Redis Cluster 模式    |
+| `cluster-config-file`  | `nodes.conf` | Cluster 配置文件               |
+| `cluster-node-timeout` | `15000`      | 节点超时时间（毫秒）           |
+
+
+
+### 3.3.5 安全相关
+
+| 配置项           | 默认值 | 说明                                        |
+| ---------------- | ------ | ------------------------------------------- |
+| `requirepass`    | -      | 客户端连接密码                              |
+| `rename-command` | -      | 重命名或禁用危险命令（如 FLUSHALL、CONFIG） |
+
+
+
+### 3.3.6 日志和监控
+
+| 配置项                    | 默认值           | 说明                                |
+| ------------------------- | ---------------- | ----------------------------------- |
+| `loglevel`                | `notice`         | 日志级别：debug/info/notice/warning |
+| `logfile`                 | ""（控制台输出） | 日志文件路径                        |
+| `databases`               | `16`             | 数据库数量                          |
+| `slowlog-log-slower-than` | `10000`          | 慢查询日志阈值（微秒）              |
+| `slowlog-max-len`         | `128`            | 保存慢查询条数上限                  |
+
+
+
+
+
+### 3.3.7 优化建议
+
+**高性能**：
+
+- 开启 AOF `everysec` 或 RDB，避免 `always`
+- 调整 `tcp-backlog` 和 `tcp-keepalive`
+
+**内存控制**：
+
+- 配置 `maxmemory` + `maxmemory-policy`
+
+**安全**：
+
+- 设置 `requirepass`
+- 对危险命令使用 `rename-command`
