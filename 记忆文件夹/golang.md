@@ -4956,7 +4956,7 @@ func BenchmarkStringAdd(b *testing.B) {
    >
    >   ```shell
    >   # 1-- http的ping  --> 必须要检查到关键路径
-   >                                                                                                                                                                       
+   >                                                                                                                                                                         
    >   # 2-- 检查进程是否存在
    >   ```
    >
@@ -7938,7 +7938,44 @@ protoc --go_out=. --go-grpc_out=. user.proto
   
   ```
 
-  
+
+
+
+## 31.10 gin里面嵌入grpc网关
+
+在gin里面嵌入grpc网关，这样可以使用grpc来实现gin的接口
+
+核心代码
+
+```go
+func run() error {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Register gRPC server endpoint
+	// Note: Make sure the gRPC server is running properly and accessible
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := gw.RegisterUserServiceHandlerFromEndpoint(ctx, mux, "127.0.0.1:9090", opts)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("gin gw Listening on port 8080...\n")
+	r := gin.Default()
+
+	// Gin 包装 gRPC-Gateway
+	// 🟠/v1/*any 可以匹配
+	// 🟠/v1/user
+	// 🟠/v1/user/123
+	r.Any("/v1/*any", func(c *gin.Context) {
+		mux.ServeHTTP(c.Writer, c.Request)
+	})
+	return r.Run(":8080")
+}
+```
+
+完整代码url = https://github.com/ShowYouShowme/gin-grpc
 
 
 
@@ -8181,7 +8218,8 @@ Nginx  ----> Gate -------> Login   ----> task
 + 客户端与gate建立ws长连接；gate与游戏、登录、任务等服务建立grpc双向流长连接；后端服务之间rpc调用采用grpc unary；admin等需要主动向客户端推送消息，可以写入nsq，每一个gate都消费nsq的消息！（建立一个名为gate的topic，每一个gate实例都消费一个单独的channel）；登录、离线、牌局信息等，写入nsq，由一个event服务来处理，每5s处理一次，批量写入ClickHouse！服务注册发现、配置热更新采用etcd；缓存用redis、数据库用mysql或者mongo
 
 + 处理grpc 双向流的类叫做Network；Network收到消息后发送到App类，App类里面增加计时器的功能；App类可以增加一个成员类型为Logic，在里面实现业务逻辑（可选的）
-+ mongodb根据uid的hansh进行分库分表，再加上etcd的分布式锁（类似mysql行锁、表锁），即可拥有非常高的qps
++ mongodb根据uid的hash进行分库分表，再加上etcd的分布式锁（类似mysql行锁、表锁），即可拥有非常高的qps
++ gate也可以直接将消息写入nsq或者grpc unary调用，消息包含gate的地址{ip:port}，上游服务处理结束后，可以根据此地址调用gate的grpc接口推送消息给client
 
 
 
